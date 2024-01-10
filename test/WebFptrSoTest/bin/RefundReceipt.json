@@ -1,0 +1,44 @@
+{
+	"number": 1,
+	"products": [
+		{
+			"name": "наименование товара или услуги",
+			"barcode": "4780000000007",
+			"amount": 1000,
+			"price": 230000,
+			"product_price": 2300.0,
+			"vat": 15000.0,
+			"vat_percent": 12,
+			"discount": 115000.0,
+			"discount_percent": 50.0,
+			"other": 0.0,
+			"labels": [
+				"05367567230048c?eN1(o0029"
+			],
+			"class_code": "04811001001000000",
+			"package_code": 1431970,
+			"owner_type": 1,
+			"comission_info": {
+				"inn": "123456789",
+				"pinfl": "12345678912345"
+			}
+		}
+	],
+	"qr_code": "https://ofd.soliq.uz/check?t=UZ191211501001&r=1447&c=20220309125810&s=461313663448",
+	"time": "2021-04-15 14:35:02",
+	"cashier": "Admin",
+	"received_cash": 100000,
+	"change": 0,
+	"send_email": true,
+	"email": "abdullo21113@gmail.com",
+	"sms_phone_number": "+998909999999",
+	"received_card": 15000,
+	"prices": [
+		{
+			"name": "UPAY",
+			"price": 100000,
+			"vat_type": "TUZATISH QQS",
+			"vat_price": 200000
+		}
+	]
+}

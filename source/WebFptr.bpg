@@ -1,0 +1,34 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = WebFptrSo.dll WebFptrCfg.exe WebFptrTst.exe WebFptrSoTest.exe \
+  WebFptrSoTestLib.dll
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+
+WebFptrTst.exe: WebFptrTst\WebFptrTst.dpr
+  $(DCC)
+
+WebFptrSoTest.exe: ..\test\WebFptrSoTest\WebFptrSoTest.dpr
+  $(DCC)
+
+WebFptrSoTestLib.dll: ..\test\WebFptrSoTest\WebFptrSoTestLib.dpr
+  $(DCC)
+
+WebFptrCfg.exe: WebFptrCfg\WebFptrCfg.dpr
+  $(DCC)
+
+WebFptrSo.dll: WebFptrSo\WebFptrSo.dpr
+  $(DCC)
+
+

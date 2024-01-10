@@ -1,0 +1,9 @@
+{
+	"data": null,
+	"error": {
+		"code": 9326,
+		"message": "DRAWER_ALREADY_OPENED",
+		"data": null
+	},
+	"is_success": false
+}

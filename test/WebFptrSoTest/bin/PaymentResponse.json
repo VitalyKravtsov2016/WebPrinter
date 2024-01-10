@@ -1,0 +1,16 @@
+{
+	"data": {
+		"amount": 1,
+		"transaction_id": "0e436d79-f100-4373-b12a-1f238b558054",
+		"payment_id": "644113a290a5eba4298f05d5",
+		"inn": "123456789",
+		"qr_code": "50501010793410469483",
+		"kkm_id": "00000001",
+		"device_id": "00000001",
+		"status": "successfully",
+		"message": "successfully payment",
+		"client_phone_number": "998946532140"
+	},
+	"error": null,
+	"is_success": true
+}

@@ -1,0 +1,10 @@
+{
+	"close_zreport": true,
+	"name": "Z Отчет",
+	"prices": [
+		{
+			"name": "UZS",
+			"price": 240000
+		}
+	]
+}

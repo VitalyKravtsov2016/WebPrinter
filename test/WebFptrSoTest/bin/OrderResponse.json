@@ -1,0 +1,12 @@
+{
+	"data": {
+		"terminal_id": "UZ170703100189",
+		"receipt_count": 643,
+		"date_time": "20200518221403",
+		"fiscal_sign": "248429044289",
+		"applet_version": "0300",
+		"qr_url": "https://ofd.soliq.uz/check?t=UZ170703100189&r=643&c=20200518221403&s=248429044289"
+	},
+	"error": null,
+	"is_success": true
+}

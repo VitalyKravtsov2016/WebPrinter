@@ -1,0 +1,9 @@
+{
+	"data": null,
+	"error": {
+		"code": 9327,
+		"message": "ZREPORT_ALREADY_OPEN",
+		"data": null
+	},
+	"is_success": false
+}

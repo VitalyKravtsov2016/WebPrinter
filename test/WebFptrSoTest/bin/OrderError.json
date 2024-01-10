@@ -1,0 +1,9 @@
+{
+	"data": null,
+	"error": {
+		"code": 101,
+		"message": "Printer not working",
+		"data": null
+	},
+	"is_success": false
+}
