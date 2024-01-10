@@ -35,7 +35,7 @@ function CurrencyToInt64(Value: Currency): Int64;
 implementation
 
 uses
-  WebkassaImpl;
+  WebPrinterImpl;
 
 function CurrencyToInt64(Value: Currency): Int64;
 begin
@@ -80,7 +80,7 @@ end;
 procedure TCashInReceipt.Print(AVisitor: TObject);
 begin
   if FIsVoided then Exit;
-  TWebkassaImpl(AVisitor).Print(Self);
+  TWebPrinterImpl(AVisitor).Print(Self);
 end;
 
 function TCashInReceipt.GetPayment: Currency;

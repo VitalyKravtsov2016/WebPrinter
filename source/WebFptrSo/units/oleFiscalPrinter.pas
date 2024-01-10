@@ -8,24 +8,24 @@ uses
   // Opos
   OposFptrUtils,
   // This
-  OPOSWebkassaLib_TLB, WebkassaImpl, LogFile;
+  WebFptrSO_TLB, WebPrinterImpl, LogFile;
 
 type
   { ToleFiscalPrinter }
 
   ToleFiscalPrinter = class(TAutoObject, IFiscalPrinterService_1_12)
   private
-    FDriver: TWebkassaImpl;
+    FDriver: TWebPrinterImpl;
     FLock: TCriticalSection;
 
     procedure Lock;
     procedure Unlock;
     function GetLogger: ILogFile;
-    function GetDriver: TWebkassaImpl;
+    function GetDriver: TWebPrinterImpl;
     function GetLock: TCriticalSection;
  public
     property Logger: ILogFile read GetLogger;
-    property Driver: TWebkassaImpl read GetDriver;
+    property Driver: TWebPrinterImpl read GetDriver;
   public
     destructor Destroy; override;
 
@@ -355,10 +355,10 @@ begin
   Result := Driver.Logger;
 end;
 
-function ToleFiscalPrinter.GetDriver: TWebkassaImpl;
+function ToleFiscalPrinter.GetDriver: TWebPrinterImpl;
 begin
   if FDriver = nil then
-    FDriver := TWebkassaImpl.Create(nil);
+    FDriver := TWebPrinterImpl.Create(nil);
   Result := FDriver;
 end;
 

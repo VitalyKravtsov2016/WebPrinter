@@ -10,7 +10,7 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = WebFptrSo.dll WebFptrCfg.exe WebFptrTst.exe WebFptrSoTest.exe \
-  WebFptrSoTestLib.dll
+  WebFptrSoTestLib.dll AcceptanceTest.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -29,6 +29,9 @@ WebFptrCfg.exe: WebFptrCfg\WebFptrCfg.dpr
   $(DCC)
 
 WebFptrSo.dll: WebFptrSo\WebFptrSo.dpr
+  $(DCC)
+
+AcceptanceTest.exe: ..\test\AcceptanceTest\AcceptanceTest.dpr
   $(DCC)
 
 

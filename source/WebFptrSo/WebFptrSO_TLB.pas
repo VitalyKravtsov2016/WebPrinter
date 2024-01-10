@@ -12,10 +12,10 @@ unit WebFptrSO_TLB;
 // ************************************************************************ //
 
 // PASTLWTR : 1.2
-// File generated on 09.01.2024 11:04:25 from Type Library described below.
+// File generated on 10.01.2024 18:14:32 from Type Library described below.
 
 // ************************************************************************  //
-// Type Lib: D:\projects\WebPrinter\source\WebFptrSo\WebFptrSo.tlb (1)
+// Type Lib: C:\projects\WebPrinter\source\WebFptrSo\WebFptrSo.tlb (1)
 // LIBID: {ABC85BEB-F195-4A72-8538-CE429020EA83}
 // LCID: 0
 // Helpfile: 

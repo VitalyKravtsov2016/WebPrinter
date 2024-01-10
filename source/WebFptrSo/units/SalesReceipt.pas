@@ -144,7 +144,7 @@ type
 implementation
 
 uses
-  WebkassaImpl;
+  WebPrinterImpl;
 
 procedure CheckPercents(Amount: Currency);
 begin
@@ -207,7 +207,7 @@ end;
 procedure TSalesReceipt.Print(AVisitor: TObject);
 begin
   if FIsVoided then Exit;
-  TWebkassaImpl(AVisitor).Print(Self);
+  TWebPrinterImpl(AVisitor).Print(Self);
 end;
 
 procedure TSalesReceipt.CheckAmount(Amount: Currency);

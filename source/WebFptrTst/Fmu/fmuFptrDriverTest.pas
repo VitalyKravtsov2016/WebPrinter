@@ -54,17 +54,7 @@ begin
   AddTest(TDateTest);
   AddTest(TX5Test);
   AddTest(TGlobusReceiptTest);
-  AddTest(TCancelReceiptTest);
   AddTest(TStornoReceiptTest);
-  AddTest(TReadEJACtivationResultTest);
-  AddTest(TReadEJACtivationResultTest2);
-  AddTest(TReadEJACtivationResultTest3);
-  AddTest(TReadEJACtivationResultTest4);
-  AddTest(TBoldTextTest);
-  AddTest(TPrint10Test);
-  AddTest(TPrint20Test);
-  AddTest(TPrintNormalTest);
-  //AddTest(TRecNearEndTest); { !!! }
 end;
 
 destructor TfmFptrDriverTest.Destroy;

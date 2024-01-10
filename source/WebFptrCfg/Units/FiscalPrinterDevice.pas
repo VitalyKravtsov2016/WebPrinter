@@ -52,8 +52,7 @@ implementation
 
 uses
   fmuFptrConnection, fmuFptrLog, fmuFptrHeader, fmuFptrTrailer,
-  fmuFptrVatRate, fmuFptrPayType, fmuFptrMiscParams, fmuTranslation,
-  fmuFptrBarcode, fmuFptrReceipt;
+  fmuFptrVatRate, fmuFptrPayType, fmuFptrMiscParams;
 
 { TFiscalPrinterDevice }
 
@@ -99,15 +98,11 @@ begin
     LoadParameters(Parameters, DeviceName, Logger);
     //
     AddPage(fm, TfmFptrConnection);
-    AddPage(fm, TfmPrinter);
     AddPage(fm, TfmFptrLog);
     AddPage(fm, TfmFptrHeader);
     AddPage(fm, TfmFptrTrailer);
     AddPage(fm, TfmFptrPayType);
     AddPage(fm, TfmFptrVatRate);
-    AddPage(fm, TfmTranslation);
-    AddPage(fm, TfmFptrBarcode);
-    AddPage(fm, TfmFptrReceipt);
     AddPage(fm, TfmFptrMiscParams);
 
     fm.Init;

@@ -102,7 +102,7 @@ var
 
 begin
   try
-    Driver := TSMFiscalPrinter.Create;
+    Driver := TSMFiscalPrinter.Create(nil);
     try
       Check(Driver.Open(FPrinterDevice));
       Check(Driver.ClaimDevice(0));

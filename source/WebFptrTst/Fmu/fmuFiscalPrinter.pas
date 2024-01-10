@@ -21,8 +21,8 @@ uses
   fmuFptrDate, fmuFptrSlipInsertion, fmuFptrSetLine, fmuFptrProperties,
   fmuFptrAddHeaderTrailer, fmuFptrGetData, fmuFptrRecCash,
   fmuFptrWritableProperties, fmuFptrSetHeadertrailer, fmuFptrDriverTest,
-  fmuFptrDirectIOHex, fmuFptrDirectIOStr, fmuFptrDirectIOEndDay, fmuFptrDirectIO,
-  fmuFptrDirectIOBarcode, fmuFptrDirectIOFS, fmuFptrTraining, fmuFptrReceiptTest,
+  fmuFptrDirectIOHex, fmuFptrDirectIOEndDay, fmuFptrDirectIO,
+  fmuFptrTraining, fmuFptrReceiptTest,
   fmuPrintRecVoidItem, fmuPrintRecItemRefund, fmuPrintRecItemRefundVoid,
   fmuFptrStatistics, fmuFptrMonitoring,
   fmuFptrEvents, fmuFptrTest, fmuFptrThreadTest, fmuFptrFiscalStorage,
@@ -174,25 +174,12 @@ begin
   // DirectIO
   AddPage(TfmFptrDirectIO);
   AddPage(TfmFptrDirectIOHex);
-  AddPage(TfmFptrDirectIOStr);
   AddPage(TfmFptrDirectIOEndDay);
-  AddPage(TfmFptrDirectIOBarcode);
-  AddPage(TfmFptrDirectIOFS);
   // Driver tests
   AddPage(TfmFptrDriverTest);
   AddPage(TfmFptrStatistics);
   AddPage(TfmFptrMonitoring);
-  // Malina
-  {$IFDEF MALINA}
-  AddPage(TfmMalina);
-  AddPage(TfmTextBlock);
-  AddPage(TfmTextReceipt);
-  AddPage(TfmTankReport);
-  AddPage(TfmFptrFroudReceipt);
-  {$ENDIF}
   AddPage(TfmFptrTest);
-  //AddPage(TfmFptrThreadTest);
-  //AddPage(TfmFptrTest2);
 end;
 
 procedure TfmFiscalPrinter.UpdatePages(ListBox: TTntListBox; Pages: TPages);

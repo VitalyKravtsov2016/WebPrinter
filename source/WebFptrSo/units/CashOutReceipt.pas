@@ -8,7 +8,7 @@ uses
   // Opos
   Opos, OposException, OposFptr,
   // This
-  CustomReceipt, WebkassaClient, gnugettext;
+  CustomReceipt, gnugettext;
 
 type
   { TCashOutReceipt }
@@ -33,7 +33,7 @@ type
 implementation
 
 uses
-  WebkassaImpl;
+  WebPrinterImpl;
 
 { TCashOutReceipt }
 
@@ -73,7 +73,7 @@ end;
 procedure TCashOutReceipt.Print(AVisitor: TObject);
 begin
   if FIsVoided then Exit;
-  TWebkassaImpl(AVisitor).Print(Self);
+  TWebPrinterImpl(AVisitor).Print(Self);
 end;
 
 function TCashOutReceipt.GetPayment: Currency;

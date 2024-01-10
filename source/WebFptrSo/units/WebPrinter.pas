@@ -8,7 +8,7 @@ uses
   // Tnt
   TntClasses, TntRegistry,
   // Indy
-  IdHTTP, IdSSLOpenSSL, IdHeaderList,
+  IdHTTP, IdSSLOpenSSL, IdHeaderList, IdURI,
   // This
   LogFile, JsonUtils, DriverError;
 
@@ -19,6 +19,13 @@ const
   WP_RECEIPT_TYPE_ORDER     = 'order';
   WP_RECEIPT_TYPE_PREPAID   = 'prepaid';
   WP_RECEIPT_TYPE_CREDIT    = 'credit';
+
+  //////////////////////////////////////////////////////////////////////////////
+  // PaymentType
+
+  PaymentTypeCash             = 0;
+  PaymentTypePrepaid          = 1;
+  PaymentTypeCredit           = 2;
 
   //////////////////////////////////////////////////////////////////////////////
   (*
@@ -411,12 +418,14 @@ type
   TWPCloseDayRequest = class(TJsonPersistent)
   private
     FClose: Boolean;
-    Fprices: TWPCurrencies;
-    Fname: WideString;
+    FTime: TDateTime;
+    FName: WideString;
+    FPrices: TWPCurrencies;
     procedure SetPrices(const Value: TWPCurrencies);
   public
     constructor Create;
     destructor Destroy; override;
+    property Time: TDateTime read FTime write FTime;
   published
     property name: WideString read Fname write Fname;
     property prices: TWPCurrencies read Fprices write SetPrices;
@@ -601,6 +610,8 @@ type
     FLogger: ILogFile;
     FTestMode: Boolean;
     FAddress: WideString;
+    FConnectTimeout: Integer;
+
     FRaiseErrors: Boolean;
     FTransport: TIdHTTP;
     FAnswerJson: WideString;
@@ -608,7 +619,8 @@ type
     FInfo: TWPInfoCommand;
     FResponse: TWPResponse;
     FOpenDayResponse: TWPOpenDayResponse;
-    FCloseDayResponse: TWPCloseDayResponse2;
+    FCloseDayResponse: TWPCloseDayResponse;
+    FCloseDayResponse2: TWPCloseDayResponse2;
     FPaymentResponse: TWPPaymentResponse;
     FPaymentConfirmResponse: TWPPaymentConfirmResponse;
     FCreateOrderResponse: TWPCreateOrderResponse;
@@ -623,13 +635,15 @@ type
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
 
+    procedure Connect;
+    procedure Disconnect;
     function ReadInfo: WideString;
     function ReadInfo2: TWPInfoCommand;
     function OpenFiscalDay(Time: TDateTime): WideString;
     function OpenFiscalDay2(Time: TDateTime): TWPOpenDayResponse;
     function CloseFiscalDay(Time: TDateTime): WideString;
-    function CloseFiscalDay2(Time: TDateTime): TWPCloseDayResponse2;
-    function PrintZReport(Request: TWPCloseDayRequest): TWPCloseDayResponse2;
+    function CloseFiscalDay2(Time: TDateTime): TWPCloseDayResponse;
+    function PrintZReport(Request: TWPCloseDayRequest): TWPCloseDayResponse;
     function ReadZReport: TWPCloseDayResponse2;
     function OpenCashDrawer: TWPResponse;
     function PaymentClick(Request: TWPPaymentRequest): TWPPaymentResponse;
@@ -649,7 +663,9 @@ type
     property AnswerJson: WideString read FAnswerJson write FAnswerJson;
     property RequestJson: WideString read FRequestJson write FRequestJson;
     property OpenDayResponse: TWPOpenDayResponse read FOpenDayResponse;
-    property CloseDayResponse: TWPCloseDayResponse2 read FCloseDayResponse;
+    property CloseDayResponse: TWPCloseDayResponse read FCloseDayResponse;
+    property CloseDayResponse2: TWPCloseDayResponse2 read FCloseDayResponse2;
+    property ConnectTimeout: Integer read FConnectTimeout write FConnectTimeout;
   end;
 
 function WPDateTimeToStr(Time: TDateTime): string;
@@ -992,7 +1008,8 @@ begin
   FAddress := 'https://devkkm.webkassa.kz/';
   FInfo := TWPInfoCommand.Create;
   FOpenDayResponse := TWPOpenDayResponse.Create;
-  FCloseDayResponse := TWPCloseDayResponse2.Create;
+  FCloseDayResponse := TWPCloseDayResponse.Create;
+  FCloseDayResponse2 := TWPCloseDayResponse2.Create;
   FResponse := TWPResponse.Create;
   FPaymentResponse := TWPPaymentResponse.Create;
   FPaymentConfirmResponse := TWPPaymentConfirmResponse.Create;
@@ -1032,6 +1049,7 @@ begin
     FTransport.Request.Accept := 'application/json, */*; q=0.01';
     FTransport.Request.ContentType := 'application/json; charset=UTF-8';
     FTransport.Request.CharSet := 'utf-8';
+    FTransport.ConnectTimeout := FConnectTimeout;
   end;
   Result := FTransport;
 end;
@@ -1064,29 +1082,38 @@ begin
   Stream := TMemoryStream.Create;
   DstStream := TMemoryStream.Create;
   try
-    S := Request;
-    Stream.WriteBuffer(S[1], Length(S));
+    try
+      S := Request;
+      Stream.WriteBuffer(S[1], Length(S));
 
-    if IsGetRequest then
-    begin
-      Transport.Get(URL, DstStream);
-    end else
-    begin
-      Transport.Post(URL, Stream, DstStream);
+      Transport.Request.Date := Now;
+      if IsGetRequest then
+      begin
+        Transport.Get(URL, DstStream);
+      end else
+      begin
+        Transport.Post(URL, Stream, DstStream);
+      end;
+      Answer := '';
+      if DstStream.Size > 0 then
+      begin
+        DstStream.Seek(0, 0);
+        SetLength(Answer, DstStream.Size);
+        DstStream.ReadBuffer(Answer[1], DstStream.Size);
+      end;
+      Result := Answer;
+      FAnswerJson := Result;
+      FLogger.Debug('<= ' + UTF8Decode(Answer));
+    finally
+      Stream.Free;
+      DstStream.Free;
     end;
-    Answer := '';
-    if DstStream.Size > 0 then
+  except
+    on E: Exception do
     begin
-      DstStream.Seek(0, 0);
-      SetLength(Answer, DstStream.Size);
-      DstStream.ReadBuffer(Answer[1], DstStream.Size);
+      FLogger.Error(E.Message);
+      raise;
     end;
-    Result := Answer;
-    FAnswerJson := Result;
-    FLogger.Debug('<= ' + UTF8Decode(Answer));
-  finally
-    Stream.Free;
-    DstStream.Free;
   end;
 end;
 
@@ -1112,6 +1139,16 @@ begin
   begin
     RaiseError(Error.code, Error.message);
   end;
+end;
+
+procedure TWebPrinter.Connect;
+begin
+  ReadInfo2;
+end;
+
+procedure TWebPrinter.Disconnect;
+begin
+  Transport.Disconnect;
 end;
 
 function TWebPrinter.ReadInfo: WideString;
@@ -1140,7 +1177,8 @@ function TWebPrinter.OpenFiscalDay(Time: TDateTime): WideString;
 var
   URL: WideString;
 begin
-  URL := GetAddress + '/zreport/open/' + Format('?time="%s"', [WPDateTimeToStr(Time)]);
+  URL := GetAddress + '/zreport/open/' + '?' +
+    TIdURI.ParamsEncode(Format('time=%s', [WPDateTimeToStr(time)]));
   Result := GetJson(URL);
 end;
 
@@ -1165,21 +1203,18 @@ Operation for close ZReport / «акрытие кассовой смены
 
 function TWebPrinter.CloseFiscalDay(Time: TDateTime): WideString;
 begin
-  Result := GetJson(GetAddress + '/zreport/close/' +
-    Format('?time=[%s]', [WPDateTimeToStr(Time)]));
+  Result := GetJson(GetAddress + '/zreport/close' + '?' +
+    TIdURI.ParamsEncode(Format('time=%s', [WPDateTimeToStr(time)])));
 end;
 
-function TWebPrinter.CloseFiscalDay2(Time: TDateTime): TWPCloseDayResponse2;
+function TWebPrinter.CloseFiscalDay2(Time: TDateTime): TWPCloseDayResponse;
 var
   JsonText: WideString;
 begin
   JsonText := CloseFiscalDay(Time);
-  FCloseDayResponse.result.is_success := False;
+  FCloseDayResponse.is_success := False;
   JsonToObject(JsonText, FCloseDayResponse);
-  if not FCloseDayResponse.result.is_success then
-    JsonToObject(JsonText, FCloseDayResponse.result);
-
-  CheckForError(FCloseDayResponse.Result.Error);
+  CheckForError(FCloseDayResponse.Error);
   Result := FCloseDayResponse;
 end;
 
@@ -1192,16 +1227,17 @@ Operation for close ZReport / «акрытие кассовой смены с напечатыванием чека
 **Auth required** : NO
 *)
 
-function TWebPrinter.PrintZReport(Request: TWPCloseDayRequest): TWPCloseDayResponse2;
+function TWebPrinter.PrintZReport(Request: TWPCloseDayRequest): TWPCloseDayResponse;
 var
+  URL: WideString;
   JsonText: WideString;
 begin
-  JsonText := PostJson(GetAddress + '/zreport/close/', ObjectToJson(Request));
-  JsonToObject(JsonText, FCloseDayResponse);
-  if not FCloseDayResponse.result.is_success then
-    JsonToObject(JsonText, FCloseDayResponse.result);
+  URL := GetAddress + '/zreport/close' + '?' +
+    TIdURI.ParamsEncode(Format('time=%s', [WPDateTimeToStr(Request.time)]));
 
-  CheckForError(FCloseDayResponse.result.error);
+  JsonText := PostJson(URL, ObjectToJson(Request));
+  JsonToObject(JsonText, FCloseDayResponse);
+  CheckForError(FCloseDayResponse.error);
   Result := FCloseDayResponse;
 end;
 
@@ -1218,12 +1254,12 @@ var
   JsonText: WideString;
 begin
   JsonText := GetJson(GetAddress + '/zreport/info/');
-  JsonToObject(JsonText, FCloseDayResponse);
-  if not FCloseDayResponse.result.is_success then
-    JsonToObject(JsonText, FCloseDayResponse.result);
+  JsonToObject(JsonText, FCloseDayResponse2);
+  if not FCloseDayResponse2.result.is_success then
+    JsonToObject(JsonText, FCloseDayResponse2.result);
 
-  CheckForError(FCloseDayResponse.result.error);
-  Result := FCloseDayResponse;
+  CheckForError(FCloseDayResponse2.result.error);
+  Result := FCloseDayResponse2;
 end;
 
 (*

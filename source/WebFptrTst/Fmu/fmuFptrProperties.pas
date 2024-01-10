@@ -290,7 +290,7 @@ var
   PropID: Integer;
   DispParams: TDispParams;
 begin
-  Intf := FiscalPrinter.Driver.ControlInterface;
+  Intf := FiscalPrinter.ControlInterface;
   PName := PWideChar(PropertyName);
   try
     OleCheck(Intf.GetIDsOfNames(GUID_NULL, @PName, 1, GetThreadLocale, @PropID));
@@ -316,7 +316,7 @@ var
   PropName: WideString;
 begin
   Memo.Clear;
-  Dispatch := FiscalPrinter.Driver.ControlInterface;
+  Dispatch := FiscalPrinter.ControlInterface;
 
   Dispatch.GetTypeInfo(0, 0, TypeInfo);
   if TypeInfo = nil then Exit;

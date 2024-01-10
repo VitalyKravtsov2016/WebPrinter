@@ -9,8 +9,7 @@ uses
   // Tnt
   TntStdCtrls, TntSysUtils, TntClasses, 
   // This
-  untPages, OposFiscalPrinter, DirectIOAPI, Opos, CommandDef,
-  CommandParam, BStrUtil, LogFile;
+  untPages, OposFiscalPrinter, DirectIOAPI, Opos, BStrUtil, LogFile;
 
 type
   TfmFptrDirectIOStr = class(TPage)
@@ -28,14 +27,6 @@ type
     procedure btnExecuteClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure cbCommandChange(Sender: TObject);
-  private
-    function GetCommands: TCommandDefs;
-    procedure UpdateCommandText(const S: WideString);
-  private
-    FCommands: TCommandDefs;
-    procedure UpdateCommandHint;
-
-    property Commands: TCommandDefs read GetCommands;
   public
     destructor Destroy; override;
   end;

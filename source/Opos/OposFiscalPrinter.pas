@@ -44,7 +44,7 @@ begin
   if  FFiscalPrinter = nil then
   begin
     try
-      FFiscalPrinter := TSMFiscalPrinter.Create;
+      FFiscalPrinter := TSMFiscalPrinter.Create(nil);
     except
       on E: Exception do
       begin

@@ -15,7 +15,7 @@ object fmFptrThreadTest: TfmFptrThreadTest
   OnCreate = FormCreate
   DesignSize = (
     368
-    215)
+    216)
   PixelsPerInch = 96
   TextHeight = 13
   object lblDrawerTestCount_: TTntLabel

@@ -9,7 +9,7 @@ uses
   TntSysUtils, TntClasses,
   // This
   DIOHandler, DirectIOAPI, LogFile, PrinterParameters,
-  OposUtils, OposFptrUtils, WException, gnugettext, WebkassaImpl,
+  OposUtils, OposFptrUtils, WException, gnugettext, WebPrinterImpl,
   StringUtils, PrinterTypes;
 
 const
@@ -20,13 +20,13 @@ type
 
   TDIOHandler2 = class(TDIOHandler)
   private
-    FPrinter: TWebkassaImpl;
+    FPrinter: TWebPrinterImpl;
     function GetParameters: TPrinterParameters;
   public
     constructor CreateCommand(AOwner: TDIOHandlers; ACommand: Integer;
-      APrinter: TWebkassaImpl);
+      APrinter: TWebPrinterImpl);
 
-    property Printer: TWebkassaImpl read FPrinter;
+    property Printer: TWebPrinterImpl read FPrinter;
     property Parameters: TPrinterParameters read GetParameters;
   end;
 
@@ -109,7 +109,7 @@ end;
 { TDIOHandler2 }
 
 constructor TDIOHandler2.CreateCommand(AOwner: TDIOHandlers;
-  ACommand: Integer; APrinter: TWebkassaImpl);
+  ACommand: Integer; APrinter: TWebPrinterImpl);
 begin
   inherited Create(AOwner, ACommand);
   FPrinter := APrinter;
@@ -124,113 +124,24 @@ end;
 
 procedure TDIOBarcode.DirectIO(var pData: Integer;
   var pString: WideString);
-var
-  Barcode: TBarcodeRec;
 begin
-  if Pos(';', pString) = 0 then
-  begin
-    Barcode.BarcodeType := pData;
-    Barcode.Data := pString;
-    Barcode.Text := pString;
-    Barcode.Height := 0;
-    Barcode.ModuleWidth := 4;
-    Barcode.Alignment := 0;
-    Barcode.Parameter1 := 0;
-    Barcode.Parameter2 := 0;
-    Barcode.Parameter3 := 0;
-    Barcode.Parameter4 := 0;
-    Barcode.Parameter5 := 0;
-  end else
-  begin
-    Barcode.BarcodeType := pData;
-    Barcode.Data := GetString(pString, 1, ValueDelimiters);
-    Barcode.Text := GetString(pString, 2, ValueDelimiters);
-    Barcode.Height := GetInteger(pString, 3, ValueDelimiters);
-    Barcode.ModuleWidth := GetInteger(pString, 4, ValueDelimiters);
-    Barcode.Alignment := GetInteger(pString, 5, ValueDelimiters);
-    Barcode.Parameter1 := GetInteger(pString, 6, ValueDelimiters);
-    Barcode.Parameter2 := GetInteger(pString, 7, ValueDelimiters);
-    Barcode.Parameter3 := GetInteger(pString, 8, ValueDelimiters);
-    Barcode.Parameter4 := GetInteger(pString, 9, ValueDelimiters);
-    Barcode.Parameter5 := GetInteger(pString, 10, ValueDelimiters);
-  end;
-  Printer.PrintBarcode(BarcodeToStr(Barcode));
+  { !!! }
 end;
 
 { TDIOBarcodeHex }
 
 procedure TDIOBarcodeHex.DirectIO(var pData: Integer;
   var pString: WideString);
-var
-  Barcode: TBarcodeRec;
 begin
-  if Pos(';', pString) = 0 then
-  begin
-    Barcode.BarcodeType := pData;
-    Barcode.Data := HexToStr(pString);
-    Barcode.Text := pString;
-
-    (*
-    Barcode.Height := Printer.Params.BarcodeHeight;
-    Barcode.ModuleWidth := Printer.Params.BarcodeModuleWidth;
-    Barcode.Alignment := Printer.Params.BarcodeAlignment;
-    Barcode.Parameter1 := Printer.Params.BarcodeParameter1;
-    Barcode.Parameter2 := Printer.Params.BarcodeParameter2;
-    Barcode.Parameter3 := Printer.Params.BarcodeParameter3;
-    *)
-  end else
-  begin
-    Barcode.BarcodeType := pData;
-    Barcode.Data := HexToStr(GetString(pString, 1, ValueDelimiters));
-    Barcode.Text := GetString(pString, 2, ValueDelimiters);
-    Barcode.Height := GetInteger(pString, 3, ValueDelimiters);
-    Barcode.ModuleWidth := GetInteger(pString, 4, ValueDelimiters);
-    Barcode.Alignment := GetInteger(pString, 5, ValueDelimiters);
-    Barcode.Parameter1 := GetInteger(pString, 6, ValueDelimiters);
-    Barcode.Parameter2 := GetInteger(pString, 7, ValueDelimiters);
-    Barcode.Parameter3 := GetInteger(pString, 8, ValueDelimiters);
-  end;
-  Printer.PrintBarcode(BarcodeToStr(Barcode));
+  { !!! }
 end;
 
 { TDIOBarcodeHex2 }
 
 procedure TDIOBarcodeHex2.DirectIO(var pData: Integer;
   var pString: WideString);
-var
-  Barcode: TBarcodeRec;
 begin
-  if Pos(';', pString) = 0 then
-  begin
-    Barcode.BarcodeType := pData;
-    Barcode.Data := HexToStr(pString);
-    Barcode.Text := pString;
-
-    (*
-    Barcode.Height := Printer.Params.BarcodeHeight;
-    Barcode.ModuleWidth := Printer.Params.BarcodeModuleWidth;
-    Barcode.Alignment := Printer.Params.BarcodeAlignment;
-    Barcode.Parameter1 := Printer.Params.BarcodeParameter1;
-    Barcode.Parameter2 := Printer.Params.BarcodeParameter2;
-    Barcode.Parameter3 := Printer.Params.BarcodeParameter3;
-    Barcode.Parameter4 := Printer.Params.BarcodeParameter4;
-    Barcode.Parameter5 := Printer.Params.BarcodeParameter5;
-    *)
-  end else
-  begin
-    Barcode.BarcodeType := pData;
-    Barcode.Data := HexToStr(GetString(pString, 1, ValueDelimiters));
-    Barcode.Text := HexToStr(GetString(pString, 2, ValueDelimiters));
-    Barcode.Height := GetInteger(pString, 3, ValueDelimiters);
-    Barcode.ModuleWidth := GetInteger(pString, 4, ValueDelimiters);
-    Barcode.Alignment := GetInteger(pString, 5, ValueDelimiters);
-    Barcode.Parameter1 := GetInteger(pString, 6, ValueDelimiters);
-    Barcode.Parameter2 := GetInteger(pString, 7, ValueDelimiters);
-    Barcode.Parameter3 := GetInteger(pString, 8, ValueDelimiters);
-    Barcode.Parameter4 := GetInteger(pString, 9, ValueDelimiters);
-    Barcode.Parameter5 := GetInteger(pString, 10, ValueDelimiters);
-  end;
-  Printer.PrintBarcode(BarcodeToStr(Barcode));
+  { !!! }
 end;
 
 { TDIOPrintText }
@@ -273,12 +184,6 @@ end;
 procedure TDIOGetDriverParameter.DirectIO(var pData: Integer;
   var pString: WideString);
 begin
-  case pData of
-    DriverParameterPrintEnabled: pString := BoolToStr(Printer.Params.PrintEnabled);
-    DriverParameterBarcode: pString := Printer.Receipt.Barcode;
-    DriverParameterExternalCheckNumber: pString := Printer.ExternalCheckNumber;
-    DriverParameterFiscalSign: pString := Printer.Receipt.FiscalSign;
-  end;
 end;
 
 { TDIOSetDriverParameter }
@@ -286,16 +191,7 @@ end;
 procedure TDIOSetDriverParameter.DirectIO(var pData: Integer;
   var pString: WideString);
 begin
-  case pData of
-    DriverParameterPrintEnabled: Printer.Params.PrintEnabled := StrToBool(pString);
-    DriverParameterBarcode: Printer.Receipt.Barcode := pString;
-    DriverParameterExternalCheckNumber:
-    begin
-      if pString <> '' then
-        Printer.ExternalCheckNumber := pString;
-    end;
-    DriverParameterFiscalSign: Printer.Receipt.FiscalSign := pString;
-  end;
+
 end;
 
 { TDIOPrintReceiptDuplicate }
@@ -303,7 +199,7 @@ end;
 procedure TDIOPrintReceiptDuplicate.DirectIO(var pData: Integer;
   var pString: WideString);
 begin
-  Printer.PrintReceiptDuplicate2(pString);
+  { !!! }
 end;
 
 end.

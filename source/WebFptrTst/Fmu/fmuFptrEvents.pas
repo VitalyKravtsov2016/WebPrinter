@@ -59,10 +59,10 @@ end;
 
 procedure TfmFptrEvents.FormCreate(Sender: TObject);
 begin
-  FiscalPrinter.Driver.OnDirectIOEvent := DirectIOEvent;
-  FiscalPrinter.Driver.OnErrorEvent := ErrorEvent;
-  FiscalPrinter.Driver.OnOutputCompleteEvent := OutputCompleteEvent;
-  FiscalPrinter.Driver.OnStatusUpdateEvent := StatusUpdateEvent;
+  FiscalPrinter.OnDirectIOEvent := DirectIOEvent;
+  FiscalPrinter.OnErrorEvent := ErrorEvent;
+  FiscalPrinter.OnOutputCompleteEvent := OutputCompleteEvent;
+  FiscalPrinter.OnStatusUpdateEvent := StatusUpdateEvent;
 end;
 
 procedure TfmFptrEvents.DirectIOEvent(Sender: TObject; EventNumber: Integer;
