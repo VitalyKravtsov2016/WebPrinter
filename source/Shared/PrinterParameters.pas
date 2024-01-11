@@ -28,7 +28,7 @@ const
   DefLogFileEnabled = True;
 
   DefConnectTimeout = 10;
-  DefWebPrinterAddress = 'https://devkkm.WebPrinter.kz/';
+  DefWebPrinterAddress = 'http://fbox.ngrok.io';
 
 type
   { TPrinterParameters }

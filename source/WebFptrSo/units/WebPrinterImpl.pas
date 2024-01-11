@@ -17,7 +17,8 @@ uses
   CustomReceipt, NonFiscalDoc, ServiceVersion,  PrinterParameters,
   PrinterParametersX, CashInReceipt, CashOutReceipt, SalesReceipt,
   ReceiptItem, StringUtils, DebugUtils, VatRate, FileUtils,
-  PrinterTypes, DirectIOAPI, PrinterParametersReg, WebPrinter, WebFptrSO_TLB;
+  PrinterTypes, DirectIOAPI, PrinterParametersReg, WebPrinter,
+  WebFptrSO_TLB, MathUtils;
 
 const
   AmountDecimalPlaces = 2;
@@ -326,6 +327,7 @@ begin
   inherited Create(AOwner);
   FLogger := TLogFile.Create;
   FReceipt := TCustomReceipt.Create;
+  FPrinter := TWebPrinter.Create(FLogger);
   FParams := TPrinterParameters.Create(FLogger);
   FOposDevice := TOposServiceDevice19.Create(FLogger);
   FOposDevice.ErrorEventEnabled := False;
@@ -340,6 +342,7 @@ begin
 
   FParams.Free;
   FReceipt.Free;
+  FPrinter.Free;
   FOposDevice.Free;
   FPrinterState.Free;
   inherited Destroy;
@@ -469,7 +472,7 @@ begin
   FCapReceiptNotPaid := False;
   FCapRemainingFiscalMemory := False;
   FCapReservedWord := False;
-  FCapSetPOSID := False;
+  FCapSetPOSID := True;
   FCapSetStoreFiscalID := False;
   FCapSetVatTable := False;
   FCapSlpFiscalDocument := False;
@@ -1905,13 +1908,7 @@ function TWebPrinterImpl.HandleDriverError(E: EDriverError): TOPOSError;
 begin
   Result.ResultCode := OPOS_E_EXTENDED;
   Result.ErrorString := GetExceptionMessage(E);
-  if E.ErrorCode = 11 then
-  begin
-    Result.ResultCodeExtended := OPOS_EFPTR_DAY_END_REQUIRED;
-  end else
-  begin
-    Result.ResultCodeExtended := 300 + E.ErrorCode;
-  end;
+  Result.ResultCodeExtended := E.ErrorCode;
 end;
 
 procedure TWebPrinterImpl.Print(Receipt: TCashInReceipt);
@@ -1927,43 +1924,80 @@ end;
 procedure TWebPrinterImpl.Print(Receipt: TSalesReceipt);
 var
   i: Integer;
-  VatRate: TVatRate;
-  Adjustment: TAdjustment;
+  Order: TWPOrder;
+  Product: TWPProduct;
+  //VatRate: TVatRate;
+  //Adjustment: TAdjustment;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
 begin
-  // Items
-  for i := 0 to Receipt.Items.Count-1 do
-  begin
-    ReceiptItem := Receipt.Items[i];
-    if ReceiptItem is TSalesReceiptItem then
+  Order := TWPOrder.Create;
+  try
+	  Order.Number := 1;
+	  Order.Receipt_type := WP_RECEIPT_TYPE_ORDER;
+	  Order.Time := WPDateTimeToStr(Now);
+	  Order.Cashier := FCashierID;
+	  Order.Received_cash := Round2(Receipt.GetPayment * 100);
+	  Order.change := Round2(Receipt.Change  * 100);
+	  Order.Received_card := 0;
+	  //Order.Open_cashbox := Parameters.OpenCashbox; !!!
+	  Order.Send_email := True;
+	  Order.Email := Receipt.CustomerEmail;
+	  Order.sms_phone_number := Receipt.CustomerPhone;
+
+    // Items
+    for i := 0 to Receipt.Items.Count-1 do
     begin
-      Item := ReceiptItem as TSalesReceiptItem;
-
-      //VatRate := GetVatRate(Item.VatInfo);
-
+      ReceiptItem := Receipt.Items[i];
+      if ReceiptItem is TSalesReceiptItem then
+      begin
+        Item := ReceiptItem as TSalesReceiptItem;
+        Product := Order.products.Add as TWPProduct;
+        Product.Name := Item.Description;
+        Product.Amount := Round2(Item.Quantity * 1000);
+        Product.Barcode := Item.Barcode;
+        //Product.Units := Item.Units;
+        Product.Price := Round2(Item.Price * 100);
+        Product.Product_price := Round2(Item.UnitPrice * 100);
+        //Product.VAT := Round2(Item.VatAmount * 100);
+        Product.VAT := 0;
+        Product.vat_percent := 0;
+        //Product.vat_percent := GetVatPercent(Item.VatInfo);
+        Product.discount := Round2((Item.Discounts.GetTotal - Item.Charges.GetTotal) * 100);
+        //Product.Discount_percent := GetDiscountPercent(Item);
+        Product.Discount_percent := 0;
+        Product.Other := 0;
+        Product.Labels := Item.MarkList;
+        Product.Class_code := '';
+        Product.Package_code := 0;
+        Product.Owner_type := 0;
+        Product.Comission_info.inn := '';
+        Product.Comission_info.pinfl := '';
+      end;
+    end;
+    // Discounts
+    for i := 0 to Receipt.Discounts.Count-1 do
+    begin
+      //Adjustment := Receipt.Discounts[i];
       { !!! }
     end;
-  end;
-  // Discounts
-  for i := 0 to Receipt.Discounts.Count-1 do
-  begin
-    Adjustment := Receipt.Discounts[i];
-    { !!! }
-  end;
-  // Charges
-  for i := 0 to Receipt.Charges.Count-1 do
-  begin
-    Adjustment := Receipt.Charges[i];
-    { !!! }
-  end;
-  // Payments
-  for i := Low(Receipt.Payments) to High(Receipt.Payments) do
-  begin
-    if Receipt.Payments[i] <> 0 then
+    // Charges
+    for i := 0 to Receipt.Charges.Count-1 do
     begin
+      //Adjustment := Receipt.Charges[i];
       { !!! }
     end;
+    // Payments
+    for i := Low(Receipt.Payments) to High(Receipt.Payments) do
+    begin
+      if Receipt.Payments[i] <> 0 then
+      begin
+        //Receipt.Payments[i]
+      end;
+    end;
+    FPrinter.CreateOrder(Order);
+  finally
+    Order.Free;
   end;
 end;
 

@@ -50,15 +50,10 @@ See http://www.suigeneris.org/want/ for details.
   <property name="test"               value="${basepath}/test" />
   <property name="setup"             value="${basepath}/setup" />
 
-  <property name="OposConfig"        value="${src}/OposConfig" />
-  <property name="OposTest"          value="${src}/OposTest" />
-  <property name="SmScale"           value="${src}/SmScale" />
-  <property name="SmFptrSrv"         value="${src}/SmFptrSrv" />
-  <property name="smFiscalPrinter"   value="${src}/SmFiscalPrinter" />
-  <property name="SmFiscalPrinterTest" value="${test}/SmFiscalPrinterTest" />
-  <property name="smscaletest" value="${test}/smscaletest" />
-  <property name="OposConfigTest" value="${test}/OposConfigTest" />
-  <property name="OposTestTest" value="${test}/OposTestTest" />
+  <property name="WebFptrCfg"        value="${src}/WebFptrCfg" />
+  <property name="WebFptrTst"          value="${src}/WebFptrTst" />
+  <property name="WebFptrSo"           value="${src}/WebFptrSo" />
+  <property name="WebFptrSoTest" value="${test}/WebFptrSoTest" />
 
   <target name="prepare" >
     <mkdir dir="${dcu}" />
@@ -92,18 +87,18 @@ See http://www.suigeneris.org/want/ for details.
   <target name="finalclean" >
   </target >
 
-<!-- ***** Compile OposConfig ***** -->
+<!-- ***** Compile WebFptrCfg ***** -->
 
-  <target name="Compile-OposConfig" depends="prepare">
+  <target name="Compile-WebFptrCfg" depends="prepare">
 
-    <echo input="${OposConfig}/OposConfig.rt" file="${OposConfig}/OposConfig.rc" />
-    <brcc file="${OposConfig}/OposConfig.rc" output="${OposConfig}/OposConfig.res" />
+    <echo input="${WebFptrCfg}/WebFptrCfg.rt" file="${WebFptrCfg}/WebFptrCfg.rc" />
+    <brcc file="${WebFptrCfg}/WebFptrCfg.rc" output="${WebFptrCfg}/WebFptrCfg.res" />
     
     <delete dir="${dcu}" >
       <include name="*.dcu" />
     </delete>
     
-    <dcc basedir="${OposConfig}" source="OposConfig.dpr">
+    <dcc basedir="${WebFptrCfg}" source="WebFptrCfg.dpr">
       <exeoutput path="${bin}" />
       <dcuoutput path="${dcu}" />
 
@@ -128,18 +123,18 @@ See http://www.suigeneris.org/want/ for details.
     </dcc>
   </target>
   
-<!-- ***** Compile OposTest ***** -->
+<!-- ***** Compile WebFptrTst ***** -->
 
-  <target name="Compile-OposTest" depends="prepare">
+  <target name="Compile-WebFptrTst" depends="prepare">
 
-    <echo input="${OposTest}/OposTest.rt" file="${OposTest}/OposTest.rc" />
-    <brcc file="${OposTest}/OposTest.rc" output="${OposTest}/OposTest.res" />
+    <echo input="${WebFptrTst}/WebFptrTst.rt" file="${WebFptrTst}/WebFptrTst.rc" />
+    <brcc file="${WebFptrTst}/WebFptrTst.rc" output="${WebFptrTst}/WebFptrTst.res" />
     
     <delete dir="${dcu}" >
       <include name="*.dcu" />
     </delete>
     
-    <dcc basedir="${OposTest}" source="OposTest.dpr">
+    <dcc basedir="${WebFptrTst}" source="WebFptrTst.dpr">
       <exeoutput path="${bin}" />
       <dcuoutput path="${dcu}" />
 
@@ -164,19 +159,19 @@ See http://www.suigeneris.org/want/ for details.
     </dcc>
   </target>
 
-<!-- ***** Compile SmFiscalPrinter ***** -->
+<!-- ***** Compile WebFptrSo ***** -->
 
-  <target name="Compile-SmFiscalPrinter" depends="prepare">
+  <target name="Compile-WebFptrSo" depends="prepare">
     
     <delete dir="${dcu}" >
       <include name="*.dcu" />
     </delete>
 	
-    <echo input="${SmFiscalPrinter}/SmFiscalPrinter.rt" file="${SmFiscalPrinter}/SmFiscalPrinter.rc" />
-    <brcc file="${SmFiscalPrinter}/SmFiscalPrinter.rc" output="${SmFiscalPrinter}/SmFiscalPrinter.res" />
+    <echo input="${WebFptrSo}/WebFptrSo.rt" file="${WebFptrSo}/WebFptrSo.rc" />
+    <brcc file="${WebFptrSo}/WebFptrSo.rc" output="${WebFptrSo}/WebFptrSo.res" />
     
 
-    <dcc basedir="${SmFiscalPrinter}" source="SmFiscalPrinter.dpr">
+    <dcc basedir="${WebFptrSo}" source="WebFptrSo.dpr">
 
 
       <exeoutput path="${bin}" />
@@ -205,84 +200,11 @@ See http://www.suigeneris.org/want/ for details.
     </dcc>
   </target>
 
-  <!-- ***** Compile SmFptrSrv ***** -->
-
-  <target name="Compile-SmFptrSrv" depends="prepare">
-
-    <echo input="${SmFptrSrv}/SmFptrSrv.rt" file="${SmFptrSrv}/SmFptrSrv.rc" />
-    <brcc file="${SmFptrSrv}/SmFptrSrv.rc" output="${SmFptrSrv}/SmFptrSrv.res" />
-
-    <delete dir="${dcu}" >
-      <include name="*.dcu" />
-    </delete>
-
-    <dcc basedir="${SmFptrSrv}" source="SmFptrSrv.dpr">
-
-
-      <exeoutput path="${bin}" />
-      <dcuoutput path="${dcu}" />
-
-      <debug     value="false" />
-      <console   value="false" />
-      <hugestrings value="true" />
-      <writeableconst value="true" />
-      <align value="false" />
-      <optimize value="false" />
-      <warnings value="true" />
-      <warning name="SYMBOL_PLATFORM" value="off" />
-      <warning name="SYMBOL_DEPRECATED" value="off" />
-      <warning name="UNIT_PLATFORM" value="off" />
-      <warning name="UNSAFE_CODE" value="off" />
-      <warning name="UNSAFE_TYPE" value="off" />
-      <warning name="UNSAFE_CAST" value="off" />
-      <hints value="true" />
-      <overflowchecks value="false" />
-      <rangechecks value="false" />
-      <iochecks value="false" />
-      <build value="true" />
-    </dcc>
-  </target>
-
-  <!-- ***** Compile SmFptrSrv ***** -->
-
-  <target name="compile-smscale" depends="prepare">
-
-    <echo input="${smscale}/smscale.rt" file="${smscale}/smscale.rc" />
-    <brcc file="${smscale}/smscale.rc" output="${smscale}/smscale.res" />
-
-    <delete dir="${dcu}" >
-      <include name="*.dcu" />
-    </delete>
-
-    <dcc basedir="${smscale}" source="smscale.dpr">
-      <exeoutput path="${bin}" />
-      <dcuoutput path="${dcu}" />
-      <debug     value="false" />
-      <console   value="false" />
-      <hugestrings value="true" />
-      <writeableconst value="true" />
-      <align value="false" />
-      <optimize value="false" />
-      <warnings value="true" />
-      <warning name="SYMBOL_PLATFORM" value="off" />
-      <warning name="SYMBOL_DEPRECATED" value="off" />
-      <warning name="UNIT_PLATFORM" value="off" />
-      <warning name="UNSAFE_CODE" value="off" />
-      <warning name="UNSAFE_TYPE" value="off" />
-      <warning name="UNSAFE_CAST" value="off" />
-      <hints value="true" />
-      <overflowchecks value="false" />
-      <rangechecks value="false" />
-      <iochecks value="false" />
-      <build value="true" />
-    </dcc>
-  </target>
-  
   <!-- ***** Tests ***** -->
  
-  <target name="Test-SmFiscalPrinter" depends="prepare">
-    <dcc basedir="${SmFiscalPrinterTest}" source="SmFiscalPrinterTestLib.dpr" >
-      <exeoutput path="${test}/SmFiscalPrinterTest/Bin" />
+  <target name="Test-WebFptrSo" depends="prepare">
+    <dcc basedir="${WebFptrSoTest}" source="WebFptrSoTestLib.dpr" >
+      <exeoutput path="${test}/WebFptrSoTest/Bin" />
       <dcuoutput path="${dcu}"  />
       <build     value="true" />
       <debug     value="true" />
@@ -300,102 +222,19 @@ See http://www.suigeneris.org/want/ for details.
       <define name="DEBUG" />
       <define name="SUPPORTS_WIDESTRING" />
     </dcc>
-    <dunit basedir="${SmFiscalPrinterTest}/bin" testlib="${SmFiscalPrinterTest}/bin/SmFiscalPrinterTestLib.dll" />
+    <dunit basedir="${WebFptrSoTest}/bin" testlib="${WebFptrSoTest}/bin/WebFptrSoTestLib.dll" />
   </target>
 
-  <target name="test-smscale" depends="prepare">
-    <delete dir="${dcu}" >
-      <include name="*.dcu" />
-    </delete>
-    <dcc basedir="${smscaletest}" source="smscaletestlib.dpr" >
-      <exeoutput path="${test}/smscaletest/bin" />
-      <dcuoutput path="${dcu}"  />
-      <build     value="true" />
-      <debug     value="true" />
-      <console   value="true" />
-      <writeableconst value="true" />
-      <warnings value="true" />    
-      <warning name="SYMBOL_PLATFORM" value="off" />
-      <warning name="SYMBOL_DEPRECATED" value="off" />
-      <warning name="UNIT_PLATFORM" value="off" />	
-      <warning name="UNSAFE_CODE" value="off" /> 
-      <warning name="UNSAFE_TYPE" value="off" /> 
-      <warning name="UNSAFE_CAST" value="off" /> 
-      <hints value="true" />
-      <define name="DUNIT_DLL" />
-      <define name="DEBUG" />
-      <define name="SUPPORTS_WIDESTRING" />
-    </dcc>
-    <dunit basedir="${smscaletest}/bin" testlib="${smscaletest}/bin/smscaletestlib.dll" />
-  </target>
-  
-  <target name="OposConfigTest" depends="prepare">
-    <delete dir="${dcu}" >
-      <include name="*.dcu" />
-    </delete>
-    <dcc basedir="${OposConfigTest}" source="OposConfigTestLib.dpr" >
-      <exeoutput path="${OposConfigTest}/Bin" />
-      <dcuoutput path="${dcu}"  />
-      <build     value="true" />
-      <debug     value="true" />
-      <console   value="true" />
-      <writeableconst value="true" />
-      <warnings value="true" />
-      <warning name="SYMBOL_PLATFORM" value="off" />
-      <warning name="SYMBOL_DEPRECATED" value="off" />
-      <warning name="UNIT_PLATFORM" value="off" />
-      <warning name="UNSAFE_CODE" value="off" />
-      <warning name="UNSAFE_TYPE" value="off" />
-      <warning name="UNSAFE_CAST" value="off" />
-      <hints value="true" />
-      <define name="DUNIT_DLL" />
-      <define name="DEBUG" />
-      <define name="SUPPORTS_WIDESTRING" />
-    </dcc>
-    <dunit basedir="${OposConfigTest}/bin" testlib="${OposConfigTest}/bin/OposConfigTestLib.dll" />
-  </target>
-
-  <target name="OposTestTest" depends="prepare">
-    <delete dir="${dcu}" >
-      <include name="*.dcu" />
-    </delete>
-    <dcc basedir="${OposTestTest}" source="OposTestTestLib.dpr" >
-      <exeoutput path="${OposTestTest}/Bin" />
-      <dcuoutput path="${dcu}"  />
-      <build     value="true" />
-      <debug     value="true" />
-      <console   value="true" />
-      <writeableconst value="true" />
-      <warnings value="true" />
-      <warning name="SYMBOL_PLATFORM" value="off" />
-      <warning name="SYMBOL_DEPRECATED" value="off" />
-      <warning name="UNIT_PLATFORM" value="off" />
-      <warning name="UNSAFE_CODE" value="off" />
-      <warning name="UNSAFE_TYPE" value="off" />
-      <warning name="UNSAFE_CAST" value="off" />
-      <hints value="true" />
-      <define name="DUNIT_DLL" />
-      <define name="DEBUG" />
-      <define name="SUPPORTS_WIDESTRING" />
-    </dcc>
-    <dunit basedir="${OposTestTest}/bin" testlib="${OposTestTest}/bin/OposTestTestLib.dll" />
-  </target>
   
   <target name="sign">
     <exec executable="SignShtrih.bat">
-      <arg value="${bin}/OposConfig.exe" />
+      <arg value="${bin}/WebFptrCfg.exe" />
     </exec>
     <exec executable="SignShtrih.bat">
-      <arg value="${bin}/OposTest.exe" />
+      <arg value="${bin}/WebFptrTst.exe" />
     </exec>
     <exec executable="SignShtrih.bat">
-      <arg value="${bin}/SmScale.dll" />
-    </exec>
-    <exec executable="SignShtrih.bat">
-      <arg value="${bin}/SmFiscalPrinter.dll" />
-    </exec>
-    <exec executable="SignShtrih.bat">
-      <arg value="${bin}/SmFptrSrv.exe" />
+      <arg value="${bin}/WebFptrSo.dll" />
     </exec>
   </target>
   
@@ -408,7 +247,7 @@ See http://www.suigeneris.org/want/ for details.
     <exec executable="SignShtrih.bat">
       <arg value="${basepath}/setup.exe" />
     </exec>
-    <move tofile="${basepath}/OposShtrih_${version2}_${build}.exe">
+    <move tofile="${basepath}/WebFptr_${version2}_${build}.exe">
       <include name="${basepath}/setup.exe" />
     </move>
     <delete file="${basepath}/setup.iss" />
@@ -432,7 +271,7 @@ See http://www.suigeneris.org/want/ for details.
       <arg value="Setup.iss" />
       <arg value="/Q" />
     </exec>
-    <move tofile="${basepath}/OposShtrih_${version2}_${build}.exe">
+    <move tofile="${basepath}/WebFptr_${version2}_${build}.exe">
       <include name="${basepath}/setup.exe" />
     </move>
     <delete file="${basepath}/setup.iss" />
@@ -445,9 +284,9 @@ See http://www.suigeneris.org/want/ for details.
     </ini>
   </target>
 
-  <target name="release" depends="clean,prepare,Test-SmFiscalPrinter,test-smscale,OposConfigTest,OposTestTest,Compile-OposConfig,Compile-OposTest,Compile-SmFptrSrv,compile-smscale,Compile-SmFiscalPrinter,sign,makesetup,finalclean"/>
-  <target name="release_norename" depends="clean,prepare,Test-SmFiscalPrinter,test-smscale,OposConfigTest,OposTestTest,Compile-OposConfig,Compile-OposTest,Compile-SmFptrSrv,compile-smscale,Compile-SmFiscalPrinter,sign,makesetup_norename,finalclean"/>
-  <target name="buildns" depends="clean,prepare,Test-SmFiscalPrinter,test-smscale,OposConfigTest,OposTestTest,Compile-OposConfig,Compile-OposTest,Compile-SmFptrSrv,compile-smscale,Compile-SmFiscalPrinter,makesetupns,finalclean"/>
+  <target name="release" depends="clean,prepare,Test-WebFptrSo,Compile-WebFptrCfg,Compile-WebFptrTst,Compile-WebFptrSo,sign,makesetup,finalclean"/>
+  <target name="release_norename" depends="clean,prepare,Test-WebFptrSo,Compile-WebFptrCfg,Compile-WebFptrTst,Compile-WebFptrSo,sign,makesetup_norename,finalclean"/>
+  <target name="buildns" depends="clean,prepare,Test-WebFptrSo,Compile-WebFptrCfg,Compile-WebFptrTst,Compile-WebFptrSo,makesetupns,finalclean"/>
   
   
   

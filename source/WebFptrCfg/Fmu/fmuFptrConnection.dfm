@@ -60,14 +60,14 @@ object fmFptrConnection: TfmFptrConnection
       Value = 0
       OnChange = ModifiedClick
     end
-    object edtWebkassaAddress: TEdit
+    object edtAddress: TEdit
       Left = 168
       Top = 24
       Width = 289
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
-      Text = 'edtWebkassaAddress'
+      Text = 'edtAddress'
       OnChange = ModifiedClick
     end
     object btnTestConnection: TButton

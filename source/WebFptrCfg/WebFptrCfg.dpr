@@ -53,7 +53,8 @@ uses
   DriverContext in '..\Shared\DriverContext.pas',
   ReceiptItem in '..\WebFptrSo\units\ReceiptItem.pas',
   MathUtils in '..\WebFptrSo\units\MathUtils.pas',
-  NotifyThread in '..\Shared\NotifyThread.pas';
+  NotifyThread in '..\Shared\NotifyThread.pas',
+  WebPrinter in '..\WebFptrSo\units\WebPrinter.pas';
 
 {$R *.RES}
 {$R WindowsXP.RES}

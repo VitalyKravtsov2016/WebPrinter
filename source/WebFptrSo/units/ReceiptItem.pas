@@ -69,15 +69,16 @@ type
   TSalesReceiptItem = class(TReceiptItem)
   private
     FPrice: Currency;
+    FBarcode: string;
     FVatInfo: Integer;
     FQuantity: Double;
     FUnitPrice: Currency;
     FUnitName: WideString;
     FDescription: WideString;
-    FMarkCode: string;
     FCharges: TAdjustments;
     FDiscounts: TAdjustments;
     FNumber: Integer;
+    FMarkList: TStrings;
   public
     constructor Create(AOwner: TReceiptItems); override;
     destructor Destroy; override;
@@ -101,7 +102,8 @@ type
     property UnitPrice: Currency read FUnitPrice write FUnitPrice;
     property UnitName: WideString read FUnitName write FUnitName;
     property Description: WideString read FDescription write FDescription;
-    property MarkCode: string read FMarkCode write FMarkCode;
+    property Barcode: string read FBarcode write FBarcode;
+    property MarkList: TStrings read FMarkList;
   end;
 
   { TAdjustments }
@@ -288,12 +290,14 @@ begin
   inherited Create(AOwner);
   FCharges := TAdjustments.Create;
   FDiscounts := TAdjustments.Create;
+  FMarkList := TStringList.Create;
 end;
 
 destructor TSalesReceiptItem.Destroy;
 begin
   FCharges.Free;
   FDiscounts.Free;
+  FMarkList.Free;
   inherited Destroy;
 end;
 

@@ -1,9 +1,7 @@
 ﻿Для сборки проекта используется:
 
 1. Delphi 7.0
-2. Система сборки: Want - res\tool
-3. Компоненты: в папке res\comp
-   Компоненты можно поставить более новые
-4. Инсталлятор: Inno Setup Compiler: http://www.innosetup.com
-5. При сборке файлы подписываются сертификатом при помощи SignShtrih.bat
+2. Система сборки: Want
+3. Инсталлятор: Inno Setup Compiler: http://www.innosetup.com
+4. При сборке файлы подписываются сертификатом при помощи SignShtrih.bat
    

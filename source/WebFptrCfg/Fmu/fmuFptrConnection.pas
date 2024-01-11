@@ -10,7 +10,7 @@ uses
   TntStdCtrls,
   // This
   untUtil, PrinterParameters, FptrTypes, FiscalPrinterDevice, FileUtils,
-  LogFile;
+  LogFile, WebPrinter;
 
 type
   { TfmFptrConnection }
@@ -20,7 +20,7 @@ type
     lblConnectTimeout: TTntLabel;
     lblWebkassaAddress: TTntLabel;
     seConnectTimeout: TSpinEdit;
-    edtWebkassaAddress: TEdit;
+    edtAddress: TEdit;
     btnTestConnection: TButton;
     lblResultCode: TTntLabel;
     stResultCode: TStaticText;
@@ -39,40 +39,39 @@ implementation
 
 procedure TfmFptrConnection.UpdatePage;
 begin
-(*
-  edtWebkassaAddress.Text := Parameters.WebkassaAddress;
+  edtAddress.Text := Parameters.WebPrinterAddress;
   seConnectTimeout.Value := Parameters.ConnectTimeout;
-*)
 end;
 
 procedure TfmFptrConnection.UpdateObject;
 begin
-(*
-  Parameters.WebkassaAddress := edtWebkassaAddress.Text;
+  Parameters.WebPrinterAddress := edtAddress.Text;
   Parameters.ConnectTimeout := seConnectTimeout.Value;
-*)  
 end;
 
 procedure TfmFptrConnection.btnTestConnectionClick(Sender: TObject);
+var
+  Driver: TWebPrinter;
 begin
-(*
   EnableButtons(False);
-  edtResultCode.Clear;
+  stResultCode.Caption := '';
   UpdateObject;
-  Driver := CreateDriver;
+
+  Driver := TWebPrinter.Create(Logger);
   try
+    Driver.Address := Parameters.WebPrinterAddress;
+    Driver.ConnectTimeout := Driver.ConnectTimeout;
     Driver.Connect;
-    edtResultCode.Text := 'OK';
+    stResultCode.Caption := 'OK';
   except
     on E: Exception do
     begin
       Logger.Error(E.Message);
-      edtResultCode.Text := E.Message;
+      stResultCode.Caption := E.Message;
     end;
   end;
   Driver.Free;
   EnableButtons(True);
-*)
 end;
 
 procedure TfmFptrConnection.ModifiedClick(Sender: TObject);

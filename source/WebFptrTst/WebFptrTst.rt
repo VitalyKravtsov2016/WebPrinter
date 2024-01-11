@@ -12,12 +12,12 @@ BEGIN
     BLOCK "040904E4"
     BEGIN
       VALUE "CompanyName", "SHTRIH-M\0"
-      VALUE "FileDescription", "WebPrinter OPOS fiscal printer service\0"
+      VALUE "FileDescription", "WebPrinter OPOS test utility\0"
       VALUE "FileVersion", "${version}\0"
-      VALUE "InternalName", "WebPrinter OPOS fiscal printer driver\0"
+      VALUE "InternalName", "WebPrinter OPOS test \0"
       VALUE "LegalCopyright", "SHTRIH-M \251 2024 \0"
-      VALUE "OriginalFilename", "WebFptrSo.dll\0"
-      VALUE "ProductName", "OPOS drivers\0"
+      VALUE "OriginalFilename", "WebFptrTst.exe\0"
+      VALUE "ProductName", "WebPrinter OPOS driver\0"
       VALUE "ProductVersion","${version2}\0"
       VALUE "Comments", "http://www.shtrih-m.ru\0"
     END

@@ -292,7 +292,7 @@ begin
   Item.VatInfo := VatInfo;
   Item.Description := Description;
   Item.UnitName := UnitName;
-  Item.MarkCode := FBarcode;
+  Item.Barcode := FBarcode;
   FBarcode := '';
 end;
 
@@ -314,7 +314,7 @@ begin
   Item.VatInfo := VatInfo;
   Item.Description := Description;
   Item.UnitName := UnitName;
-  Item.MarkCode := FBarcode;
+  Item.Barcode := FBarcode;
   FBarcode := '';
 end;
 
@@ -338,7 +338,7 @@ begin
   Item.VatInfo := VatInfo;
   Item.Description := ADescription;
   Item.UnitName := AUnitName;
-  Item.MarkCode := FBarcode;
+  Item.Barcode := FBarcode;
   FBarcode := '';
 end;
 
@@ -368,7 +368,7 @@ begin
   Item.Description := Description;
   Item.UnitName := '';
   Item.UnitPrice := 0;
-  Item.MarkCode := FBarcode;
+  Item.Barcode := FBarcode;
   FBarcode := '';
 end;
 
@@ -465,7 +465,7 @@ begin
   Item.VatInfo := VatInfo;
   Item.Description := Description;
   Item.UnitName := '';
-  Item.MarkCode := FBarcode;
+  Item.Barcode := FBarcode;
   FBarcode := '';
 end;
 
@@ -486,7 +486,7 @@ begin
   Item.VatInfo := VatInfo;
   Item.Description := Description;
   Item.UnitName := '';
-  Item.MarkCode := FBarcode;
+  Item.Barcode := FBarcode;
   FBarcode := '';
 end;
 

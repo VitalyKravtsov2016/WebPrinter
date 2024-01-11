@@ -1437,7 +1437,7 @@ end;
 
 initialization
   DecimalSeparator := '.';
-  ComServer.SetServerName('OposWebkassa');
+  ComServer.SetServerName('OposWebPrinter');
   TAutoObjectFactory.Create(ComServer, ToleFiscalPrinter, Class_FiscalPrinter,
     ciMultiInstance, tmApartment);
 

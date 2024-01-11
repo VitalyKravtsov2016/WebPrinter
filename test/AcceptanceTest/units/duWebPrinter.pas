@@ -127,15 +127,12 @@ end;
 
 procedure TWebPrinterTest2.CheckPrintXReport;
 var
-  Info: TWPInfoResponse;
   Request: TWPCloseDayRequest;
   Response: TWPCloseDayResponse;
 begin
   Request := TWPCloseDayRequest.Create;
   try
-    Info := FPrinter.ReadInfo2.Data;
-
-    Request.Time := Info.current_time;
+    Request.Time := Now;
     Request.close_zreport := False;
     Request.name := 'X מעקוע';
     Response := FPrinter.PrintZReport(Request);
@@ -147,15 +144,12 @@ end;
 
 procedure TWebPrinterTest2.CheckPrintZReport;
 var
-  Info: TWPInfoResponse;
   Request: TWPCloseDayRequest;
   Response: TWPCloseDayResponse;
 begin
   Request := TWPCloseDayRequest.Create;
   try
-    Info := FPrinter.ReadInfo2.Data;
-
-    Request.Time := Info.current_time;
+    Request.Time := Now;
     Request.close_zreport := True;
     Request.name := 'X מעקוע';
     Response := FPrinter.PrintZReport(Request);
@@ -268,7 +262,6 @@ end;
 procedure TWebPrinterTest2.CheckReturnOrder;
 var
   Request: TWPOrder;
-  RequestJson: WideString;
   Response: TWPCreateOrderResponse;
 begin
   Request := TWPOrder.Create;

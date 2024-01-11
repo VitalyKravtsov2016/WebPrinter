@@ -206,15 +206,15 @@ type
   private
     Fname: WideString;
     Fbarcode: WideString;
-    Famount: Integer;
+    Famount: Int64;
     Funits: Integer;
-    Fprice: Integer;
-    Fproduct_price: Integer;
-    Fvat: Integer;
+    Fprice: Int64;
+    Fproduct_price: Int64;
+    Fvat: Int64;
     Fvat_percent: Integer;
-    Fdiscount: Integer;
+    Fdiscount: Int64;
     Fdiscount_percent: Integer;
-    Fother: Integer;
+    Fother: Int64;
     Flabels: TStrings;
     Fclass_code: WideString;
     Fpackage_code: Integer;
@@ -228,21 +228,53 @@ type
   published
     property name: WideString read Fname write Fname;
     property barcode: WideString read Fbarcode write Fbarcode;
-    property amount: Integer read Famount write Famount;
+    property amount: Int64 read Famount write Famount;
     property units: Integer read Funits write Funits;
-    property price: Integer read Fprice write Fprice;
-    property product_price: Integer read Fproduct_price write Fproduct_price;
-    property vat: Integer read Fvat write Fvat;
+    property price: Int64 read Fprice write Fprice;
+    property product_price: Int64 read Fproduct_price write Fproduct_price;
+    property vat: Int64 read Fvat write Fvat;
     property vat_percent: Integer read Fvat_percent write Fvat_percent;
-    property discount: Integer read Fdiscount write Fdiscount;
+    property discount: Int64 read Fdiscount write Fdiscount;
     property discount_percent: Integer read Fdiscount_percent write Fdiscount_percent;
-    property other: Integer read Fother write Fother;
+    property other: Int64 read Fother write Fother;
     property labels: TStrings read Flabels write Setlabels;
     property class_code: WideString read Fclass_code write Fclass_code;
     property package_code: Integer read Fpackage_code write Fpackage_code;
     property owner_type: Integer read Fowner_type write Fowner_type;
     property comission_info: TWPComissionInfo read Fcomission_info write Setcomission_info;
   end;
+
+(*
+| amount             | Long   | Product amount/??????????                                                      | 1 ??. = 1000; 0,25 ?? = 250                 |
+| price              | Long   | Price/?????                                                                    | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| product_price      | Long   | Product price/???? ?? ??????? ??????/??????                                    | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| vat                | Long   | Nds price/????? ???                                                            | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| vat_percent        | Integer| Nds percent/??????? ???                                                        | 0 = 0%, 12 = 12%                            |
+| discount           | Long   | Discount price/???? c?????                                                     | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| discount_percent   | Integr | Discount price percent/??????? ??????                                          | 0 = 0%, 10 = 10%, 15 = 15%, 20 = 20%        |
+| other              | Long   | Other discount prices/?????? ??????                                            | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| labels             | String | Marking codes list/??? ?????????? (???????? ???? DataMatrix). ? ??????? ????   | 05367567230048c?eN1(o0029                   |
+|                    |        | ???-?? ??????? ? ??????. ????? 5 ??, ?? ? amount ????????? 1 ??                |                                             |
+| class_code         | Long   | Product class code/??? ???? (????) (tasnif.soliq.uz)                           | 10999001001000000                           |
+| package_code       | Long   | Package_code/ ??? ???????? (tasnif.soliq.uz)                                   | 1520627                                     |
+| owner_type         | Integer| Owner_type/ ??? ????????????? ?????? (???? ???????? ???? 0, ???? 1, ???? 2     | 0,1,2                                       |
+|                    |        | (0-"??????? ? ???????" / 1-"??????????? ????????????" / 2-"????????? ?????")   |                                             |
+| comission_info     | Long   | Sign commission check TIN, PINFL/??????? ???????????? ??? ???, ?????           | 123456789, 12345678912345                   |
+| time               | Double | Time in format yyyy-MM-dd hh:mm:ss/???? ? ????? ? ??????? yyyy-MM-dd hh:mm:ss  | 2021-09-08 22:54:59                         |
+| cashier            | String | Cashier name/??? ???????                                                       | ?????                                       |
+| received_cash      | Long   | Received cash price/?????? ?????????                                           | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| change             | Long   | Change price/?????                                                             | 100                                         |
+| received_card      | Long   | Received cash price/?????? ?????????? ??????,Payme,Click,UZUM                  | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| open_cashbox       | String | Open cashbox device/???????? ????????? ?????                                   | true = open, falce = not open               |
+| type               | String | Banner type - {text, barcode, qr_code}/?????-???, QR-???                       | barcode                                     |
+| data               | String | Banner text/????????? ?????                                                    | ?????? ?? ????????? ??????? 5%              |
+| prices / name      | String | Price name/???????????? ???? ??????                                            | USD, VISA, MasterCard, Click, Payme, Uzum   |
+| prices / price     | Long   | Price/?????                                                                    | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| prices / vat_type  | Long   | Vat type/???????? ?????? ? ??????                                              | ??? 15%                                     |
+| prices / vat_price | Long   | Vat price/????? ??????                                                         | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+
+*)
+
 
   { TWPProducts }
 
@@ -306,8 +338,8 @@ type
 	  Fproducts: TWPProducts;
 	  Ftime: WideString;
 	  Fcashier: WideString;
-	  Freceived_cash: Integer;
-	  Fchange: Integer;
+	  Freceived_cash: Int64;
+	  Fchange: Int64;
 	  Freceived_card: Integer;
 	  Fopen_cashbox: Boolean;
 	  Fsend_email: Boolean;
@@ -327,8 +359,8 @@ type
 	  property products: TWPProducts read Fproducts write SetProducts;
 	  property time: WideString read FTime write FTime;
 	  property cashier: WideString read Fcashier write Fcashier;
-	  property received_cash: Integer read Freceived_cash write Freceived_cash;
-	  property change: Integer read Fchange write Fchange;
+	  property received_cash: Int64 read Freceived_cash write Freceived_cash;
+	  property change: Int64 read Fchange write Fchange;
 	  property received_card: Integer read Freceived_card write Freceived_card;
 	  property open_cashbox: Boolean read Fopen_cashbox write Fopen_cashbox;
 	  property send_email: Boolean read Fsend_email write Fsend_email;
@@ -1006,6 +1038,8 @@ begin
   inherited Create;
   FLogger := ALogger;
   FAddress := 'https://devkkm.webkassa.kz/';
+  FRaiseErrors := True;
+
   FInfo := TWPInfoCommand.Create;
   FOpenDayResponse := TWPOpenDayResponse.Create;
   FCloseDayResponse := TWPCloseDayResponse.Create;
@@ -1049,7 +1083,7 @@ begin
     FTransport.Request.Accept := 'application/json, */*; q=0.01';
     FTransport.Request.ContentType := 'application/json; charset=UTF-8';
     FTransport.Request.CharSet := 'utf-8';
-    FTransport.ConnectTimeout := FConnectTimeout;
+    FTransport.ConnectTimeout := FConnectTimeout * 1000;
   end;
   Result := FTransport;
 end;

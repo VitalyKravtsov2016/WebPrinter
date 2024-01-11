@@ -7,7 +7,7 @@ uses
   Windows, StdCtrls, Controls, ExtCtrls, Classes, Forms, SysUtils,
   Registry, ComCtrls,
   // Tnt
-  TntStdCtrls, TntSysUtils, TntComCtrls, 
+  TntStdCtrls, TntSysUtils, TntComCtrls, TntExtCtrls,
   // Opos
   OposFptrUtils, OposUtils,
   // This
@@ -19,22 +19,14 @@ uses
   fmuFptrRecSubtotalAdjustment, fmuFptrRecSubtotalAdjustVoid, fmuFptrRecTaxID,
   fmuFptrRecTotal, fmuFptrRecSubtotal, fmuFptrFiscalDocument, fmuFptrSetVatTable,
   fmuFptrDate, fmuFptrSlipInsertion, fmuFptrSetLine, fmuFptrProperties,
-  fmuFptrAddHeaderTrailer, fmuFptrGetData, fmuFptrRecCash,
-  fmuFptrWritableProperties, fmuFptrSetHeadertrailer, fmuFptrDriverTest,
+  fmuFptrGetData, fmuFptrRecCash, fmuFptrWritableProperties,
+  fmuFptrSetHeadertrailer, fmuFptrDriverTest,
   fmuFptrDirectIOHex, fmuFptrDirectIOEndDay, fmuFptrDirectIO,
   fmuFptrTraining, fmuFptrReceiptTest,
   fmuPrintRecVoidItem, fmuPrintRecItemRefund, fmuPrintRecItemRefundVoid,
-  fmuFptrStatistics, fmuFptrMonitoring,
-  fmuFptrEvents, fmuFptrTest, fmuFptrThreadTest, fmuFptrFiscalStorage,
-  fmuFptrTest2,
-  {$IFDEF MALINA}
-  fmuMalina,
-  fmuTextBlock,
-  fmuTextReceipt,
-  fmuTankReport,
-  fmuFptrFroudReceipt,
-  {$ENDIF}
-  DebugUtils, TntExtCtrls;
+  fmuFptrStatistics, fmuFptrEvents, fmuFptrTest, fmuFptrThreadTest,
+  fmuFptrFiscalStorage, fmuFptrTest2,
+  DebugUtils;
 
 type
   { TfmMain }
@@ -170,7 +162,6 @@ begin
   AddPage(TfmFptrWritableProperties);
   AddPage(TfmFptrGetData);
   AddPage(TfmFptrSetHeaderTrailer);
-  AddPage(TfmFptrAddHeaderTrailer);
   // DirectIO
   AddPage(TfmFptrDirectIO);
   AddPage(TfmFptrDirectIOHex);
@@ -178,7 +169,6 @@ begin
   // Driver tests
   AddPage(TfmFptrDriverTest);
   AddPage(TfmFptrStatistics);
-  AddPage(TfmFptrMonitoring);
   AddPage(TfmFptrTest);
 end;
 
