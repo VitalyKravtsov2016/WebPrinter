@@ -44,7 +44,6 @@ type
     FPaymentType2: Integer;
     FPaymentType3: Integer;
     FPaymentType4: Integer;
-    procedure LogText(const Caption, Text: WideString);
   public
     constructor Create(ALogger: ILogFile);
 
@@ -92,33 +91,7 @@ begin
   PaymentType4 := 3;
 end;
 
-procedure TPrinterParameters.LogText(const Caption, Text: WideString);
-var
-  i: Integer;
-  Lines: TTntStrings;
-begin
-  Lines := TTntStringList.Create;
-  try
-    Lines.Text := Text;
-    if Lines.Count = 1 then
-    begin
-      Logger.Debug(Format('%s: ''%s''', [Caption, Lines[0]]));
-    end else
-    begin
-      for i := 0 to Lines.Count-1 do
-      begin
-        Logger.Debug(Format('%s.%d: ''%s''', [Caption, i, Lines[i]]));
-      end;
-    end;
-  finally
-    Lines.Free;
-  end;
-end;
-
 procedure TPrinterParameters.WriteLogParameters;
-var
-  i: Integer;
-  VatRate: TVatRate;
 begin
   Logger.Debug('TPrinterParameters.WriteLogParameters');
   Logger.Debug(Logger.Separator);

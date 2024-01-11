@@ -321,9 +321,9 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-	  property receipt_type: WideString read Freceipt_type write Freceipt_type;
   published
 	  property number: Integer read Fnumber write Fnumber;
+	  property receipt_type: WideString read Freceipt_type write Freceipt_type;
 	  property products: TWPProducts read Fproducts write SetProducts;
 	  property time: WideString read FTime write FTime;
 	  property cashier: WideString read Fcashier write Fcashier;

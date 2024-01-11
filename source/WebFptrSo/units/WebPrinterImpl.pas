@@ -1927,8 +1927,8 @@ end;
 procedure TWebPrinterImpl.Print(Receipt: TSalesReceipt);
 var
   i: Integer;
-  Adjustment: TAdjustment;
   VatRate: TVatRate;
+  Adjustment: TAdjustment;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
 begin

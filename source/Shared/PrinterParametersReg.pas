@@ -141,13 +141,8 @@ end;
 
 procedure TPrinterParametersReg.LoadSysParameters(const DeviceName: WideString);
 var
-  i: Integer;
   Reg: TTntRegistry;
-  Names: TTntStrings;
   KeyName: WideString;
-  VatCode: Integer;
-  VatRate: Double;
-  VatName: WideString;
 begin
   Logger.Debug('TPrinterParametersReg.Load', [DeviceName]);
 
@@ -191,8 +186,6 @@ end;
 
 procedure TPrinterParametersReg.SaveSysParameters(const DeviceName: WideString);
 var
-  i: Integer;
-  Item: TVatRate;
   Reg: TTntRegistry;
   KeyName: WideString;
 begin

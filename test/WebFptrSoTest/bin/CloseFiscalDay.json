@@ -1,24 +1,22 @@
 {
-	"result": {
-		"data": {
-			"applet_version": "0300",
-			"terminal_id": "UZ170703100597",
-			"number": 3,
-			"count": 20,
-			"last_receipt_seq": 20,
-			"first_receipt_seq": 18,
-			"open_time": "2019-10-07 17:07:52",
-			"close_time": "2019-10-09 19:16:15",
-			"total_refund_vat": 1234,
-			"total_refund_card": 123,
-			"total_refund_cash": 2343,
-			"total_refund_count": 4564,
-			"total_sale_vat": 195342,
-			"total_sale_card": 1231,
-			"total_sale_cash": 195000,
-			"total_sale_count": 3
-		},
-		"error": null,
-		"is_success": true
-	}
+	"data": {
+		"applet_version": "0300",
+		"terminal_id": "UZ170703100597",
+		"number": 3,
+		"count": 20,
+		"last_receipt_seq": 20,
+		"first_receipt_seq": 18,
+		"open_time": "2019-10-07 17:07:52",
+		"close_time": "2019-10-09 19:16:15",
+		"total_refund_vat": 1234,
+		"total_refund_card": 123,
+		"total_refund_cash": 2343,
+		"total_refund_count": 4564,
+		"total_sale_vat": 195342,
+		"total_sale_card": 1231,
+		"total_sale_cash": 195000,
+		"total_sale_count": 3
+	},
+	"error": null,
+	"is_success": true
 }

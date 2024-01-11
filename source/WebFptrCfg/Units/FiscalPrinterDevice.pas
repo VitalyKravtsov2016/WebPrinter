@@ -51,8 +51,7 @@ type
 implementation
 
 uses
-  fmuFptrConnection, fmuFptrLog, fmuFptrHeader, fmuFptrTrailer,
-  fmuFptrVatRate, fmuFptrPayType, fmuFptrMiscParams;
+  fmuFptrConnection, fmuFptrLog;
 
 { TFiscalPrinterDevice }
 
@@ -99,11 +98,6 @@ begin
     //
     AddPage(fm, TfmFptrConnection);
     AddPage(fm, TfmFptrLog);
-    AddPage(fm, TfmFptrHeader);
-    AddPage(fm, TfmFptrTrailer);
-    AddPage(fm, TfmFptrPayType);
-    AddPage(fm, TfmFptrVatRate);
-    AddPage(fm, TfmFptrMiscParams);
 
     fm.Init;
     fm.UpdatePage;

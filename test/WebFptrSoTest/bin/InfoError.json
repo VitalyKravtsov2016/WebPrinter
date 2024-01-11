@@ -1,9 +1,9 @@
 {
-"data": null,
- "error": {
-    "code": 102,
-    "message": "FISCAL_MODULE_NOT_INITIALIZED",
-    "data": null
-    },
-"is_success": false 
+	"data": null,
+	"error": {
+		"code": 102,
+		"message": "FISCAL_MODULE_NOT_INITIALIZED",
+		"data": null
+	},
+	"is_success": false
 }

@@ -1,5 +1,7 @@
 {
-	"data": null,
-	"error": null,
-	"is_success": true
+	"result": {
+		"data": null,
+		"error": null,
+		"is_success": true
+	}
 }

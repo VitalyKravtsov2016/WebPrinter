@@ -83,7 +83,7 @@ begin
   FPrinter.RaiseErrors := True;
   FPrinter.AnswerJson := ReadFileData('infoError.json');
   try
-    FPrinter.ReadInfo;
+    FPrinter.ReadInfo2;
     Fail('No Exception');
   except
     on E: EDriverError do
@@ -128,7 +128,7 @@ begin
   FPrinter.TestMode := True;
   FPrinter.AnswerJson := ReadFileData('CloseFiscalDay.json');
   CheckEquals(FPrinter.AnswerJson, FPrinter.CloseFiscalDay(Now), 'CloseFiscalDay');
-  Response := FPrinter.CloseFiscalDay2(Now).Result;
+  Response := FPrinter.CloseFiscalDay2(Now);
   CheckEquals(True, Response.is_success, 'is_success');
   CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
   CheckEquals('UZ170703100597', Response.data.terminal_id, 'data.terminal_id');
@@ -155,7 +155,7 @@ begin
   FPrinter.TestMode := True;
   FPrinter.AnswerJson := ReadFileData('CloseFiscalDayError.json');
   CheckEquals(FPrinter.AnswerJson, FPrinter.CloseFiscalDay(Now), 'CloseFiscalDay');
-  Response := FPrinter.CloseFiscalDay2(Now).Result;
+  Response := FPrinter.CloseFiscalDay2(Now);
   CheckEquals(False, Response.is_success, 'is_success');
   CheckEquals(9326, Response.error.code, 'error.code');
   CheckEquals('ZREPORT_ALREADY_CLOSE', Response.error.message, 'error.message');
@@ -178,7 +178,7 @@ begin
   try
     FPrinter.TestMode := True;
     FPrinter.AnswerJson := ReadFileData('CloseFiscalDay.json');
-    Response := FPrinter.PrintZReport(Request).Result;
+    Response := FPrinter.PrintZReport(Request);
     CheckEquals(True, Response.is_success, 'is_success');
     CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
     CheckEquals('UZ170703100597', Response.data.terminal_id, 'data.terminal_id');
@@ -210,7 +210,7 @@ begin
   try
     FPrinter.TestMode := True;
     FPrinter.AnswerJson := ReadFileData('CloseFiscalDayError.json');
-    Response := FPrinter.PrintZReport(Request).Result;
+    Response := FPrinter.PrintZReport(Request);
     CheckEquals(False, Response.is_success, 'is_success');
     CheckEquals(9326, Response.error.code, 'error.code');
     CheckEquals('ZREPORT_ALREADY_CLOSE', Response.error.message, 'error.message');

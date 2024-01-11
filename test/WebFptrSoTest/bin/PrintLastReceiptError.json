@@ -1,9 +1,11 @@
 {
-	"data": null,
-	"error": {
-		"code": 9326,
-		"message": "ZREPORT_ALREADY_CLOSE",
-		"data": null
-	},
-	"is_success": false
+	"result": {
+		"data": null,
+		"error": {
+			"code": 9326,
+			"message": "ZREPORT_ALREADY_CLOSE",
+			"data": null
+		},
+		"is_success": false
+	}
 }
