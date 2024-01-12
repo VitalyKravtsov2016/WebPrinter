@@ -26,9 +26,9 @@ const
 
   DefLogMaxCount = 10;
   DefLogFileEnabled = True;
-
   DefConnectTimeout = 10;
   DefWebPrinterAddress = 'http://fbox.ngrok.io';
+  DefVatRateEnabled = True;
 
 type
   { TPrinterParameters }
@@ -44,8 +44,11 @@ type
     FPaymentType2: Integer;
     FPaymentType3: Integer;
     FPaymentType4: Integer;
+    FVatRates: TVatRates;
+    FVatRateEnabled: Boolean;
   public
     constructor Create(ALogger: ILogFile);
+    destructor Destroy; override;
 
     procedure SetDefaults;
     procedure CheckPrameters;
@@ -55,6 +58,8 @@ type
     procedure Assign(Source: TPersistent); override;
 
     property Logger: ILogFile read FLogger;
+    property VatRates: TVatRates read FVatRates;
+    property VatRateEnabled: Boolean read FVatRateEnabled write FVatRateEnabled;
     property ConnectTimeout: Integer read FConnectTimeout write FConnectTimeout;
     property WebPrinterAddress: WideString read FWebPrinterAddress write FWebPrinterAddress;
     property LogMaxCount: Integer read FLogMaxCount write FLogMaxCount;
@@ -73,7 +78,15 @@ constructor TPrinterParameters.Create(ALogger: ILogFile);
 begin
   inherited Create;
   FLogger := ALogger;
+  FVatRates := TVatRates.Create;
+
   SetDefaults;
+end;
+
+destructor TPrinterParameters.Destroy;
+begin
+  FVatRates.Free;
+  inherited Destroy;
 end;
 
 procedure TPrinterParameters.SetDefaults;
@@ -89,9 +102,16 @@ begin
   PaymentType2 := 1;
   PaymentType3 := 2;
   PaymentType4 := 3;
+  // VatRates
+  VatRates.Clear;
+  VatRates.Add(1, 12, 'ÍÄÑ 12%'); // ÍÄÑ 12%
+  VatRateEnabled := DefVatRateEnabled;
 end;
 
 procedure TPrinterParameters.WriteLogParameters;
+var
+  i: Integer;
+  VatRate: TVatRate;
 begin
   Logger.Debug('TPrinterParameters.WriteLogParameters');
   Logger.Debug(Logger.Separator);
@@ -103,6 +123,14 @@ begin
   Logger.Debug('PaymentType2: ' + IntToStr(PaymentType2));
   Logger.Debug('PaymentType3: ' + IntToStr(PaymentType3));
   Logger.Debug('PaymentType4: ' + IntToStr(PaymentType4));
+  Logger.Debug('VatRateEnabled: ' + BoolToStr(VatRateEnabled));
+  // VatRates
+  for i := 0 to VatRates.Count-1 do
+  begin
+    VatRate := VatRates[i];
+    Logger.Debug(Format('VAT: code=%d, rate=%.2f, name="%s"', [
+      VatRate.Code, VatRate.Rate, VatRate.Name]));
+  end;
   Logger.Debug(Logger.Separator);
 end;
 
@@ -127,6 +155,8 @@ begin
     PaymentType2 := Src.PaymentType2;
     PaymentType3 := Src.PaymentType3;
     PaymentType4 := Src.PaymentType4;
+    VatRateEnabled := Src.VatRateEnabled;
+    VatRates.Assign(VatRates);
   end else
     inherited Assign(Source);
 end;

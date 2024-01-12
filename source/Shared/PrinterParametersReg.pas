@@ -141,8 +141,13 @@ end;
 
 procedure TPrinterParametersReg.LoadSysParameters(const DeviceName: WideString);
 var
+  i: Integer;
   Reg: TTntRegistry;
+  Names: TTntStrings;
   KeyName: WideString;
+  VatCode: Integer;
+  VatRate: Double;
+  VatName: WideString;
 begin
   Logger.Debug('TPrinterParametersReg.Load', [DeviceName]);
 
@@ -177,7 +182,37 @@ begin
       if Reg.ValueExists('PaymentType4') then
         Parameters.PaymentType4 := Reg.ReadInteger('PaymentType4');
 
+      if Reg.ValueExists('VatRateEnabled') then
+        Parameters.VatRateEnabled := Reg.ReadBool('VatRateEnabled');
+
       Reg.CloseKey;
+    end;
+    // VatRates
+    if Reg.OpenKey(KeyName + '\' + REG_KEY_VatRateS, False) then
+    begin
+      Parameters.VatRates.Clear;
+      Names := TTntStringList.Create;
+      try
+        Reg.GetKeyNames(Names);
+        Reg.CloseKey;
+
+        for i := 0 to Names.Count-1 do
+        begin
+          if Reg.OpenKey(KeyName + '\' + REG_KEY_VatRateS, False) then
+          begin
+            if Reg.OpenKey(Names[i], False) then
+            begin
+              VatCode := Reg.ReadInteger('Code');
+              VatRate := Reg.ReadFloat('Rate');
+              VatName := Reg.ReadString('Name');
+              Parameters.VatRates.Add(VatCode, VatRate, VatName);
+              Reg.CloseKey;
+            end;
+          end;
+        end;
+      finally
+        Names.Free;
+      end;
     end;
   finally
     Reg.Free;
@@ -186,6 +221,8 @@ end;
 
 procedure TPrinterParametersReg.SaveSysParameters(const DeviceName: WideString);
 var
+  i: Integer;
+  Item: TVatRate;
   Reg: TTntRegistry;
   KeyName: WideString;
 begin
@@ -206,7 +243,25 @@ begin
     Reg.WriteInteger('PaymentType2', FParameters.PaymentType2);
     Reg.WriteInteger('PaymentType3', FParameters.PaymentType3);
     Reg.WriteInteger('PaymentType4', FParameters.PaymentType4);
+    Reg.WriteBool('VatRateEnabled', FParameters.VatRateEnabled);
     Reg.CloseKey;
+    // VatRates
+    Reg.DeleteKey(KeyName + '\' + REG_KEY_VatRateS);
+    for i := 0 to Parameters.VatRates.Count-1 do
+    begin
+      if Reg.OpenKey(KeyName + '\' + REG_KEY_VatRateS, True) then
+      begin
+        Item := Parameters.VatRates[i];
+        if Reg.OpenKey(IntToStr(i), True) then
+        begin
+          Reg.WriteInteger('Code', Item.Code);
+          Reg.WriteFloat('Rate', Item.Rate);
+          Reg.WriteString('Name', Item.Name);
+          Reg.CloseKey;
+        end;
+        Reg.CloseKey;
+      end;
+    end;
   finally
     Reg.Free;
   end;

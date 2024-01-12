@@ -659,8 +659,8 @@ begin
               WriteStr(Prefix + Indentation + '"' + Strings[i] + '"');
             end;
             WriteStr(Prefix + ']');
+            Result := True;
           end;
-          Result := True;
         end else
         begin
           if Value is TJsonPersistent then

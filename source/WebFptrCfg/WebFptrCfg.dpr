@@ -31,7 +31,6 @@ uses
   FptrTypes in 'Units\FptrTypes.pas',
   FiscalPrinterDevice in 'Units\FiscalPrinterDevice.pas',
   fmuFptrLog in 'Fmu\fmuFptrLog.pas' {fmFptrLog},
-  TntIniFiles in '..\Shared\TntIniFiles.pas',
   StringUtils in '..\Shared\StringUtils.pas',
   fmuFptrConnection in 'Fmu\fmuFptrConnection.pas' {fmFptrConnection},
   OposEventsRCS in '..\Opos\OposEventsRCS.pas',
@@ -48,13 +47,13 @@ uses
   WebFptrSo_TLB in '..\WebFptrSo\WebFptrSo_TLB.pas',
   PrinterParametersX in '..\Shared\PrinterParametersX.pas',
   PrinterParametersReg in '..\Shared\PrinterParametersReg.pas',
-  PrinterParametersIni in '..\Shared\PrinterParametersIni.pas',
-  SmIniFile in '..\Shared\SmIniFile.pas',
   DriverContext in '..\Shared\DriverContext.pas',
   ReceiptItem in '..\WebFptrSo\units\ReceiptItem.pas',
   MathUtils in '..\WebFptrSo\units\MathUtils.pas',
   NotifyThread in '..\Shared\NotifyThread.pas',
-  WebPrinter in '..\WebFptrSo\units\WebPrinter.pas';
+  WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
+  fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate},
+  fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType};
 
 {$R *.RES}
 {$R WindowsXP.RES}

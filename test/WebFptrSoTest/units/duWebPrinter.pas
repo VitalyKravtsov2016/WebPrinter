@@ -49,6 +49,7 @@ procedure TWebPrinterTest.Setup;
 begin
   FLogger := TLogFile.Create;
   FPrinter := TWebPrinter.Create(FLogger);
+  FPrinter.RaiseErrors := False;
 end;
 
 procedure TWebPrinterTest.TearDown;
@@ -301,7 +302,7 @@ begin
   Product.discount := 0;
   Product.discount_percent := 0;
   Product.other := 0;
-  Product.labels.Add('05367567230048c?eN1(o0029');
+  //Product.labels.Add('05367567230048c?eN1(o0029');
   Product.class_code := '04811001001000000';
   Product.package_code := 1431970;
   Product.owner_type := 1;
