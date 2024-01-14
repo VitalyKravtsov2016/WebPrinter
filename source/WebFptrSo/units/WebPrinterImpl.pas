@@ -725,6 +725,20 @@ function TWebPrinterImpl.DirectIO(Command: Integer; var pData: Integer;
 begin
   try
     FOposDevice.CheckOpened;
+    if Command = DIO_WRITE_FS_STRING_TAG_OP then
+    begin
+      case pData of
+        1228: FReceipt.CustomerINN := pString;
+        1008:
+        begin
+          if Pos('@', pString) <> 0 then
+            FReceipt.CustomerEmail := pString
+          else
+            FReceipt.CustomerPhone := pString;
+        end;
+      end;
+    end;
+
     Result := ClearResult;
   except
     on E: Exception do
@@ -812,6 +826,11 @@ begin
   Result := FOposDevice.OpenResult;
 end;
 
+(*
+    Ftotal_sale_count: Int64;
+    Ftotal_refund_count: Int64;
+*)
+
 function TWebPrinterImpl.GetData(DataItem: Integer; out OptArgs: Integer;
   out Data: WideString): Integer;
 begin
@@ -827,7 +846,7 @@ begin
       FPTR_GD_RECEIPT_NUMBER: Data := FCheckNumber;
       //FPTR_GD_REFUND: Data := AmountToOutStr(ReadRefundTotal);
       FPTR_GD_REFUND_VOID: Data := AmountToOutStr(0);
-      // FPTR_GD_Z_REPORT: !!!
+      FPTR_GD_Z_REPORT: Data := IntToStr(FPrinter.Info.Data.zreport_count);
       //FPTR_GD_FISCAL_REC: Data := AmountToOutStr(ReadSellTotal);
       FPTR_GD_FISCAL_DOC,
       FPTR_GD_FISCAL_DOC_VOID,
@@ -840,7 +859,6 @@ begin
       FPTR_GD_TENDER,
       FPTR_GD_LINECOUNT:
         Data := AmountToStr(0);
-      //FPTR_GD_DESCRIPTION_LENGTH: Data := IntToStr(Printer.RecLineChars); !!!
     else
       InvalidParameterValue('DataItem', IntToStr(DataItem));
     end;
@@ -1031,12 +1049,25 @@ end;
 function TWebPrinterImpl.GetTotalizer(VatID, OptArgs: Integer;
   out Data: WideString): Integer;
 
+  function ReadDailyTotal: Currency;
+  var
+    DayResult: TWPDayResult;
+  begin
+    DayResult := FPrinter.CloseDayResponse.data;
+    Result := (
+      DayResult.total_sale_cash +
+      DayResult.total_sale_card -
+      DayResult.total_refund_cash -
+      DayResult.total_refund_card)/100;
+  end;
+
+
   function ReadGrossTotalizer(OptArgs: Integer): Currency;
   begin
     Result := 0;
     case OptArgs of
       FPTR_TT_DOCUMENT: Result := 0;
-      //FPTR_TT_DAY: Result := ReadDailyTotal; !!!
+      FPTR_TT_DAY: Result := ReadDailyTotal;
       FPTR_TT_RECEIPT: Result := Receipt.GetTotal;
       //FPTR_TT_GRAND: Result := ReadGrandTotal;
     else
@@ -1940,7 +1971,7 @@ begin
 	  Order.Received_cash := Round2(Receipt.GetPayment * 100);
 	  Order.change := Round2(Receipt.Change  * 100);
 	  Order.Received_card := 0;
-	  //Order.Open_cashbox := Parameters.OpenCashbox; !!!
+	  Order.Open_cashbox := Params.OpenCashbox;
 	  Order.Send_email := True;
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;

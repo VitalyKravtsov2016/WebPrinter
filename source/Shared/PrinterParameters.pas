@@ -46,6 +46,7 @@ type
     FPaymentType4: Integer;
     FVatRates: TVatRates;
     FVatRateEnabled: Boolean;
+    FOpenCashbox: Boolean;
   public
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
@@ -68,6 +69,7 @@ type
     property PaymentType2: Integer read FPaymentType2 write FPaymentType2;
     property PaymentType3: Integer read FPaymentType3 write FPaymentType3;
     property PaymentType4: Integer read FPaymentType4 write FPaymentType4;
+    property OpenCashbox: Boolean read FOpenCashbox write FOpenCashbox;
   end;
 
 implementation
@@ -106,6 +108,7 @@ begin
   VatRates.Clear;
   VatRates.Add(1, 12, 'ÍÄÑ 12%'); // ÍÄÑ 12%
   VatRateEnabled := DefVatRateEnabled;
+  FOpenCashbox := False;
 end;
 
 procedure TPrinterParameters.WriteLogParameters;
@@ -124,6 +127,7 @@ begin
   Logger.Debug('PaymentType3: ' + IntToStr(PaymentType3));
   Logger.Debug('PaymentType4: ' + IntToStr(PaymentType4));
   Logger.Debug('VatRateEnabled: ' + BoolToStr(VatRateEnabled));
+  Logger.Debug('OpenCashbox: ' + BoolToStr(OpenCashbox));
   // VatRates
   for i := 0 to VatRates.Count-1 do
   begin
@@ -157,6 +161,7 @@ begin
     PaymentType4 := Src.PaymentType4;
     VatRateEnabled := Src.VatRateEnabled;
     VatRates.Assign(VatRates);
+    OpenCashbox := Src.OpenCashbox;
   end else
     inherited Assign(Source);
 end;

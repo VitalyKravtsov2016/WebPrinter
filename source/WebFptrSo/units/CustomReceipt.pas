@@ -31,9 +31,9 @@ type
     function GetPayment: Currency; virtual;
     property IsVoided: Boolean read FIsVoided;
     property IsOpened: Boolean read FIsOpened;
-    property CustomerINN: WideString read FCustomerINN;
-    property CustomerEmail: WideString read FCustomerEmail;
-    property CustomerPhone: WideString read FCustomerPhone;
+    property CustomerINN: WideString read FCustomerINN write FCustomerINN;
+    property CustomerEmail: WideString read FCustomerEmail write FCustomerEmail;
+    property CustomerPhone: WideString read FCustomerPhone write FCustomerPhone;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -117,7 +117,7 @@ type
 
     procedure PrintNormal(const Text: WideString; Station: Integer); virtual;
 
-    procedure DirectIO(Command: Integer; var pData: Integer; var pString: WideString); virtual;
+    procedure DirectIO(Command: Integer; var pData: Integer; var pString: WideString);
 
     procedure Print(AVisitor: TObject); virtual;
     procedure PrintBarcode(const Barcode: string); virtual;
@@ -340,19 +340,6 @@ end;
 procedure TCustomReceipt.DirectIO(Command: Integer; var pData: Integer;
   var pString: WideString);
 begin
-  if Command = DIO_WRITE_FS_STRING_TAG_OP then
-  begin
-    case pData of
-      1228: FCustomerINN := pString;
-      1008:
-      begin
-        if Pos('@', pString) <> 0 then
-          FCustomerEmail := pString
-        else
-          FCustomerPhone := pString;
-      end;
-    end;
-  end;
 end;
 
 procedure TCustomReceipt.PrintBarcode(const Barcode: string);

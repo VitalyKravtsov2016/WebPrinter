@@ -53,6 +53,7 @@ uses
   NotifyThread in '..\Shared\NotifyThread.pas',
   WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
   fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate},
+  fmuFptrCashDrawer in 'Fmu\fmuFptrCashDrawer.pas' {fmFptrCashDrawer},
   fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType};
 
 {$R *.RES}

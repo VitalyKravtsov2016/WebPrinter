@@ -185,6 +185,9 @@ begin
       if Reg.ValueExists('VatRateEnabled') then
         Parameters.VatRateEnabled := Reg.ReadBool('VatRateEnabled');
 
+      if Reg.ValueExists('OpenCashbox') then
+        Parameters.OpenCashbox := Reg.ReadBool('OpenCashbox');
+
       Reg.CloseKey;
     end;
     // VatRates
@@ -244,6 +247,8 @@ begin
     Reg.WriteInteger('PaymentType3', FParameters.PaymentType3);
     Reg.WriteInteger('PaymentType4', FParameters.PaymentType4);
     Reg.WriteBool('VatRateEnabled', FParameters.VatRateEnabled);
+    Reg.WriteBool('VatRateEnabled', FParameters.VatRateEnabled);
+    Reg.WriteBool('OpenCashbox', FParameters.OpenCashbox);
     Reg.CloseKey;
     // VatRates
     Reg.DeleteKey(KeyName + '\' + REG_KEY_VatRateS);
