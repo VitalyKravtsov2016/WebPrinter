@@ -21,6 +21,9 @@ type
   protected
     procedure Setup; override;
     procedure TearDown; override;
+    
+    procedure CheckCreateOrder;
+    procedure CheckReturnOrder;
   published
     procedure CheckInfoCommand;
     procedure CheckOpenFiscalDay;
@@ -34,8 +37,6 @@ type
     procedure CheckReadZReportError;
     procedure CheckOpenCashDrawer;
     procedure CheckOpenCashDrawerError;
-    procedure CheckCreateOrder;
-    procedure CheckReturnOrder;
     procedure CheckPrintLastReceipt;
     procedure CheckPrintLastReceiptError;
   end;

@@ -20,11 +20,13 @@ type
     FLines: TTntStrings;
     FTrailer: TTntStrings;
     FAfterTotal: Boolean;
-    FBarcode: string;
     FFiscalSign: WideString;
     FCustomerINN: WideString;
     FCustomerEmail: WideString;
     FCustomerPhone: WideString;
+    FBarcode: WideString;
+    FClasscode: WideString;
+    FPackageCode: Integer;
   public
     procedure CheckNotVoided;
     function GetTotal: Currency; virtual;
@@ -120,13 +122,15 @@ type
     procedure DirectIO(Command: Integer; var pData: Integer; var pString: WideString);
 
     procedure Print(AVisitor: TObject); virtual;
-    procedure PrintBarcode(const Barcode: string); virtual;
+    procedure AddMarkCode(const MarkCode: string); virtual;
 
-    property Barcode: string read FBarcode write FBarcode;
     property Lines: TTntStrings read FLines;
     property Trailer: TTntStrings read FTrailer;
     property AfterTotal: Boolean read FAfterTotal;
     property FiscalSign: WideString read FFiscalSign write FFiscalSign;
+    property Barcode: WideString read FBarcode write FBarcode;
+    property Classcode: WideString read FClasscode write FClasscode;
+    property PackageCode: Integer read FPackageCode write FPackageCode;
   end;
 
 function CurrencyToInt64(Value: Currency): Int64;
@@ -342,8 +346,9 @@ procedure TCustomReceipt.DirectIO(Command: Integer; var pData: Integer;
 begin
 end;
 
-procedure TCustomReceipt.PrintBarcode(const Barcode: string);
+procedure TCustomReceipt.AddMarkCode(const MarkCode: string);
 begin
+
 end;
 
 end.

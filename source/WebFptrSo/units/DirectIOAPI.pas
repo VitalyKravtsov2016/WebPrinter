@@ -103,6 +103,9 @@ const
   DIO_STLV_WRITE_OP             = 70; // Write tag value to operation
 
   DIO_ADD_ITEM_CODE             = 71; // add item code
+  DIO_SET_ITEM_BARCODE          = 72; // add item code
+  DIO_SET_ITEM_CLASS_CODE       = 73; // add item code
+  DIO_SET_ITEM_PACKAGE_CODE     = 74; // add item code
 
 
   // Read document from fiscal storage device

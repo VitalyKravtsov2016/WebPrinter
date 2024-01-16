@@ -6,7 +6,7 @@ Uses
   // VCL
   Classes, SysUtils, Math,
   // This
-  MathUtils, PrinterTypes;
+  MathUtils, PrinterTypes, OposFptr;
 
 const
   // RoundType - Тип округления
@@ -18,7 +18,6 @@ type
   TAdjustment = class;
   TAdjustments = class;
   TReceiptItem = class;
-  TBarcodeItem = class;
 
   { TAdjustmentRec }
 
@@ -70,6 +69,7 @@ type
   private
     FPrice: Currency;
     FBarcode: string;
+    FClassCode: string;
     FVatInfo: Integer;
     FQuantity: Double;
     FUnitPrice: Currency;
@@ -78,7 +78,8 @@ type
     FCharges: TAdjustments;
     FDiscounts: TAdjustments;
     FNumber: Integer;
-    FMarkList: TStrings;
+    FMarkCodes: TStrings;
+    FPackageCode: Integer;
   public
     constructor Create(AOwner: TReceiptItems); override;
     destructor Destroy; override;
@@ -89,8 +90,10 @@ type
     function GetDiscount: TAdjustmentRec;
     function GetTotal: Currency; override;
     procedure Assign(Item: TSalesReceiptItem);
+    function GetVatAmount(VatRate: Double): Currency;
     function GetTotalAmount(RoundType: Integer): Currency;
     function GetTotalByVAT(AVatInfo: Integer): Currency; override;
+    function GetDiscountPercent: Double;
 
     property Total: Currency read GetTotal;
     property Charges: TAdjustments read FCharges;
@@ -103,7 +106,9 @@ type
     property UnitName: WideString read FUnitName write FUnitName;
     property Description: WideString read FDescription write FDescription;
     property Barcode: string read FBarcode write FBarcode;
-    property MarkList: TStrings read FMarkList;
+    property ClassCode: string read FClassCode write FClassCode;
+    property PackageCode: Integer read FPackageCode write FPackageCode;
+    property MarkCodes: TStrings read FMarkCodes;
   end;
 
   { TAdjustments }
@@ -166,15 +171,6 @@ type
   public
     property Style: Integer read FStyle write FStyle;
     property Text: WideString read FText write FText;
-  end;
-
-  { TBarcodeItem }
-
-  TBarcodeItem = class(TReceiptItem)
-  private
-    FBarcode: string;
-  public
-    property Barcode: string read FBarcode write FBarcode;
   end;
 
 implementation
@@ -290,14 +286,14 @@ begin
   inherited Create(AOwner);
   FCharges := TAdjustments.Create;
   FDiscounts := TAdjustments.Create;
-  FMarkList := TStringList.Create;
+  FMarkCodes := TStringList.Create;
 end;
 
 destructor TSalesReceiptItem.Destroy;
 begin
   FCharges.Free;
   FDiscounts.Free;
-  FMarkList.Free;
+  FMarkCodes.Free;
   inherited Destroy;
 end;
 
@@ -311,6 +307,13 @@ begin
   Result := FPrice - Abs(FDiscounts.GetTotal) + Abs(FCharges.GetTotal);
   if (RoundType = RoundTypeItems) then
     Result := Ceil(Result);
+end;
+
+function TSalesReceiptItem.GetVatAmount(VatRate: Double): Currency;
+begin
+  Result := 0;
+  if VatRate = 0 then Exit;
+  Result := GetTotal * VatRate/100;
 end;
 
 procedure TSalesReceiptItem.Assign(Item: TSalesReceiptItem);
@@ -363,6 +366,21 @@ begin
   Result := 0;
   if VatInfo = AVatInfo then
     Result := GetTotal;
+end;
+
+function TSalesReceiptItem.GetDiscountPercent: Double;
+var
+  Discount: TAdjustment;
+begin
+  Result := 0;
+  if (Charges.Count = 0)and(Discounts.Count = 1) then
+  begin
+    Discount := Discounts[0];
+    if Discount.AdjustmentType = FPTR_AT_PERCENTAGE_DISCOUNT then
+    begin
+      Result := Discount.Amount;
+    end;
+  end;
 end;
 
 { TAdjustment }

@@ -18,7 +18,7 @@ uses
   PrinterParametersX, CashInReceipt, CashOutReceipt, SalesReceipt,
   ReceiptItem, StringUtils, DebugUtils, VatRate, FileUtils,
   PrinterTypes, DirectIOAPI, PrinterParametersReg, WebPrinter,
-  WebFptrSO_TLB, MathUtils;
+  WebFptrSO_TLB, MathUtils, ItemUnit;
 
 const
   AmountDecimalPlaces = 2;
@@ -29,17 +29,20 @@ type
 
   TWebPrinterImpl = class(TComponent, IFiscalPrinterService_1_12)
   private
-    FPrinter: TWebPrinter;
-    FCheckNumber: WideString;
-    FTestMode: Boolean;
-    FLoadParamsEnabled: Boolean;
-    FPOSID: WideString;
-    FCashierID: WideString;
     FLogger: ILogFile;
+    FPrinter: TWebPrinter;
     FReceipt: TCustomReceipt;
     FParams: TPrinterParameters;
     FOposDevice: TOposServiceDevice19;
     FPrinterState: TFiscalPrinterState;
+
+    FTestMode: Boolean;
+    FPOSID: WideString;
+    FTimeDiff: TDateTime;
+    FCashierID: WideString;
+    FCheckNumber: WideString;
+    FLoadParamsEnabled: Boolean;
+    function GetPrinterDate: TDateTime;
   public
     function AmountToStr(Value: Currency): AnsiString;
     function AmountToOutStr(Value: Currency): AnsiString;
@@ -333,6 +336,7 @@ begin
   FOposDevice.ErrorEventEnabled := False;
   FPrinterState := TFiscalPrinterState.Create;
   FLoadParamsEnabled := True;
+  FTimeDiff := 0;
 end;
 
 destructor TWebPrinterImpl.Destroy;
@@ -346,6 +350,11 @@ begin
   FOposDevice.Free;
   FPrinterState.Free;
   inherited Destroy;
+end;
+
+function TWebPrinterImpl.GetPrinterDate: TDateTime;
+begin
+  Result := Now + FTimeDiff;
 end;
 
 function TWebPrinterImpl.AmountToStr(Value: Currency): AnsiString;
@@ -725,16 +734,23 @@ function TWebPrinterImpl.DirectIO(Command: Integer; var pData: Integer;
 begin
   try
     FOposDevice.CheckOpened;
-    if Command = DIO_WRITE_FS_STRING_TAG_OP then
-    begin
-      case pData of
-        1228: FReceipt.CustomerINN := pString;
-        1008:
-        begin
-          if Pos('@', pString) <> 0 then
-            FReceipt.CustomerEmail := pString
-          else
-            FReceipt.CustomerPhone := pString;
+    case Command of
+      DIO_ADD_ITEM_CODE: Receipt.AddMarkCode(pString);
+      DIO_SET_ITEM_BARCODE: Receipt.Barcode := pString;
+      DIO_SET_ITEM_CLASS_CODE: Receipt.Classcode := pString;
+      DIO_SET_ITEM_PACKAGE_CODE: Receipt.PackageCode := pData;
+
+      DIO_WRITE_FS_STRING_TAG_OP:
+      begin
+        case pData of
+          1228: FReceipt.CustomerINN := pString;
+          1008:
+          begin
+            if Pos('@', pString) <> 0 then
+              FReceipt.CustomerEmail := pString
+            else
+              FReceipt.CustomerPhone := pString;
+          end;
         end;
       end;
     end;
@@ -877,7 +893,7 @@ begin
     case FDateType of
       FPTR_DT_RTC:
       begin
-        DecodeDateTime(Now, Year, Month, Day, Hour, Minute, Second, MilliSecond);
+        DecodeDateTime(GetPrinterDate, Year, Month, Day, Hour, Minute, Second, MilliSecond);
         Date := Format('%.2d%.2d%.4d%.2d%.2d',[Day, Month, Year, Hour, Minute]);
       end;
     else
@@ -1129,6 +1145,7 @@ begin
   try
     CheckEnabled;
     CheckState(FPTR_PS_MONITOR);
+    FPrinter.PrintLastReceipt;
     Result := ClearResult;
   except
     on E: Exception do
@@ -1526,7 +1543,7 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
-    Request.Time := Now;
+    Request.Time := GetPrinterDate;
     Request.close_zreport := False;
     Request.name := 'X ÎÒ×¨Ò';
     FPrinter.PrintZReport(Request);
@@ -1546,7 +1563,7 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
-    Request.Time := Now;
+    Request.Time := GetPrinterDate;
     Request.close_zreport := True;
     Request.name := 'Z ÎÒ×¨Ò';
     FPrinter.PrintZReport(Request);
@@ -1609,6 +1626,7 @@ function TWebPrinterImpl.SetDate(const Date: WideString): Integer;
 begin
   try
     CheckEnabled;
+
     Result := ClearResult;
   except
     on E: Exception do
@@ -1915,6 +1933,8 @@ procedure TWebPrinterImpl.SetDeviceEnabled(Value: Boolean);
     Result := Pos(IntToStr(CharacterSet), CharacterSetList) <> 0;
   end;
 
+var
+  PrinterTime: TDateTime;
 begin
   if Value <> FOposDevice.DeviceEnabled then
   begin
@@ -1922,6 +1942,9 @@ begin
     begin
       FParams.CheckPrameters;
       FPrinter.Connect;
+
+      PrinterTime := WPStrToDateTime(FPrinter.Info.Data.current_time);
+      FTimeDiff := PrinterTime - Now;
 
       FOposDevice.PhysicalDeviceDescription := FOposDevice.PhysicalDeviceName +
         Format(' terminal_id: %s, applet_version: %s, version_code: %s',
@@ -1953,11 +1976,35 @@ begin
 end;
 
 procedure TWebPrinterImpl.Print(Receipt: TSalesReceipt);
+
+  function GetUnitCode(const UnitName: WideString): Integer;
+  var
+    Item: TItemUnit;
+  begin
+    Result := WP_UNIT_PEACE;
+    Item := Params.ItemUnits.ItemByName(UnitName);
+    if Item <> nil then
+      Result := Item.Code;
+  end;
+
+  function GetVatRate(VatInfo: Integer): Double;
+  var
+    VatRate: TVatRate;
+  begin
+    Result := 0;
+    if not Params.VatRateEnabled then Exit;
+    VatRate := Params.VatRates.ItemByCode(VatInfo);
+    if VatRate <> nil then
+    begin
+      Result := VatRate.Rate;
+    end;
+  end;
+
 var
   i: Integer;
   Order: TWPOrder;
+  VatRate: Double;
   Product: TWPProduct;
-  //VatRate: TVatRate;
   //Adjustment: TAdjustment;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
@@ -1966,13 +2013,13 @@ begin
   try
 	  Order.Number := 1;
 	  Order.Receipt_type := WP_RECEIPT_TYPE_ORDER;
-	  Order.Time := WPDateTimeToStr(Now);
+	  Order.Time := WPDateTimeToStr(GetPrinterDate);
 	  Order.Cashier := FCashierID;
 	  Order.Received_cash := Round2(Receipt.GetPayment * 100);
 	  Order.change := Round2(Receipt.Change  * 100);
 	  Order.Received_card := 0;
 	  Order.Open_cashbox := Params.OpenCashbox;
-	  Order.Send_email := True;
+	  Order.Send_email := Receipt.CustomerEmail <> '';
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;
 
@@ -1987,20 +2034,20 @@ begin
         Product.Name := Item.Description;
         Product.Amount := Round2(Item.Quantity * 1000);
         Product.Barcode := Item.Barcode;
-        //Product.Units := Item.Units;
+        Product.Units := GetUnitCode(Item.UnitName);
         Product.Price := Round2(Item.Price * 100);
         Product.Product_price := Round2(Item.UnitPrice * 100);
-        //Product.VAT := Round2(Item.VatAmount * 100);
-        Product.VAT := 0;
-        Product.vat_percent := 0;
-        //Product.vat_percent := GetVatPercent(Item.VatInfo);
+
+        VatRate := GetVatRate(Item.VatInfo);
+        Product.VAT := Round2(Item.GetVatAmount(VatRate) * 100);
+        Product.vat_percent := Round(VatRate);
+
         Product.discount := Round2((Item.Discounts.GetTotal - Item.Charges.GetTotal) * 100);
-        //Product.Discount_percent := GetDiscountPercent(Item);
-        Product.Discount_percent := 0;
+        Product.Discount_percent := Round(Item.GetDiscountPercent);
         Product.Other := 0;
-        Product.Labels := Item.MarkList;
-        Product.Class_code := '';
-        Product.Package_code := 0;
+        Product.Labels.Assign(Item.MarkCodes);
+        Product.Class_code := Item.ClassCode;
+        Product.Package_code := Item.PackageCode;
         Product.Owner_type := 0;
         Product.Comission_info.inn := '';
         Product.Comission_info.pinfl := '';

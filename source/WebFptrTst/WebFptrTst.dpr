@@ -92,7 +92,11 @@ uses
   MathUtils in '..\WebFptrSo\units\MathUtils.pas',
   Translation in '..\Shared\Translation.pas',
   SMFiscalPrinter in '..\Opos\SMFiscalPrinter.pas',
-  VatRate in '..\Shared\VatRate.pas';
+  ItemUnit in '..\Shared\ItemUnit.pas',
+  VatRate in '..\Shared\VatRate.pas',
+  duWebPrinter in '..\..\test\AcceptanceTest\units\duWebPrinter.pas',
+  WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
+  JsonUtils in '..\Shared\JsonUtils.pas';
 
 {$R *.RES}
 {$R WindowsXP.RES}

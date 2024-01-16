@@ -35,7 +35,7 @@ uses
   fmuFptrConnection in 'Fmu\fmuFptrConnection.pas' {fmFptrConnection},
   OposEventsRCS in '..\Opos\OposEventsRCS.pas',
   OposSemaphore in '..\Opos\OposSemaphore.pas',
-  VatRate in '..\Shared\VatRate.pas',
+  ItemUnit in '..\Shared\ItemUnit.pas',
   uLkJSON in '..\Shared\uLkJSON.pas',
   OposServiceDevice19 in '..\Opos\OposServiceDevice19.pas',
   ServiceVersion in '..\Shared\ServiceVersion.pas',
@@ -52,9 +52,11 @@ uses
   MathUtils in '..\WebFptrSo\units\MathUtils.pas',
   NotifyThread in '..\Shared\NotifyThread.pas',
   WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
-  fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate},
+  fmuFptrUnit in 'Fmu\fmuFptrUnit.pas' {fmFptrUnit},
   fmuFptrCashDrawer in 'Fmu\fmuFptrCashDrawer.pas' {fmFptrCashDrawer},
-  fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType};
+  fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType},
+  VatRate in '..\Shared\VatRate.pas',
+  fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate};
 
 {$R *.RES}
 {$R WindowsXP.RES}

@@ -245,33 +245,42 @@ type
   end;
 
 (*
-| amount             | Long   | Product amount/??????????                                                      | 1 ??. = 1000; 0,25 ?? = 250                 |
-| price              | Long   | Price/?????                                                                    | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| product_price      | Long   | Product price/???? ?? ??????? ??????/??????                                    | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| vat                | Long   | Nds price/????? ???                                                            | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| vat_percent        | Integer| Nds percent/??????? ???                                                        | 0 = 0%, 12 = 12%                            |
-| discount           | Long   | Discount price/???? c?????                                                     | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| discount_percent   | Integr | Discount price percent/??????? ??????                                          | 0 = 0%, 10 = 10%, 15 = 15%, 20 = 20%        |
-| other              | Long   | Other discount prices/?????? ??????                                            | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| labels             | String | Marking codes list/??? ?????????? (???????? ???? DataMatrix). ? ??????? ????   | 05367567230048c?eN1(o0029                   |
-|                    |        | ???-?? ??????? ? ??????. ????? 5 ??, ?? ? amount ????????? 1 ??                |                                             |
-| class_code         | Long   | Product class code/??? ???? (????) (tasnif.soliq.uz)                           | 10999001001000000                           |
-| package_code       | Long   | Package_code/ ??? ???????? (tasnif.soliq.uz)                                   | 1520627                                     |
-| owner_type         | Integer| Owner_type/ ??? ????????????? ?????? (???? ???????? ???? 0, ???? 1, ???? 2     | 0,1,2                                       |
-|                    |        | (0-"??????? ? ???????" / 1-"??????????? ????????????" / 2-"????????? ?????")   |                                             |
-| comission_info     | Long   | Sign commission check TIN, PINFL/??????? ???????????? ??? ???, ?????           | 123456789, 12345678912345                   |
-| time               | Double | Time in format yyyy-MM-dd hh:mm:ss/???? ? ????? ? ??????? yyyy-MM-dd hh:mm:ss  | 2021-09-08 22:54:59                         |
-| cashier            | String | Cashier name/??? ???????                                                       | ?????                                       |
-| received_cash      | Long   | Received cash price/?????? ?????????                                           | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| change             | Long   | Change price/?????                                                             | 100                                         |
-| received_card      | Long   | Received cash price/?????? ?????????? ??????,Payme,Click,UZUM                  | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| open_cashbox       | String | Open cashbox device/???????? ????????? ?????                                   | true = open, falce = not open               |
-| type               | String | Banner type - {text, barcode, qr_code}/?????-???, QR-???                       | barcode                                     |
-| data               | String | Banner text/????????? ?????                                                    | ?????? ?? ????????? ??????? 5%              |
-| prices / name      | String | Price name/???????????? ???? ??????                                            | USD, VISA, MasterCard, Click, Payme, Uzum   |
-| prices / price     | Long   | Price/?????                                                                    | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
-| prices / vat_type  | Long   | Vat type/???????? ?????? ? ??????                                              | ??? 15%                                     |
-| prices / vat_price | Long   | Vat price/????? ??????                                                         | 50 ????? = 50, 1 ??? = 100, 100 ??? = 10000 |
+| Name               | Type   | Description EN/RU                                                              | Example                                     |
+| ------------------ | -------| ------------------------------------------------------------------------------ | ------------------------------------------- |
+| number             | Integer| Forder number/Номер чека                                                       | 1                                           |
+| receipt_type       | String | Receipt type/Вид продажи (продажа,аванс,кредит)                                | order,prepaid,credit                        |
+|                    |        | Примечание: На авансовые и кредитные чеки QR код и фиск.признак не печатается  |                                             |
+| name               | String | Product name/Наименование товара или услуги                                    | Хлеб                                        |
+| barcode            | Long   | Product barcode/Штрих-код (GTIN) товара                                        | EAN-8 47800007, EAN-13 4780000000007        |
+| amount             | Long   | Product amount/Количество                                                      | 1 шт. = 1000; 0,25 кг = 250                 |
+| unit_name          | String | Unit name/Едииница измереня для отображаения на чеке на лат. UZ                | dona                                        |
+| units              | Integr | Unit/Единица измерения                                                         | "1" - это шт. Подробности см ниже           |
+| price              | Long   | Price/Сумма                                                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| product_price      | Long   | Product price/Цена за единицу товара/услуги                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| vat                | Long   | Nds price/Сумма НДС                                                            | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| vat_percent        | Integer| Nds percent/Процент НДС                                                        | 0 = 0%, 12 = 12%                            |
+| discount           | Long   | Discount price/Цена cкидки                                                     | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| discount_percent   | Integr | Discount price percent/Процент скидки                                          | 0 = 0%, 10 = 10%, 15 = 15%, 20 = 20%        |
+| other              | Long   | Other discount prices/Другая скидка                                            | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| labels             | String | Marking codes list/Код маркировки (значеник кода DataMatrix). К примеру если   | 05367567230048c?eN1(o0029                   |
+|                    |        | кол-во товаров с маркир. будет 5 шт, то в amount указываем 1 шт                |                                             |
+| class_code         | Long   | Product class code/Код ИКПУ (МХИК) (tasnif.soliq.uz)                           | 10999001001000000                           |
+| package_code       | Long   | Package_code/ Код упаковки (tasnif.soliq.uz)                                   | 1520627                                     |
+| owner_type         | Integer| Owner_type/ Код происхождения товара (одно значение либо 0, либо 1, либо 2     | 0,1,2                                       |
+|                    |        | (0-"Куплено и продано" / 1-"Собственное производство" / 2-"Поставщик услуг")   |                                             |
+| comission_info     | Long   | Sign commission check TIN, PINFL/Признак комиссионный чек ИНН, ПИНФЛ           | 123456789, 12345678912345                   |
+| time               | Double | Time in format yyyy-MM-dd hh:mm:ss/Дата и время в формате yyyy-MM-dd hh:mm:ss  | 2021-09-08 22:54:59                         |
+| cashier            | String | Cashier name/Имя кассира                                                       | Админ                                       |
+| received_cash      | Long   | Received cash price/Оплата наличными                                           | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| change             | Long   | Change price/Сдача                                                             | 100                                         |
+| received_card      | Long   | Received cash price/Оплата банковской картой,Payme,Click,UZUM                  | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| open_cashbox       | String | Open cashbox device/Открытие денежнего ящика                                   | true = open, falce = not open               |
+| type               | String | Banner type - {text, barcode, qr_code}/Штрих-код, QR-код                       | barcode                                     |
+| data               | String | Banner text/Рекламный текст                                                    | Скидка на следующую покупку 5%              |
+| prices / name      | String | Price name/Наименование вида оплаты                                            | USD, VISA, MasterCard, Click, Payme, Uzum   |
+| prices / price     | Long   | Price/Сумма                                                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| prices / vat_type  | Long   | Vat type/Название налога и ставка                                              | НДС 15%                                     |
+| prices / vat_price | Long   | Vat price/Сумма налога                                                         | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 
 *)
 
@@ -365,9 +374,9 @@ type
 	  property open_cashbox: Boolean read Fopen_cashbox write Fopen_cashbox;
 	  property send_email: Boolean read Fsend_email write Fsend_email;
 	  property email: WideString read Femail write Femail;
-	  property sms_phone_number: WideString read Fsms_phone_number write Fsms_phone_number;
 	  property banners: TWPBanners read Fbanners write SetBanners;
 	  property prices: TWPPrices read Fprices write SetPrices;
+	  property sms_phone_number: WideString read Fsms_phone_number write Fsms_phone_number;
   end;
 
   { TWPCreateOrderResult }
@@ -701,12 +710,27 @@ type
   end;
 
 function WPDateTimeToStr(Time: TDateTime): string;
+function WPStrToDateTime(const S: string): TDateTime;
 
 implementation
 
 function WPDateTimeToStr(Time: TDateTime): string;
 begin
   Result := FormatDateTime('yyyy-mm-dd hh:nn:ss', Time);
+end;
+
+function WPStrToDateTime(const S: string): TDateTime;
+var
+  Year, Month, Day: Word;
+  Hour, Min, Sec: Word;
+begin
+  Year := StrToInt(Copy(S, 1, 4));
+  Month := StrToInt(Copy(S, 6, 2));
+  Day := StrToInt(Copy(S, 9, 2));
+  Hour := StrToInt(Copy(S, 12, 2));
+  Min := StrToInt(Copy(S, 15, 2));
+  Sec := StrToInt(Copy(S, 18, 2));
+  Result := EncodeDate(Year, Month, Day) + EncodeTime(Hour, Min, Sec, 0);
 end;
 
 { TWPResult }

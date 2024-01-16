@@ -9,7 +9,7 @@ uses
   TntClasses, TntStdCtrls, TntRegistry, TntSysUtils,
   // This
   PrinterParameters, LogFile, Oposhi, WException, gnugettext,
-  DriverError, VatRate;
+  DriverError, VatRate, ItemUnit;
 
 type
   { TPrinterParametersReg }
@@ -23,6 +23,8 @@ type
     procedure LoadUsrParameters(const DeviceName: WideString);
     procedure SaveSysParameters(const DeviceName: WideString);
     procedure SaveUsrParameters(const DeviceName: WideString);
+    procedure ReadVatRates(Reg: TTntRegistry; const KeyName: WideString);
+    procedure ReadUnits(Reg: TTntRegistry; const KeyName: WideString);
 
     property Parameters: TPrinterParameters read FParameters;
   public
@@ -49,7 +51,8 @@ procedure SaveUsrParametersReg(Item: TPrinterParameters;
 implementation
 
 const
-  REG_KEY_VatRateS  = 'VatRates';
+  REG_KEY_UNITS  = 'Units';
+  REG_KEY_VATRATES  = 'VatRates';
   REG_KEY_PAYTYPES  = 'PaymentTypes';
   REGSTR_KEY_IBT = 'SOFTWARE\POSITIVE\POSITIVE32\Terminal';
 
@@ -141,13 +144,8 @@ end;
 
 procedure TPrinterParametersReg.LoadSysParameters(const DeviceName: WideString);
 var
-  i: Integer;
-  Reg: TTntRegistry;
-  Names: TTntStrings;
   KeyName: WideString;
-  VatCode: Integer;
-  VatRate: Double;
-  VatName: WideString;
+  Reg: TTntRegistry;
 begin
   Logger.Debug('TPrinterParametersReg.Load', [DeviceName]);
 
@@ -190,42 +188,86 @@ begin
 
       Reg.CloseKey;
     end;
-    // VatRates
-    if Reg.OpenKey(KeyName + '\' + REG_KEY_VatRateS, False) then
-    begin
-      Parameters.VatRates.Clear;
-      Names := TTntStringList.Create;
-      try
-        Reg.GetKeyNames(Names);
-        Reg.CloseKey;
+    ReadVatRates(Reg, KeyName + '\' + REG_KEY_VATRATES);
+    ReadUnits(Reg, KeyName + '\' + REG_KEY_UNITS);
+  finally
+    Reg.Free;
+  end;
+end;
 
-        for i := 0 to Names.Count-1 do
+procedure TPrinterParametersReg.ReadVatRates(Reg: TTntRegistry; const KeyName: WideString);
+var
+  i: Integer;
+  Names: TTntStrings;
+  VatCode: Integer;
+  VatRate: Double;
+  VatName: WideString;
+begin
+  if not Reg.OpenKey(KeyName, False) then Exit;
+
+  Parameters.VatRates.Clear;
+  Names := TTntStringList.Create;
+  try
+    Reg.GetKeyNames(Names);
+    Reg.CloseKey;
+
+    for i := 0 to Names.Count-1 do
+    begin
+      if Reg.OpenKey(KeyName, False) then
+      begin
+        if Reg.OpenKey(Names[i], False) then
         begin
-          if Reg.OpenKey(KeyName + '\' + REG_KEY_VatRateS, False) then
-          begin
-            if Reg.OpenKey(Names[i], False) then
-            begin
-              VatCode := Reg.ReadInteger('Code');
-              VatRate := Reg.ReadFloat('Rate');
-              VatName := Reg.ReadString('Name');
-              Parameters.VatRates.Add(VatCode, VatRate, VatName);
-              Reg.CloseKey;
-            end;
-          end;
+          VatCode := Reg.ReadInteger('Code');
+          VatRate := Reg.ReadFloat('Rate');
+          VatName := Reg.ReadString('Name');
+          Parameters.VatRates.Add(VatCode, VatRate, VatName);
+          Reg.CloseKey;
         end;
-      finally
-        Names.Free;
       end;
     end;
   finally
-    Reg.Free;
+    Names.Free;
+  end;
+end;
+
+procedure TPrinterParametersReg.ReadUnits(Reg: TTntRegistry; const KeyName: WideString);
+var
+  i: Integer;
+  Names: TTntStrings;
+  UnitCode: Integer;
+  UnitName: WideString;
+begin
+  if not Reg.OpenKey(KeyName, False) then Exit;
+
+  Parameters.VatRates.Clear;
+  Names := TTntStringList.Create;
+  try
+    Reg.GetKeyNames(Names);
+    Reg.CloseKey;
+
+    for i := 0 to Names.Count-1 do
+    begin
+      if Reg.OpenKey(KeyName, False) then
+      begin
+        if Reg.OpenKey(Names[i], False) then
+        begin
+          UnitCode := Reg.ReadInteger('Code');
+          UnitName := Reg.ReadString('Name');
+          Parameters.ItemUnits.Add(UnitCode, UnitName);
+          Reg.CloseKey;
+        end;
+      end;
+    end;
+  finally
+    Names.Free;
   end;
 end;
 
 procedure TPrinterParametersReg.SaveSysParameters(const DeviceName: WideString);
 var
   i: Integer;
-  Item: TVatRate;
+  VatRate: TVatRate;
+  ItemUnit: TItemUnit;
   Reg: TTntRegistry;
   KeyName: WideString;
 begin
@@ -251,17 +293,33 @@ begin
     Reg.WriteBool('OpenCashbox', FParameters.OpenCashbox);
     Reg.CloseKey;
     // VatRates
-    Reg.DeleteKey(KeyName + '\' + REG_KEY_VatRateS);
+    Reg.DeleteKey(KeyName + '\' + REG_KEY_VATRATES);
     for i := 0 to Parameters.VatRates.Count-1 do
     begin
-      if Reg.OpenKey(KeyName + '\' + REG_KEY_VatRateS, True) then
+      if Reg.OpenKey(KeyName + '\' + REG_KEY_VATRATES, True) then
       begin
-        Item := Parameters.VatRates[i];
+        VatRate := Parameters.VatRates[i];
         if Reg.OpenKey(IntToStr(i), True) then
         begin
-          Reg.WriteInteger('Code', Item.Code);
-          Reg.WriteFloat('Rate', Item.Rate);
-          Reg.WriteString('Name', Item.Name);
+          Reg.WriteInteger('Code', VatRate.Code);
+          Reg.WriteFloat('Rate', VatRate.Rate);
+          Reg.WriteString('Name', VatRate.Name);
+          Reg.CloseKey;
+        end;
+        Reg.CloseKey;
+      end;
+    end;
+    // Units
+    Reg.DeleteKey(KeyName + '\' + REG_KEY_UNITS);
+    for i := 0 to Parameters.ItemUnits.Count-1 do
+    begin
+      if Reg.OpenKey(KeyName + '\' + REG_KEY_UNITS, True) then
+      begin
+        ItemUnit := Parameters.ItemUnits[i];
+        if Reg.OpenKey(IntToStr(i), True) then
+        begin
+          Reg.WriteInteger('Code', ItemUnit.Code);
+          Reg.WriteString('Name', ItemUnit.Name);
           Reg.CloseKey;
         end;
         Reg.CloseKey;

@@ -33,6 +33,7 @@ type
     FCharges: TAdjustments;
     FDiscounts: TAdjustments;
     FAmountDecimalPlaces: Integer;
+    FMarkCodes: TStrings;
 
     function AddItem: TSalesReceiptItem;
     procedure SubtotalCharge(Amount: Currency;
@@ -127,12 +128,13 @@ type
     procedure Print(AVisitor: TObject); override;
 
     procedure PrintRecMessage(const Message: WideString); override;
-    procedure PrintBarcode(const Barcode: string); override;
+    procedure AddMarkCode(const MarkCode: string); override;
 
     property Change: Currency read FChange;
     property Charge: Currency read GetCharge;
     property RecType: TRecType read FRecType;
     property Items: TReceiptItems read FItems;
+    property MarkCodes: TStrings read FMarkCodes;
     property RoundType: Integer read FRoundType;
     property Payments: TPayments read FPayments;
     property Discount: Currency read GetDiscount;
@@ -183,6 +185,7 @@ begin
   FItems := TReceiptItems.Create;
   FCharges := TAdjustments.Create;
   FDiscounts := TAdjustments.Create;
+  FMarkCodes := TStringList.Create;
 end;
 
 destructor TSalesReceipt.Destroy;
@@ -191,6 +194,7 @@ begin
   FRecItems.Free;
   FCharges.Free;
   FDiscounts.Free;
+  FMarkCodes.Free;
   inherited Destroy;
 end;
 
@@ -272,6 +276,11 @@ begin
   Result := TSalesReceiptItem.Create(FItems);
   FRecItems.Add(Result);
   Result.Number := FRecItems.Count;
+  Result.Barcode := FBarcode;
+  Result.Classcode := FClasscode;
+  Result.MarkCodes.AddStrings(MarkCodes);
+  FMarkCodes.Clear;
+  FBarcode := '';
 end;
 
 procedure TSalesReceipt.PrintRecItem(const Description: WideString;
@@ -292,8 +301,6 @@ begin
   Item.VatInfo := VatInfo;
   Item.Description := Description;
   Item.UnitName := UnitName;
-  Item.Barcode := FBarcode;
-  FBarcode := '';
 end;
 
 procedure TSalesReceipt.PrintRecItemVoid(const Description: WideString;
@@ -645,14 +652,9 @@ begin
   end;
 end;
 
-procedure TSalesReceipt.PrintBarcode(const Barcode: string);
-var
-  Item: TBarcodeItem;
+procedure TSalesReceipt.AddMarkCode(const MarkCode: string);
 begin
-  Item := TBarcodeItem.Create(Items);
-  Item.Barcode := Barcode;
+  FMarkCodes.Add(MarkCode);
 end;
-
-
 
 end.

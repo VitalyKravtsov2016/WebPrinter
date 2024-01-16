@@ -10,7 +10,7 @@ uses
   // Opos
   Opos, Oposhi, OposException,
   // This
-  WException, LogFile, FileUtils, VatRate, ReceiptItem;
+  WException, LogFile, FileUtils, VatRate, ReceiptItem, ItemUnit;
 
 const
   /////////////////////////////////////////////////////////////////////////////
@@ -45,6 +45,7 @@ type
     FPaymentType3: Integer;
     FPaymentType4: Integer;
     FVatRates: TVatRates;
+    FItemUnits: TItemUnits;
     FVatRateEnabled: Boolean;
     FOpenCashbox: Boolean;
   public
@@ -58,6 +59,7 @@ type
     procedure Save(const DeviceName: WideString);
     procedure Assign(Source: TPersistent); override;
 
+    property ItemUnits: TItemUnits read FItemUnits;
     property Logger: ILogFile read FLogger;
     property VatRates: TVatRates read FVatRates;
     property VatRateEnabled: Boolean read FVatRateEnabled write FVatRateEnabled;
@@ -80,6 +82,7 @@ constructor TPrinterParameters.Create(ALogger: ILogFile);
 begin
   inherited Create;
   FLogger := ALogger;
+  FItemUnits := TItemUnits.Create;
   FVatRates := TVatRates.Create;
 
   SetDefaults;
@@ -87,6 +90,7 @@ end;
 
 destructor TPrinterParameters.Destroy;
 begin
+  FItemUnits.Free;
   FVatRates.Free;
   inherited Destroy;
 end;
@@ -109,6 +113,31 @@ begin
   VatRates.Add(1, 12, 'НДС 12%'); // НДС 12%
   VatRateEnabled := DefVatRateEnabled;
   FOpenCashbox := False;
+  // Units
+  ItemUnits.Clear;
+  ItemUnits.Add(1, 'штука');
+  ItemUnits.Add(2, 'пачка');
+  ItemUnits.Add(3, 'миллиграмм');
+  ItemUnits.Add(4, 'грамм');
+  ItemUnits.Add(5, 'килограмм');
+  ItemUnits.Add(6, 'центнер');
+  ItemUnits.Add(7, 'тонна');
+  ItemUnits.Add(8, 'миллиметр');
+  ItemUnits.Add(9, 'сантиметр');
+  ItemUnits.Add(11, 'метр');
+  ItemUnits.Add(12, 'километр');
+  ItemUnits.Add(22, 'миллилитр');
+  ItemUnits.Add(23, 'литр');
+  ItemUnits.Add(26, 'комплект');
+  ItemUnits.Add(27, 'сутки');
+  ItemUnits.Add(28, 'час');
+  ItemUnits.Add(33, 'коробка');
+  ItemUnits.Add(38, 'упаковка');
+  ItemUnits.Add(39, 'минут');
+  ItemUnits.Add(41, 'баллон');
+  ItemUnits.Add(42, 'день');
+  ItemUnits.Add(43, 'месяц');
+  ItemUnits.Add(49, 'рулон');
 end;
 
 procedure TPrinterParameters.WriteLogParameters;

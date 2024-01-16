@@ -627,7 +627,13 @@ begin
       if Instance.IsRequiredField(PropName) or (Text <> '') then
       begin
         WriteStr(Prefix + '"' + PropName + '":');
-        WriteWideString('"' + Text + '"');
+        if Text = '' then
+        begin
+          WriteWideString('null');
+        end else
+        begin
+          WriteWideString('"' + Text + '"');
+        end;
         Result := True;
       end;
     end;
@@ -639,28 +645,28 @@ begin
 
       if Value is TJsonCollection then
       begin
+        WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
         if TJsonCollection(Value).Count > 0 then
         begin
-          WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
           WriteCollection(TJsonCollection(Value), Prefix + Indentation);
-          WriteStr(Prefix + ']');
-          Result := True;
         end;
+        WriteStr(Prefix + ']');
+        Result := True;
       end else
       begin
         if Value is TStrings then
         begin
+          WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
           Strings :=  Value as TStrings;
           if Strings.Count > 0 then
           begin
-            WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
             for i := 0 to Strings.Count-1 do
             begin
               WriteStr(Prefix + Indentation + '"' + Strings[i] + '"');
             end;
-            WriteStr(Prefix + ']');
-            Result := True;
           end;
+          WriteStr(Prefix + ']');
+          Result := True;
         end else
         begin
           if Value is TJsonPersistent then

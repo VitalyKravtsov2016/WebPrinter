@@ -42,7 +42,7 @@ uses
   ReceiptItem in 'units\ReceiptItem.pas',
   TextDocument in 'units\TextDocument.pas',
   PrinterParametersReg in '..\Shared\PrinterParametersReg.pas',
-  VatRate in '..\Shared\VatRate.pas',
+  ItemUnit in '..\Shared\ItemUnit.pas',
   OposFiscalPrinter_CCO_TLB in '..\Opos\OposFiscalPrinter_CCO_TLB.pas',
   OposDevice in '..\Opos\OposDevice.pas',
   Translation in '..\Shared\Translation.pas',
@@ -50,7 +50,9 @@ uses
   xmlParser in '..\Shared\XMLParser.pas',
   DriverContext in '..\Shared\DriverContext.pas',
   PrinterTypes in '..\Shared\PrinterTypes.pas',
-  WebPrinter in 'units\WebPrinter.pas';
+  WebPrinter in 'units\WebPrinter.pas',
+  VatRate in '..\Shared\VatRate.pas',
+  duWebPrinterImpl in '..\..\test\AcceptanceTest\units\duWebPrinterImpl.pas';
 
 exports
   DllGetClassObject,
