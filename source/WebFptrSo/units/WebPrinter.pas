@@ -10,7 +10,7 @@ uses
   // Indy
   IdHTTP, IdSSLOpenSSL, IdHeaderList, IdURI,
   // This
-  LogFile, JsonUtils, DriverError;
+  LogFile, JsonUtils, DriverError, uLkJSON;
 
 const
   //////////////////////////////////////////////////////////////////////////////
@@ -359,9 +359,11 @@ type
     procedure SetBanners(const Value: TWPBanners);
     procedure SetPrices(const Value: TWPPrices);
     procedure SetProducts(const Value: TWPProducts);
+    function IsOptionalField(const Field: WideString): Boolean;
   public
     constructor Create;
     destructor Destroy; override;
+    function IsRequiredField(const Field: WideString): Boolean; override;
   published
 	  property number: Integer read Fnumber write Fnumber;
 	  property receipt_type: WideString read Freceipt_type write Freceipt_type;
@@ -797,6 +799,28 @@ begin
   inherited Destroy;
 end;
 
+function TWPOrder.IsOptionalField(const Field: WideString): Boolean;
+var
+  i: Integer;
+const
+  OptionalFields: array [0..6] of string = (
+    'extra_info', 'send_email',
+    'email', 'sms_phone_number',
+    'open_cashbox', 'banners',
+    'prices');
+begin
+  for i := Low(OptionalFields) to High(OptionalFields) do
+  begin
+    Result := AnsiCompareText(Field, OptionalFields[i]) = 0;
+    if Result then Break;
+  end;
+end;
+
+function TWPOrder.IsRequiredField(const Field: WideString): Boolean;
+begin
+  Result := not IsOptionalField(Field);
+end;
+
 procedure TWPOrder.SetBanners(const Value: TWPBanners);
 begin
   FBanners.Assign(Value);
@@ -1112,6 +1136,18 @@ begin
   Result := FTransport;
 end;
 
+function IsJson(const JsonText: WideString): Boolean;
+var
+  Json: TlkJSON;
+begin
+  Json := TlkJSON.Create;
+  try
+    Result := Json.ParseText(JsonText) <> nil;
+  finally
+    Json.Free;
+  end;
+end;
+
 function TWebPrinter.SendJson(const AURL, Request: WideString;
   IsGetRequest: Boolean): WideString;
 var
@@ -1162,6 +1198,12 @@ begin
       Result := Answer;
       FAnswerJson := Result;
       FLogger.Debug('<= ' + UTF8Decode(Answer));
+
+      if Answer = '' then
+        raise Exception.Create('Empty response received');
+      if not IsJson(Answer) then
+        raise Exception.Create(Answer);
+
     finally
       Stream.Free;
       DstStream.Free;

@@ -52,7 +52,8 @@ uses
   PrinterTypes in '..\Shared\PrinterTypes.pas',
   WebPrinter in 'units\WebPrinter.pas',
   VatRate in '..\Shared\VatRate.pas',
-  duWebPrinterImpl in '..\..\test\AcceptanceTest\units\duWebPrinterImpl.pas';
+  duWebPrinterImpl in '..\..\test\AcceptanceTest\units\duWebPrinterImpl.pas',
+  uLkJSON in '..\Shared\uLkJSON.pas';
 
 exports
   DllGetClassObject,

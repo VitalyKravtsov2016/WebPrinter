@@ -129,6 +129,7 @@ type
 
     procedure PrintRecMessage(const Message: WideString); override;
     procedure AddMarkCode(const MarkCode: string); override;
+    procedure SetClassCode(const AClassCode: string); override;
 
     property Change: Currency read FChange;
     property Charge: Currency read GetCharge;
@@ -277,7 +278,6 @@ begin
   FRecItems.Add(Result);
   Result.Number := FRecItems.Count;
   Result.Barcode := FBarcode;
-  Result.Classcode := FClasscode;
   Result.MarkCodes.AddStrings(MarkCodes);
   FMarkCodes.Clear;
   FBarcode := '';
@@ -655,6 +655,11 @@ end;
 procedure TSalesReceipt.AddMarkCode(const MarkCode: string);
 begin
   FMarkCodes.Add(MarkCode);
+end;
+
+procedure TSalesReceipt.SetClassCode(const AClassCode: string);
+begin
+  GetLastItem.ClassCode := AClassCode;
 end;
 
 end.

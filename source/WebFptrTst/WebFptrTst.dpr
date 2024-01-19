@@ -96,7 +96,8 @@ uses
   VatRate in '..\Shared\VatRate.pas',
   duWebPrinter in '..\..\test\AcceptanceTest\units\duWebPrinter.pas',
   WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
-  JsonUtils in '..\Shared\JsonUtils.pas';
+  JsonUtils in '..\Shared\JsonUtils.pas',
+  uLkJSON in '..\Shared\uLkJSON.pas';
 
 {$R *.RES}
 {$R WindowsXP.RES}

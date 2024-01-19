@@ -12,7 +12,8 @@ uses
   JsonUtils in '..\..\source\Shared\JsonUtils.pas',
   DriverError in '..\..\source\Shared\DriverError.pas',
   FileUtils in '..\..\source\Shared\FileUtils.pas',
-  duWebPrinter in 'units\duWebPrinter.pas';
+  duWebPrinter in 'units\duWebPrinter.pas',
+  uLkJSON in '..\..\source\Shared\uLkJSON.pas';
 
 {$R *.RES}
 

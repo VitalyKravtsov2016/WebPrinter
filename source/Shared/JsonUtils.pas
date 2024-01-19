@@ -102,6 +102,8 @@ type
     procedure WriteStr(Value: string);
     procedure WriteCollection(Value: TJsonCollection; const Prefix: string);
     procedure WriteProperties(Instance: TJsonPersistent; const Prefix: string);
+    function IsValidProperty(Instance: TJsonPersistent;
+      PropInfo: PPropInfo): Boolean;
   public
     constructor Create(AStream: TStream);
     procedure WriteObject(Instance: TJsonPersistent);
@@ -521,7 +523,10 @@ begin
           begin
             if (i <> (Count-1)) then
             begin
-              WriteStr(',' + CRLF);
+              if IsValidProperty(Instance, PropList^[I+1]) then
+              begin
+                WriteStr(',' + CRLF);
+              end;
             end;
           end;
           if (i = (Count-1)) then
@@ -603,6 +608,55 @@ begin
   end;
 end;
 
+function TJsonWriter.IsValidProperty(Instance: TJsonPersistent;
+  PropInfo: PPropInfo): Boolean;
+var
+  Value: TObject;
+  Text: WideString;
+  Strings: TStrings;
+  PropType: PTypeInfo;
+  PropName: WideString;
+  Collection: TJsonCollection;
+begin
+  Result := False;
+  PropName := PPropInfo(PropInfo)^.Name;
+  PropType := PropInfo^.PropType^;
+  case PropType^.Kind of
+    tkString, tkLString, tkWString:
+    begin
+      Text := GetWideStrProp(Instance, PropInfo);
+      Result := Instance.IsRequiredField(PropName) or (Text <> '');
+    end;
+
+    tkClass:
+    begin
+      Value := TObject(GetOrdProp(Instance, PropInfo));
+      if Value = nil then Exit;
+
+      if Value is TJsonCollection then
+      begin
+        Collection := Value as TJsonCollection;
+        Result := Instance.IsRequiredField(PropName) or (Collection.Count > 0);
+      end else
+      begin
+        if Value is TStrings then
+        begin
+          Strings :=  Value as TStrings;
+          Result := Instance.IsRequiredField(PropName) or (Strings.Count > 0);
+        end else
+        begin
+          if Value is TJsonPersistent then
+          begin
+            Result := True;
+          end;
+        end;
+      end;
+    end;
+  else
+    Result := True;
+  end;
+end;
+
 function TJsonWriter.WriteProperty(Instance: TJsonPersistent; PropInfo: PPropInfo;
   const Prefix: string): Boolean;
 var
@@ -613,6 +667,7 @@ var
   Strings: TStrings;
   PropType: PTypeInfo;
   PropName: WideString;
+  Collection: TJsonCollection;
 begin
   Result := False;
   PropName := PPropInfo(PropInfo)^.Name;
@@ -627,13 +682,7 @@ begin
       if Instance.IsRequiredField(PropName) or (Text <> '') then
       begin
         WriteStr(Prefix + '"' + PropName + '":');
-        if Text = '' then
-        begin
-          WriteWideString('null');
-        end else
-        begin
-          WriteWideString('"' + Text + '"');
-        end;
+        WriteWideString('"' + Text + '"');
         Result := True;
       end;
     end;
@@ -645,28 +694,29 @@ begin
 
       if Value is TJsonCollection then
       begin
-        WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
-        if TJsonCollection(Value).Count > 0 then
+        Collection := Value as TJsonCollection;
+        if Instance.IsRequiredField(PropName) or (Collection.Count > 0) then
         begin
-          WriteCollection(TJsonCollection(Value), Prefix + Indentation);
+          WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
+          WriteCollection(Collection, Prefix + Indentation);
+          WriteStr(Prefix + ']');
+          Result := True;
         end;
-        WriteStr(Prefix + ']');
-        Result := True;
       end else
       begin
         if Value is TStrings then
         begin
-          WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
           Strings :=  Value as TStrings;
-          if Strings.Count > 0 then
+          if Instance.IsRequiredField(PropName) or (Strings.Count > 0) then
           begin
+            WriteStr(Prefix + '"' + PropName + '":[' + CRLF);
             for i := 0 to Strings.Count-1 do
             begin
               WriteStr(Prefix + Indentation + '"' + Strings[i] + '"');
             end;
+            WriteStr(Prefix + ']');
+            Result := True;
           end;
-          WriteStr(Prefix + ']');
-          Result := True;
         end else
         begin
           if Value is TJsonPersistent then

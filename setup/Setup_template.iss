@@ -38,7 +38,7 @@ Name: "{group}\Opos test"; Filename: "{app}\Bin\WebFptrTst.exe"; WorkingDir: "{a
 Name: "{group}\Uninstall"; Filename: "{uninstallexe}"
 [Registry]
 ; FiscalPrinter default device
-Root: HKLM; Subkey: "SOFTWARE\OLEforRetail\ServiceOPOS\FiscalPrinter\WebPrinter-OPOS-1"; ValueType: string; ValueName: ""; ValueData: "OposWebPrinter.FiscalPrinter"; Flags: uninsdeletevalue;
+Root: HKLM; Subkey: "SOFTWARE\OLEforRetail\ServiceOPOS\FiscalPrinter\SHTRIH-M-OPOS-1"; ValueType: string; ValueName: ""; ValueData: "OposWebPrinter.FiscalPrinter"; Flags: uninsdeletevalue;
 [UninstallDelete]
 Type: files; Name: "{app}\*.log"
 

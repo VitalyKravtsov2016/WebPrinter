@@ -132,7 +132,7 @@ var
   Description: WideString;
 begin
   OpenClaimEnable;
-   Driver.SetPOSID('POS1', 'Cahier 1');
+  //Driver.SetPOSID('POS1', 'Cahier 1');
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
   CheckEquals(FPTR_RT_SALES, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
@@ -144,9 +144,9 @@ begin
 
   Description := 'ÿŒ ŒÀ¿ƒÕ¿ﬂ œÀ»“ ¿ MILKA';
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_BARCODE, 0, '4780000000007'));
-  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, '05367567230048c?eN1(o0029'));
   FptrCheck(Driver.PrintRecItem(Description, 590, 1000, 1, 590, '¯Ú'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
 
   FptrCheck(Driver.PrintRecTotal(590, 590, '0'));
 

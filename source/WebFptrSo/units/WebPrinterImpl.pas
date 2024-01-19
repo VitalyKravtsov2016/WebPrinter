@@ -737,7 +737,7 @@ begin
     case Command of
       DIO_ADD_ITEM_CODE: Receipt.AddMarkCode(pString);
       DIO_SET_ITEM_BARCODE: Receipt.Barcode := pString;
-      DIO_SET_ITEM_CLASS_CODE: Receipt.Classcode := pString;
+      DIO_SET_ITEM_CLASS_CODE: Receipt.SetClassCode(pString);
       DIO_SET_ITEM_PACKAGE_CODE: Receipt.PackageCode := pData;
 
       DIO_WRITE_FS_STRING_TAG_OP:

@@ -47,7 +47,8 @@ uses
   CashInReceipt in '..\..\source\WebFptrSo\units\CashInReceipt.pas',
   CashOutReceipt in '..\..\source\WebFptrSo\units\CashOutReceipt.pas',
   SalesReceipt in '..\..\source\WebFptrSo\units\SalesReceipt.pas',
-  TextDocument in '..\..\source\WebFptrSo\units\TextDocument.pas';
+  TextDocument in '..\..\source\WebFptrSo\units\TextDocument.pas',
+  uLkJSON in '..\..\source\Shared\uLkJSON.pas';
 
 {$R *.RES}
 

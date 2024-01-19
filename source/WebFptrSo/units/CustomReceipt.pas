@@ -25,7 +25,6 @@ type
     FCustomerEmail: WideString;
     FCustomerPhone: WideString;
     FBarcode: WideString;
-    FClasscode: WideString;
     FPackageCode: Integer;
   public
     procedure CheckNotVoided;
@@ -122,14 +121,14 @@ type
     procedure DirectIO(Command: Integer; var pData: Integer; var pString: WideString);
 
     procedure Print(AVisitor: TObject); virtual;
-    procedure AddMarkCode(const MarkCode: string); virtual;
+    procedure AddMarkCode(const AMarkCode: string); virtual;
+    procedure SetClassCode(const AClassCode: string); virtual;
 
     property Lines: TTntStrings read FLines;
     property Trailer: TTntStrings read FTrailer;
     property AfterTotal: Boolean read FAfterTotal;
     property FiscalSign: WideString read FFiscalSign write FFiscalSign;
     property Barcode: WideString read FBarcode write FBarcode;
-    property Classcode: WideString read FClasscode write FClasscode;
     property PackageCode: Integer read FPackageCode write FPackageCode;
   end;
 
@@ -346,7 +345,12 @@ procedure TCustomReceipt.DirectIO(Command: Integer; var pData: Integer;
 begin
 end;
 
-procedure TCustomReceipt.AddMarkCode(const MarkCode: string);
+procedure TCustomReceipt.AddMarkCode(const AMarkCode: string);
+begin
+
+end;
+
+procedure TCustomReceipt.SetClassCode(const AClassCode: string);
 begin
 
 end;
