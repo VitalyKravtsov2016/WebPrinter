@@ -59,7 +59,7 @@ uses
   fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate};
 
 {$R *.RES}
-{$R WindowsXP.RES}
+{$R Windows.RES}
 
 begin
   Application.Initialize;
