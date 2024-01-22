@@ -239,7 +239,7 @@ var
 begin
   if not Reg.OpenKey(KeyName, False) then Exit;
 
-  Parameters.VatRates.Clear;
+  Parameters.ItemUnits.Clear;
   Names := TTntStringList.Create;
   try
     Reg.GetKeyNames(Names);
