@@ -509,7 +509,10 @@ begin
         OpenFile;
       end;
 
-      if not WriteFile(FHandle, S[1], Length(S) * Sizeof(WideChar), Count, nil) then
+      if WriteFile(FHandle, S[1], Length(S) * Sizeof(WideChar), Count, nil) then
+      begin
+        FlushFileBuffers(FHandle);
+      end else
       begin
         CloseFile;
       end;

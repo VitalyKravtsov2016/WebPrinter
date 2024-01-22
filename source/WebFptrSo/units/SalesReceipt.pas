@@ -416,7 +416,7 @@ begin
       CheckPercents(Amount);
       Adjustment := GetLastItem.AddDiscount;
       Adjustment.Amount := Amount;
-      Adjustment.Total := -RoundAmount(GetLastItem.Price * Amount/100);
+      Adjustment.Total := -RoundAmount(GetLastItem.Price * Amount / 10000);
       Adjustment.VatInfo := VatInfo;
       Adjustment.Description := Description;
       Adjustment.AdjustmentType := AdjustmentType;
@@ -427,7 +427,7 @@ begin
       CheckPercents(Amount);
       Adjustment := GetLastItem.AddCharge;
       Adjustment.Amount := Amount;
-      Adjustment.Total := RoundAmount(GetLastItem.Price * Amount/100);
+      Adjustment.Total := RoundAmount(GetLastItem.Price * Amount / 10000);
       Adjustment.VatInfo := VatInfo;
       Adjustment.Description := Description;
       Adjustment.AdjustmentType := AdjustmentType;
@@ -652,7 +652,7 @@ begin
   Index := StrToIntDef(Description, 0);
   if Index <> 0 then
   begin
-    if (GetCashlessPayment + Payment) >= GetTotal then
+    if (GetCashlessPayment + Payment) > GetTotal then
       raise Exception.Create('Cashless payment more than receipt total');
   end;
   FPayments[Index] := FPayments[Index] + Payment;

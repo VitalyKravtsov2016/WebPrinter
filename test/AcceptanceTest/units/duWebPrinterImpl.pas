@@ -137,7 +137,7 @@ end;
 procedure TWebPrinterImplTest.TestFiscalReceipt;
 begin
   OpenClaimEnable;
-  //Driver.SetPOSID('POS1', 'Cahier 1');
+  Driver.SetPOSID('POS1', 'Cahier 1');
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
   CheckEquals(FPTR_RT_SALES, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
@@ -145,19 +145,23 @@ begin
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_BARCODE, 0, '4780000000007'));
+  FptrCheck(Driver.DirectIO2(30, 80, '4780000000007'));
   FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, '05367567230048c?eN1(o0029'));
   FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 0, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_PERCENTAGE_DISCOUNT, 'Скидка бонусами', 1000, 4));
 
   FptrCheck(Driver.PrintRecItem('Item 2', 100, 1000, 1, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 10, 4));
 
   FptrCheck(Driver.PrintRecItem('Item 3', 100, 1000, 2, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
-  
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 9, 4));
+
   FptrCheck(Driver.PrintRecItem('Item 4', 100, 1000, 3, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 8, 4));
 
   FptrCheck(Driver.PrintRecTotal(400, 150, '0'));
   FptrCheck(Driver.PrintRecTotal(400, 100, '1'));

@@ -323,6 +323,16 @@ begin
   end;
 end;
 
+procedure CheckAdjustmentType(AdjustmentType: Integer);
+begin
+  case AdjustmentType of
+   FPTR_AT_AMOUNT_DISCOUNT,
+   FPTR_AT_PERCENTAGE_DISCOUNT: Exit;
+  else
+    raiseIllegalError(Format('Invalid AdjustmentType value (%d)', [AdjustmentType]));
+  end;
+end;
+
 { TWebPrinterImpl }
 
 constructor TWebPrinterImpl.Create(AOwner: TComponent);
@@ -739,6 +749,13 @@ begin
       DIO_SET_ITEM_BARCODE: Receipt.Barcode := pString;
       DIO_SET_ITEM_CLASS_CODE: Receipt.SetClassCode(pString);
       DIO_SET_ITEM_PACKAGE_CODE: Receipt.PackageCode := pData;
+
+      DIO_SET_DRIVER_PARAMETER:
+      begin
+        case pData of
+          DriverParameterBarcode: Receipt.Barcode := pString;
+        end;
+      end;
 
       DIO_WRITE_FS_STRING_TAG_OP:
       begin
@@ -1221,6 +1238,8 @@ function TWebPrinterImpl.PrintRecItemAdjustment(AdjustmentType: Integer;
 begin
   try
     CheckState(FPTR_PS_FISCAL_RECEIPT);
+    CheckAdjustmentType(AdjustmentType);
+
     FReceipt.PrintRecItemAdjustment(AdjustmentType, Description, Amount, VatInfo);
     Result := ClearResult;
   except
@@ -1355,6 +1374,8 @@ function TWebPrinterImpl.PrintRecPackageAdjustment(AdjustmentType: Integer;
 begin
   try
     CheckState(FPTR_PS_FISCAL_RECEIPT);
+    CheckAdjustmentType(AdjustmentType);
+
     FReceipt.PrintRecPackageAdjustment(AdjustmentType,
       Description, VatAdjustment);
     Result := ClearResult;
@@ -1420,6 +1441,7 @@ function TWebPrinterImpl.PrintRecSubtotalAdjustment(AdjustmentType: Integer;
 begin
   try
     CheckState(FPTR_PS_FISCAL_RECEIPT);
+
     FReceipt.PrintRecSubtotalAdjustment(AdjustmentType, Description, Amount);
     Result := ClearResult;
   except
@@ -2042,7 +2064,7 @@ begin
         Product.VAT := Round2(Item.GetVatAmount(VatRate) * 100);
         Product.vat_percent := Round(VatRate);
 
-        Product.discount := Round2((Item.Discounts.GetTotal - Item.Charges.GetTotal) * 100);
+        Product.discount := Abs(Round2((Item.Discounts.GetTotal - Item.Charges.GetTotal) * 100));
         Product.Discount_percent := Round(Item.GetDiscountPercent);
         Product.Other := 0;
         Product.Labels.Assign(Item.MarkCodes);
@@ -2051,26 +2073,6 @@ begin
         Product.Owner_type := 0;
         Product.Comission_info.inn := '';
         Product.Comission_info.pinfl := '';
-      end;
-    end;
-    // Discounts
-    for i := 0 to Receipt.Discounts.Count-1 do
-    begin
-      //Adjustment := Receipt.Discounts[i];
-      { !!! }
-    end;
-    // Charges
-    for i := 0 to Receipt.Charges.Count-1 do
-    begin
-      //Adjustment := Receipt.Charges[i];
-      { !!! }
-    end;
-    // Payments
-    for i := Low(Receipt.Payments) to High(Receipt.Payments) do
-    begin
-      if Receipt.Payments[i] <> 0 then
-      begin
-        //Receipt.Payments[i]
       end;
     end;
     FPrinter.CreateOrder(Order);

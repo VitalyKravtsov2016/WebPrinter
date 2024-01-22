@@ -378,7 +378,7 @@ begin
     Discount := Discounts[0];
     if Discount.AdjustmentType = FPTR_AT_PERCENTAGE_DISCOUNT then
     begin
-      Result := Discount.Amount;
+      Result := Discount.Amount/100;
     end;
   end;
 end;
