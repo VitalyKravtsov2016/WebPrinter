@@ -46,6 +46,10 @@ begin
   FDriver.Params.LogFileEnabled := True;
   FDriver.Params.LogMaxCount := 10;
   FDriver.LoadParamsEnabled := False;
+  FDriver.Params.VatRates.Clear;
+  FDriver.Params.VatRates.Add(1, 10,  'Õƒ— 10%');
+  FDriver.Params.VatRates.Add(2, 12,  'Õƒ— 12%');
+  FDriver.Params.VatRates.Add(3, 15,  'Õƒ— 15%');
 end;
 
 procedure TWebPrinterImplTest.TearDown;
@@ -131,8 +135,6 @@ begin
 end;
 
 procedure TWebPrinterImplTest.TestFiscalReceipt;
-var
-  Description: WideString;
 begin
   OpenClaimEnable;
   //Driver.SetPOSID('POS1', 'Cahier 1');
@@ -143,18 +145,24 @@ begin
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  //FptrCheck(Driver.PrintRecItem('Item 1', 123.45, 1000, 0, 123.45, 'Í„'));
-
-  Description := 'ÿŒ ŒÀ¿ƒÕ¿ﬂ œÀ»“ ¿ MILKA';
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_BARCODE, 0, '4780000000007'));
   FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, '05367567230048c?eN1(o0029'));
-  FptrCheck(Driver.PrintRecItem(Description, 590, 1000, 1, 590, '¯Ú'));
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 0, 100, '¯Ú'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
 
-  FptrCheck(Driver.PrintRecTotal(590, 100, '0'));
-  FptrCheck(Driver.PrintRecTotal(590, 300, '1'));
-  FptrCheck(Driver.PrintRecTotal(590, 100, '2'));
-  FptrCheck(Driver.PrintRecTotal(590, 100, '3'));
+  FptrCheck(Driver.PrintRecItem('Item 2', 100, 1000, 1, 100, '¯Ú'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+
+  FptrCheck(Driver.PrintRecItem('Item 3', 100, 1000, 2, 100, '¯Ú'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  
+  FptrCheck(Driver.PrintRecItem('Item 4', 100, 1000, 3, 100, '¯Ú'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+
+  FptrCheck(Driver.PrintRecTotal(400, 150, '0'));
+  FptrCheck(Driver.PrintRecTotal(400, 100, '1'));
+  FptrCheck(Driver.PrintRecTotal(400, 100, '2'));
+  FptrCheck(Driver.PrintRecTotal(400, 100, '3'));
 
   CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 

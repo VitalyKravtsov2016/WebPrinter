@@ -313,7 +313,7 @@ function TSalesReceiptItem.GetVatAmount(VatRate: Double): Currency;
 begin
   Result := 0;
   if VatRate = 0 then Exit;
-  Result := GetTotal * VatRate/100;
+  Result := GetTotal * (VatRate/100)/(1 + VatRate/100);
 end;
 
 procedure TSalesReceiptItem.Assign(Item: TSalesReceiptItem);
