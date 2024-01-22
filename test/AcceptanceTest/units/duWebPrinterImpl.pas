@@ -43,6 +43,9 @@ procedure TWebPrinterImplTest.Setup;
 begin
   FDriver := TWebPrinterImpl.Create(nil);
   FDriver.Params.WebprinterAddress := 'http://fbox.ngrok.io'; // 8080 или 80
+  FDriver.Params.LogFileEnabled := True;
+  FDriver.Params.LogMaxCount := 10;
+  FDriver.LoadParamsEnabled := False;
 end;
 
 procedure TWebPrinterImplTest.TearDown;
@@ -148,7 +151,7 @@ begin
   FptrCheck(Driver.PrintRecItem(Description, 590, 1000, 1, 590, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
 
-  FptrCheck(Driver.PrintRecTotal(590, 590, '0'));
+  FptrCheck(Driver.PrintRecTotal(590, 1000, '0'));
 
   CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 

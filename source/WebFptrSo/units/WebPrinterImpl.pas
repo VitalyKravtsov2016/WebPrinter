@@ -2015,8 +2015,8 @@ begin
 	  Order.Receipt_type := WP_RECEIPT_TYPE_ORDER;
 	  Order.Time := WPDateTimeToStr(GetPrinterDate);
 	  Order.Cashier := FCashierID;
-	  Order.Received_cash := Round2(Receipt.GetPayment * 100);
-	  Order.change := Round2(Receipt.Change  * 100);
+	  Order.Received_cash := Round2(Receipt.GetTotal * 100);
+	  Order.change := Round2(Receipt.Change * 100);
 	  Order.Received_card := 0;
 	  Order.Open_cashbox := Params.OpenCashbox;
 	  Order.Send_email := Receipt.CustomerEmail <> '';
