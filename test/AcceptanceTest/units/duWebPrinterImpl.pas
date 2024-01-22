@@ -151,7 +151,10 @@ begin
   FptrCheck(Driver.PrintRecItem(Description, 590, 1000, 1, 590, 'רע'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
 
-  FptrCheck(Driver.PrintRecTotal(590, 1000, '0'));
+  FptrCheck(Driver.PrintRecTotal(590, 100, '0'));
+  FptrCheck(Driver.PrintRecTotal(590, 300, '1'));
+  FptrCheck(Driver.PrintRecTotal(590, 100, '2'));
+  FptrCheck(Driver.PrintRecTotal(590, 100, '3'));
 
   CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 

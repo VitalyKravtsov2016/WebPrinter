@@ -131,6 +131,9 @@ type
     procedure AddMarkCode(const MarkCode: string); override;
     procedure SetClassCode(const AClassCode: string); override;
 
+    function GetCashPayment: Currency;
+    function GetCashlessPayment: Currency;
+
     property Change: Currency read FChange;
     property Charge: Currency read GetCharge;
     property RecType: TRecType read FRecType;
@@ -599,6 +602,24 @@ begin
   Result := FItems.GetTotalByVAT(VatInfo);
 end;
 
+function TSalesReceipt.GetCashPayment: Currency;
+begin
+  Result := FPayments[0];
+  if (Result + GetCashlessPayment) > GetTotal then
+    Result := GetTotal - GetCashlessPayment;
+end;
+
+function TSalesReceipt.GetCashlessPayment: Currency;
+var
+  i: Integer;
+begin
+  Result := 0;
+  for i := 1 to High(FPayments) do
+  begin
+    Result := Result + FPayments[i];
+  end;
+end;
+
 function TSalesReceipt.GetPayment: Currency;
 var
   i: Integer;
@@ -629,12 +650,13 @@ begin
 
   FAfterTotal := True;
   Index := StrToIntDef(Description, 0);
-  FPayments[Index] := FPayments[Index] + Payment;
-
-  if GetPayment >= GetTotal then
+  if Index <> 0 then
   begin
-    FChange := GetPayment - GetTotal;
+    if (GetCashlessPayment + Payment) >= GetTotal then
+      raise Exception.Create('Cashless payment more than receipt total');
   end;
+  FPayments[Index] := FPayments[Index] + Payment;
+  FChange := GetPayment - GetTotal;
 end;
 
 procedure TSalesReceipt.PrintRecMessage(const Message: WideString);
