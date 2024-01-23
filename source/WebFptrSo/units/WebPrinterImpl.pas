@@ -771,6 +771,10 @@ begin
           end;
         end;
       end;
+      DIO_SET_RECEIPT_QRCODE:
+      begin
+        Receipt.QRCode := pString;
+      end;
     end;
 
     Result := ClearResult;
@@ -884,15 +888,15 @@ begin
       FPTR_GD_FIRMWARE: ;
       FPTR_GD_PRINTER_ID: Data := FPrinter.Info.Data.terminal_id;
       FPTR_GD_CURRENT_TOTAL: Data := AmountToOutStr(Receipt.GetTotal());
-      //FPTR_GD_DAILY_TOTAL: Data := AmountToOutStr(ReadDailyTotal);
-      //FPTR_GD_GRAND_TOTAL: Data := AmountToOutStr(ReadGrandTotal);
+      FPTR_GD_DAILY_TOTAL: Data := AmountToOutStr(0);
+      FPTR_GD_GRAND_TOTAL: Data := AmountToOutStr(0);
       FPTR_GD_MID_VOID: Data := AmountToOutStr(0);
       FPTR_GD_NOT_PAID: Data := AmountToOutStr(0);
       FPTR_GD_RECEIPT_NUMBER: Data := FCheckNumber;
-      //FPTR_GD_REFUND: Data := AmountToOutStr(ReadRefundTotal);
+      FPTR_GD_REFUND: Data := AmountToOutStr(0);
       FPTR_GD_REFUND_VOID: Data := AmountToOutStr(0);
       FPTR_GD_Z_REPORT: Data := IntToStr(FPrinter.Info.Data.zreport_count);
-      //FPTR_GD_FISCAL_REC: Data := AmountToOutStr(ReadSellTotal);
+      FPTR_GD_FISCAL_REC: Data := AmountToOutStr(0);
       FPTR_GD_FISCAL_DOC,
       FPTR_GD_FISCAL_DOC_VOID,
       FPTR_GD_FISCAL_REC_VOID,
@@ -902,8 +906,7 @@ begin
       FPTR_GD_RESTART,
       FPTR_GD_SIMP_INVOICE,
       FPTR_GD_TENDER,
-      FPTR_GD_LINECOUNT:
-        Data := AmountToStr(0);
+      FPTR_GD_LINECOUNT: Data := AmountToStr(0);
     else
       InvalidParameterValue('DataItem', IntToStr(DataItem));
     end;
@@ -2043,7 +2046,6 @@ var
   Order: TWPOrder;
   VatRate: Double;
   Product: TWPProduct;
-  //Adjustment: TAdjustment;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
 begin
@@ -2091,7 +2093,14 @@ begin
         Product.Comission_info.pinfl := '';
       end;
     end;
-    FPrinter.CreateOrder(Order);
+    if receipt.RecType in [rtSell, rtRetBuy] then
+    begin
+      FPrinter.CreateOrder(Order);
+    end else
+    begin
+      Order.qr_code := Receipt.QrCode;
+      FPrinter.ReturnOrder(Order);
+    end;
   finally
     Order.Free;
   end;

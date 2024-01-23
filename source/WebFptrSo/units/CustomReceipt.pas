@@ -26,6 +26,7 @@ type
     FCustomerPhone: WideString;
     FBarcode: WideString;
     FPackageCode: Integer;
+    FQRCode: WideString;
   public
     procedure CheckNotVoided;
     function GetTotal: Currency; virtual;
@@ -130,6 +131,7 @@ type
     property FiscalSign: WideString read FFiscalSign write FFiscalSign;
     property Barcode: WideString read FBarcode write FBarcode;
     property PackageCode: Integer read FPackageCode write FPackageCode;
+    property QRCode: WideString read FQRCode write FQRCode;
   end;
 
 function CurrencyToInt64(Value: Currency): Int64;

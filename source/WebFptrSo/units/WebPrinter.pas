@@ -356,6 +356,8 @@ type
 	  Fsms_phone_number: WideString;
 	  Fbanners: TWPBanners;
 	  Fprices: TWPPrices;
+    Fqr_code: WideString;
+
     procedure SetBanners(const Value: TWPBanners);
     procedure SetPrices(const Value: TWPPrices);
     procedure SetProducts(const Value: TWPProducts);
@@ -365,6 +367,7 @@ type
     destructor Destroy; override;
     function IsRequiredField(const Field: WideString): Boolean; override;
   published
+    property qr_code: WideString read Fqr_code write Fqr_code;
 	  property number: Integer read Fnumber write Fnumber;
 	  property receipt_type: WideString read Freceipt_type write Freceipt_type;
 	  property products: TWPProducts read Fproducts write SetProducts;

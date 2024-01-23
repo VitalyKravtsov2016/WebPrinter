@@ -1,60 +1,42 @@
 [Closed Files]
-File_0=SourceModule,'D:\projects\WebPrinter\source\WebFptrSo\Units\WebPrinter.pas',0,1,167,5,191,0,0
-File_1=SourceModule,'D:\projects\WebPrinter\test\WebFptrSoTest\units\duPrinterParameters.pas',0,1,37,35,71,0,0
-File_2=SourceModule,'D:\projects\WebPrinter\source\Shared\PrinterParameters.pas',0,1,98,2,113,0,0
-File_3=SourceModule,'D:\projects\WebPrinter\source\Shared\PrinterParametersX.pas',0,1,1,1,39,0,0
-File_4=SourceModule,'D:\projects\WebPrinter\source\Shared\PrinterParametersReg.pas',0,1,187,21,205,0,0
-File_5=SourceModule,'D:\projects\WebPrinter\source\Shared\DriverError.pas',0,1,23,47,36,0,0
+File_0=SourceModule,'D:\projects\WebPrinter\source\Shared\uLkJSON.pas',0,1,568,1,600,0,0
+File_1=SourceModule,'D:\projects\WebPrinter\source\Shared\LogFile.pas',0,1,491,5,513,0,0
+File_2=SourceModule,'c:\program files (x86)\borland\delphi7\source\rtl\Win\Windows.pas',0,1,4381,11,4402,0,0
+File_3=SourceModule,'D:\projects\WebPrinter\source\WebFptrSo\units\DirectIOAPI.pas',0,1,43,2,62,0,0
+File_4=SourceModule,'D:\projects\WebPrinter\source\Opos\OposFptr.pas',0,1,320,1,341,0,0
+File_5=SourceModule,'D:\projects\WebPrinter\source\WebFptrSo\units\SalesReceipt.pas',0,1,1,44,12,0,0
 
 [Modules]
-Module0=D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas
-Module1=D:\projects\WebPrinter\source\WebFptrSo\units\ReceiptItem.pas
-Module2=D:\projects\WebPrinter\source\WebFptrSo\units\SalesReceipt.pas
-Module3=D:\projects\WebPrinter\source\Opos\OposFptr.pas
-Module4=D:\projects\WebPrinter\source\WebFptrSo\units\DirectIOAPI.pas
-Module5=D:\projects\WebPrinter\source\WebFptrSo\units\WebPrinterImpl.pas
-Module6=c:\program files (x86)\borland\delphi7\source\rtl\Win\Windows.pas
-Module7=D:\projects\WebPrinter\source\Shared\LogFile.pas
-Count=8
+Module0=D:\projects\WebPrinter\source\WebFptrSo\units\WebPrinterImpl.pas
+Module1=D:\projects\WebPrinter\source\Shared\JsonUtils.pas
+Module2=D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas
+Module3=D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinter.pas
+Module4=D:\projects\WebPrinter\source\WebFptrSo\Units\WebPrinter.pas
+Count=5
 EditWindowCount=1
 TypeLibWindowCount=1
-
-[D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[D:\projects\WebPrinter\source\WebFptrSo\units\ReceiptItem.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[D:\projects\WebPrinter\source\WebFptrSo\units\SalesReceipt.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[D:\projects\WebPrinter\source\Opos\OposFptr.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[D:\projects\WebPrinter\source\WebFptrSo\units\DirectIOAPI.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
 
 [D:\projects\WebPrinter\source\WebFptrSo\units\WebPrinterImpl.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[c:\program files (x86)\borland\delphi7\source\rtl\Win\Windows.pas]
+[D:\projects\WebPrinter\source\Shared\JsonUtils.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[D:\projects\WebPrinter\source\Shared\LogFile.pas]
+[D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinter.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[D:\projects\WebPrinter\source\WebFptrSo\Units\WebPrinter.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -92,16 +74,13 @@ FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=8
-CurrentView=0
+ViewCount=5
+CurrentView=3
 View0=0
 View1=1
 View2=2
 View3=3
 View4=4
-View5=5
-View6=6
-View7=7
 CodeExplorer=CodeExplorer@EditWindow0
 MessageView=MessageView@EditWindow0
 Create=1
@@ -109,7 +88,7 @@ Visible=1
 State=2
 Left=360
 Top=140
-Width=1560
+Width=1302
 Height=682
 MaxLeft=-8
 MaxTop=107
@@ -126,59 +105,38 @@ BottomPanelClients=MessageView@EditWindow0
 BottomPanelData=000004000000000000000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
-Module=D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas
-CursorX=114
-CursorY=145
-TopLine=137
+Module=D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinter.pas
+CursorX=29
+CursorY=240
+TopLine=228
 LeftCol=1
 
 [View1]
-Module=D:\projects\WebPrinter\source\Shared\LogFile.pas
-CursorX=5
-CursorY=513
-TopLine=491
+Module=D:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas
+CursorX=2
+CursorY=182
+TopLine=148
 LeftCol=1
 
 [View2]
-Module=c:\program files (x86)\borland\delphi7\source\rtl\Win\Windows.pas
-CursorX=11
-CursorY=4402
-TopLine=4381
+Module=D:\projects\WebPrinter\source\Shared\JsonUtils.pas
+CursorX=27
+CursorY=907
+TopLine=894
 LeftCol=1
 
 [View3]
 Module=D:\projects\WebPrinter\source\WebFptrSo\units\WebPrinterImpl.pas
-CursorX=48
-CursorY=749
-TopLine=730
+CursorX=26
+CursorY=1581
+TopLine=1572
 LeftCol=1
 
 [View4]
-Module=D:\projects\WebPrinter\source\WebFptrSo\units\DirectIOAPI.pas
-CursorX=2
-CursorY=62
-TopLine=43
-LeftCol=1
-
-[View5]
-Module=D:\projects\WebPrinter\source\Opos\OposFptr.pas
+Module=D:\projects\WebPrinter\source\WebFptrSo\Units\WebPrinter.pas
 CursorX=1
-CursorY=341
-TopLine=320
-LeftCol=1
-
-[View6]
-Module=D:\projects\WebPrinter\source\WebFptrSo\units\SalesReceipt.pas
-CursorX=44
-CursorY=12
-TopLine=1
-LeftCol=1
-
-[View7]
-Module=D:\projects\WebPrinter\source\WebFptrSo\units\ReceiptItem.pas
-CursorX=7
-CursorY=379
-TopLine=350
+CursorY=520
+TopLine=519
 LeftCol=1
 
 [TypeLibEditWindow0]
@@ -230,8 +188,8 @@ Left=268
 Top=225
 Width=1652
 Height=123
-MaxLeft=-1
-MaxTop=-1
+MaxLeft=-8
+MaxTop=-8
 MaxWidth=1936
 MaxHeight=123
 ClientWidth=1920

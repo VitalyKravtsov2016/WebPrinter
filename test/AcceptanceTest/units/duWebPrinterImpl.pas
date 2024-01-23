@@ -34,6 +34,7 @@ type
   published
     procedure TestPrintZreport;
     procedure TestFiscalReceipt;
+    procedure TestRefundReceipt;
   end;
 
 implementation
@@ -135,6 +136,12 @@ begin
   FptrCheck(Driver.ResetPrinter, 'ResetPrinter');
 end;
 
+procedure TWebPrinterImplTest.TestPrintZreport;
+begin
+  OpenClaimEnable;
+  FptrCheck(Driver.PrintZReport);
+end;
+
 procedure TWebPrinterImplTest.TestFiscalReceipt;
 begin
   OpenClaimEnable;
@@ -175,11 +182,47 @@ begin
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 end;
 
-
-procedure TWebPrinterImplTest.TestPrintZreport;
+procedure TWebPrinterImplTest.TestRefundReceipt;
+const
+  receipt_qr_code = 'https://ofd.soliq.uz/check?t=UZ191211501001&r=1447&c=20220309125810&s=461313663448';
 begin
   OpenClaimEnable;
-  FptrCheck(Driver.PrintZReport);
+  Driver.SetPOSID('POS1', 'Cahier 1');
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_REFUND);
+  CheckEquals(FPTR_RT_REFUND, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.DirectIO2(DIO_SET_RECEIPT_QRCODE, 0, receipt_qr_code));
+
+  FptrCheck(Driver.DirectIO2(30, 80, '4780000000007'));
+  FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, '05367567230048c?eN1(o0029'));
+  FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 0, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_PERCENTAGE_DISCOUNT, 'Скидка бонусами', 1000, 4));
+
+  FptrCheck(Driver.PrintRecItem('Item 2', 100, 1000, 1, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 10, 4));
+
+  FptrCheck(Driver.PrintRecItem('Item 3', 100, 1000, 2, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 9, 4));
+
+  FptrCheck(Driver.PrintRecItem('Item 4', 100, 1000, 3, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 8, 4));
+
+  FptrCheck(Driver.PrintRecTotal(400, 150, '0'));
+  FptrCheck(Driver.PrintRecTotal(400, 100, '1'));
+  FptrCheck(Driver.PrintRecTotal(400, 100, '2'));
+  FptrCheck(Driver.PrintRecTotal(400, 100, '3'));
+
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 end;
 
 initialization

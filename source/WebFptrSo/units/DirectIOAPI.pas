@@ -106,6 +106,7 @@ const
   DIO_SET_ITEM_BARCODE          = 72;
   DIO_SET_ITEM_PACKAGE_CODE     = 74;
   DIO_SET_ITEM_CLASS_CODE       = 120;
+  DIO_SET_RECEIPT_QRCODE        = 75;
 
 
   // Read document from fiscal storage device
