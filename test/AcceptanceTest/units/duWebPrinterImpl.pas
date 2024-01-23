@@ -32,6 +32,7 @@ type
     procedure Setup; override;
     procedure TearDown; override;
   published
+    procedure TestPrintZreport;
     procedure TestFiscalReceipt;
   end;
 
@@ -147,7 +148,7 @@ begin
 
   FptrCheck(Driver.DirectIO2(30, 80, '4780000000007'));
   FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, '05367567230048c?eN1(o0029'));
-  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 0, 100, 'шт'));
+  FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 0, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_PERCENTAGE_DISCOUNT, 'Скидка бонусами', 1000, 4));
 
@@ -174,6 +175,12 @@ begin
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 end;
 
+
+procedure TWebPrinterImplTest.TestPrintZreport;
+begin
+  OpenClaimEnable;
+  FptrCheck(Driver.PrintZReport);
+end;
 
 initialization
   RegisterTest('', TWebPrinterImplTest.Suite);

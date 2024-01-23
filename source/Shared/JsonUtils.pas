@@ -593,6 +593,83 @@ begin
   end;
 end;
 
+function EncodeJsonString(ws: WideString): WideString;
+var
+  i: Integer;
+begin
+  Result := '"';
+  for i := 1 to Length(ws) do
+  begin
+    case ws[i] of
+      '/', '\', '"': result := result + '\' + ws[i];
+      #8: result := result + '\b';
+      #9: result := result + '\t';
+      #10: result := result + '\n';
+      #13: result := result + '\r';
+      #12: result := result + '\f';
+    else
+      if ord(ws[i]) < 32 then
+        result := result + '\u' + inttohex(ord(ws[i]), 4)
+      else
+        result := result + ws[i];
+    end;
+  end;
+  Result := Result + '"';
+end;
+
+function code2utf(iNumber: Integer): UTF8String;
+begin
+  if iNumber < 128 then Result := chr(iNumber)
+  else if iNumber < 2048 then
+    Result := chr((iNumber shr 6) + 192) + chr((iNumber and 63) + 128)
+  else if iNumber < 65536 then
+    Result := chr((iNumber shr 12) + 224) + chr(((iNumber shr 6) and
+      63) + 128) + chr((iNumber and 63) + 128)
+  else if iNumber < 2097152 then
+    Result := chr((iNumber shr 18) + 240) + chr(((iNumber shr 12) and
+      63) + 128) + chr(((iNumber shr 6) and 63) + 128) +
+      chr((iNumber and 63) + 128);
+end;
+
+function DecodeJsonString(s: WideString): WideString;
+var
+  i, j : integer;
+begin
+  i := Pos('\', s);
+  if (i = 0) then
+    Result := s
+  else
+  begin
+    Result := Copy(s, 1, i-1);
+    j := i;
+    repeat
+      if (s[j] = '\') then
+      begin
+        inc(j);
+        case s[j] of
+          '\': Result := Result + '\';
+          '"': Result := Result + '"';
+          '''': Result := Result + '''';
+          '/': Result := Result + '/';
+          'b': Result := Result + #8;
+          'f': Result := Result + #12;
+          'n': Result := Result + #10;
+          'r': Result := Result + #13;
+          't': Result := Result + #9;
+          'u':
+            begin
+              Result := Result + code2utf(strtoint('$' + copy(s, j + 1, 4)));
+              inc(j, 4);
+            end;
+        end;
+      end
+      else
+        Result := Result + s[j];
+      inc(j);
+    until j > length(s);
+  end;
+end;
+
 procedure TJsonWriter.WriteWideString(const Value: WideString);
 var
   L: Integer;
@@ -682,7 +759,7 @@ begin
       if Instance.IsRequiredField(PropName) or (Text <> '') then
       begin
         WriteStr(Prefix + '"' + PropName + '":');
-        WriteWideString('"' + Text + '"');
+        WriteWideString(EncodeJsonString(Text));
         Result := True;
       end;
     end;
@@ -844,7 +921,7 @@ begin
     Result := Result + C;
     Prev := C;
   end;
-  Result := StringReplace(Result, '\"', '"', [rfReplaceAll, rfIgnoreCase]);
+  Result := DecodeJsonString(Result);
   Result := UTF8Decode(Result);
 end;
 

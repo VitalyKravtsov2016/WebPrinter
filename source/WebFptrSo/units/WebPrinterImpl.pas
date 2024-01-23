@@ -43,6 +43,7 @@ type
     FCheckNumber: WideString;
     FLoadParamsEnabled: Boolean;
     function GetPrinterDate: TDateTime;
+    procedure OpenFiscalDay;
   public
     function AmountToStr(Value: Currency): AnsiString;
     function AmountToOutStr(Value: Currency): AnsiString;
@@ -241,12 +242,12 @@ type
     function SetVatValue(VatID: Integer; const VatValue: WideString): Integer; safecall;
     function VerifyItem(const ItemName: WideString; VatID: Integer): Integer; safecall;
     function PrintRecCash(Amount: Currency): Integer; safecall;
-    function PrintRecItemFuel(const Description: WideString; Price: Currency; Quantity: Integer; 
-                              VatInfo: Integer; UnitPrice: Currency; const UnitName: WideString; 
+    function PrintRecItemFuel(const Description: WideString; Price: Currency; Quantity: Integer;
+                              VatInfo: Integer; UnitPrice: Currency; const UnitName: WideString;
                               SpecialTax: Currency; const SpecialTaxName: WideString): Integer; safecall;
-    function PrintRecItemFuelVoid(const Description: WideString; Price: Currency; VatInfo: Integer; 
+    function PrintRecItemFuelVoid(const Description: WideString; Price: Currency; VatInfo: Integer;
                                   SpecialTax: Currency): Integer; safecall;
-    function PrintRecPackageAdjustment(AdjustmentType: Integer; const Description: WideString; 
+    function PrintRecPackageAdjustment(AdjustmentType: Integer; const Description: WideString;
                                        const VatAdjustment: WideString): Integer; safecall;
     function PrintRecPackageAdjustVoid(AdjustmentType: Integer; const VatAdjustment: WideString): Integer; safecall;
     function PrintRecRefundVoid(const Description: WideString; Amount: Currency; VatInfo: Integer): Integer; safecall;
@@ -254,7 +255,7 @@ type
     function PrintRecTaxID(const TaxID: WideString): Integer; safecall;
     function SetCurrency(NewCurrency: Integer): Integer; safecall;
     function GetOpenResult: Integer; safecall;
-    function Open(const DeviceClass: WideString; const DeviceName: WideString; 
+    function Open(const DeviceClass: WideString; const DeviceName: WideString;
                   const pDispatch: IDispatch): Integer; safecall;
     function Close: Integer; safecall;
     function Claim(Timeout: Integer): Integer; safecall;
@@ -266,7 +267,7 @@ type
     function UpdateFirmware(const FirmwareFileName: WideString): Integer; safecall;
     function PrintRecItemAdjustmentVoid(AdjustmentType: Integer; const Description: WideString;
                                         Amount: Currency; VatInfo: Integer): Integer; safecall;
-    function PrintRecItemVoid(const Description: WideString; Price: Currency; Quantity: Integer; 
+    function PrintRecItemVoid(const Description: WideString; Price: Currency; Quantity: Integer;
                               VatInfo: Integer; UnitPrice: Currency; const UnitName: WideString): Integer; safecall;
     function PrintRecItemRefund(const Description: WideString; Amount: Currency; Quantity: Integer;
                                 VatInfo: Integer; UnitAmount: Currency; const UnitName: WideString): Integer; safecall;
@@ -461,7 +462,7 @@ end;
 
 procedure TWebPrinterImpl.Initialize;
 begin
-  FDayOpened := True;
+  FDayOpened := False;
   FCapSlpEmptySensor := False;
   FCapSlpNearEndSensor := False;
   FCapSlpPresent := False;
@@ -794,10 +795,21 @@ begin
   Result := IllegalError;
 end;
 
+procedure TWebPrinterImpl.OpenFiscalDay;
+begin
+  if not FDayOpened then
+  begin
+    FPrinter.OpenFiscalDay2(GetPrinterDate);
+    FDayOpened := True;
+  end;
+end;
+
 function TWebPrinterImpl.EndFiscalReceipt(PrintHeader: WordBool): Integer;
 begin
   try
     FPrinterState.CheckState(FPTR_PS_FISCAL_RECEIPT_ENDING);
+    OpenFiscalDay;
+
     FReceipt.EndFiscalReceipt(PrintHeader);
     FReceipt.Print(Self);
 
@@ -1565,6 +1577,7 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
+    OpenFiscalDay;
     Request.Time := GetPrinterDate;
     Request.close_zreport := False;
     Request.name := 'X ÎÒ×¨Ò';
@@ -1585,10 +1598,12 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
+    OpenFiscalDay;
     Request.Time := GetPrinterDate;
     Request.close_zreport := True;
     Request.name := 'Z ÎÒ×¨Ò';
     FPrinter.PrintZReport(Request);
+    FDayOpened := False;
     Result := ClearResult;
   except
     on E: Exception do
@@ -1965,6 +1980,7 @@ begin
       FParams.CheckPrameters;
       FPrinter.Connect;
 
+      FDayOpened := FPrinter.ReadZReport.result.data.open_time <> '';
       PrinterTime := WPStrToDateTime(FPrinter.Info.Data.current_time);
       FTimeDiff := PrinterTime - Now;
 
