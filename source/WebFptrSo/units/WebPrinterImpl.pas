@@ -18,7 +18,7 @@ uses
   PrinterParametersX, CashInReceipt, CashOutReceipt, SalesReceipt,
   ReceiptItem, StringUtils, DebugUtils, VatRate, FileUtils,
   PrinterTypes, DirectIOAPI, PrinterParametersReg, WebPrinter,
-  WebFptrSO_TLB, MathUtils, ItemUnit;
+  WebFptrSO_TLB, MathUtils, ItemUnit, JsonUtils, uLkJSON;
 
 const
   AmountDecimalPlaces = 2;
@@ -42,8 +42,13 @@ type
     FCashierID: WideString;
     FCheckNumber: WideString;
     FLoadParamsEnabled: Boolean;
+    FReceiptFields: TTntStrings;
+    FRecItemFields: TTntStrings;
+
     function GetPrinterDate: TDateTime;
     procedure OpenFiscalDay;
+    procedure UpdateRecItemFields(Product: TWPProduct);
+    procedure UpdateReceiptFields(Order: TWPOrder);
   public
     function AmountToStr(Value: Currency): AnsiString;
     function AmountToOutStr(Value: Currency): AnsiString;
@@ -346,6 +351,9 @@ begin
   FOposDevice := TOposServiceDevice19.Create(FLogger);
   FOposDevice.ErrorEventEnabled := False;
   FPrinterState := TFiscalPrinterState.Create;
+  FReceiptFields := TTntStringList.Create;
+  FRecItemFields := TTntStringList.Create;
+
   FLoadParamsEnabled := True;
   FTimeDiff := 0;
 end;
@@ -360,6 +368,8 @@ begin
   FPrinter.Free;
   FOposDevice.Free;
   FPrinterState.Free;
+  FReceiptFields.Free;
+  FRecItemFields.Free;
   inherited Destroy;
 end;
 
@@ -607,6 +617,8 @@ begin
     FReceipt.Free;
     FReceipt := CreateReceipt(FFiscalReceiptType);
     FReceipt.BeginFiscalReceipt(PrintHeader);
+    FReceiptFields.Clear;
+    FRecItemFields.Clear;
 
     Result := ClearResult;
   except
@@ -742,6 +754,9 @@ end;
 
 function TWebPrinterImpl.DirectIO(Command: Integer; var pData: Integer;
   var pString: WideString): Integer;
+var
+  FieldName: WideString;
+  FieldValue: WideString;
 begin
   try
     FOposDevice.CheckOpened;
@@ -774,6 +789,41 @@ begin
       DIO_SET_RECEIPT_QRCODE:
       begin
         Receipt.QRCode := pString;
+      end;
+
+      DIO_SET_RECITEM_JSON_FIELD:
+      begin
+        FieldName := GetString(pString, 1, [';']);
+        FieldValue := GetString(pString, 2, [';']);
+        if FieldName <> '' then
+        begin
+          FRecItemFields.Values[FieldName] := FieldValue;
+        end;
+      end;
+
+      DIO_SET_RECEIPT_JSON_FIELD:
+      begin
+        FieldName := GetString(pString, 1, [';']);
+        FieldValue := GetString(pString, 2, [';']);
+        if FieldName <> '' then
+        begin
+          FReceiptFields.Values[FieldName] := FieldValue;
+        end;
+      end;
+
+      DIO_GET_RECEIPT_RESPONSE_FIELD:
+      begin
+        pString := GetJsonField2(FPrinter.CreateOrderResponse.ResponseJson, pString);
+      end;
+
+      DIO_GET_REQUEST_JSON_FIELD:
+      begin
+        pString := GetJsonField2(FPrinter.RequestJson, pString);
+      end;
+
+      DIO_GET_RESPONSE_JSON_FIELD:
+      begin
+        pString := GetJsonField2(FPrinter.ResponseJson, pString);
       end;
     end;
 
@@ -2016,6 +2066,110 @@ begin
   { !!! }
 end;
 
+procedure TWebPrinterImpl.UpdateRecItemFields(Product: TWPProduct);
+var
+  i: Integer;
+  FieldName: WideString;
+  FieldValue: WideString;
+begin
+  for i := 0 to FRecItemFields.Count-1 do
+  begin
+    FieldName := FRecItemFields.Names[i];
+    FieldValue := FRecItemFields.ValueFromIndex[i];
+
+    if AnsiCompareText('name', FieldName) = 0 then
+      Product.name := FieldValue;
+
+    if AnsiCompareText('barcode', FieldName) = 0 then
+      Product.barcode := FieldValue;
+
+    if AnsiCompareText('amount', FieldName) = 0 then
+      Product.amount := StrToInt64(FieldValue);
+
+    if AnsiCompareText('units', FieldName) = 0 then
+      Product.units := StrToInt(FieldValue);
+
+    if AnsiCompareText('price', FieldName) = 0 then
+      Product.price := StrToInt64(FieldValue);
+
+    if AnsiCompareText('product_price', FieldName) = 0 then
+      Product.product_price := StrToInt64(FieldValue);
+
+    if AnsiCompareText('vat', FieldName) = 0 then
+      Product.vat := StrToInt64(FieldValue);
+
+    if AnsiCompareText('vat_percent', FieldName) = 0 then
+      Product.vat_percent := StrToInt(FieldValue);
+
+    if AnsiCompareText('discount', FieldName) = 0 then
+      Product.discount := StrToInt64(FieldValue);
+
+    if AnsiCompareText('discount_percent', FieldName) = 0 then
+      Product.discount_percent := StrToInt(FieldValue);
+
+    if AnsiCompareText('other', FieldName) = 0 then
+      Product.other := StrToInt64(FieldValue);
+
+    if AnsiCompareText('class_code', FieldName) = 0 then
+      Product.class_code := FieldValue;
+
+    if AnsiCompareText('package_code', FieldName) = 0 then
+      Product.package_code := StrToInt(FieldValue);
+
+    if AnsiCompareText('owner_type', FieldName) = 0 then
+      Product.owner_type := StrToInt(FieldValue);
+  end;
+end;
+
+procedure TWebPrinterImpl.UpdateReceiptFields(Order: TWPOrder);
+var
+  i: Integer;
+  FieldName: WideString;
+  FieldValue: WideString;
+begin
+  for i := 0 to FRecItemFields.Count-1 do
+  begin
+    FieldName := FRecItemFields.Names[i];
+    FieldValue := FRecItemFields.ValueFromIndex[i];
+
+    if AnsiCompareText('qr_code', FieldName) = 0 then
+      Order.qr_code := FieldValue;
+
+    if AnsiCompareText('number', FieldName) = 0 then
+      Order.qr_code := FieldValue;
+
+    if AnsiCompareText('receipt_type', FieldName) = 0 then
+      Order.receipt_type := FieldValue;
+
+    if AnsiCompareText('time', FieldName) = 0 then
+      Order.time := FieldValue;
+
+    if AnsiCompareText('cashier', FieldName) = 0 then
+      Order.cashier := FieldValue;
+
+    if AnsiCompareText('received_cash', FieldName) = 0 then
+      Order.received_cash := StrToInt64(FieldValue);
+
+    if AnsiCompareText('change', FieldName) = 0 then
+      Order.change := StrToInt64(FieldValue);
+
+    if AnsiCompareText('received_card', FieldName) = 0 then
+      Order.received_card := StrToInt(FieldValue);
+
+    if AnsiCompareText('open_cashbox', FieldName) = 0 then
+      Order.open_cashbox := StrToBool(FieldValue);
+
+    if AnsiCompareText('send_email', FieldName) = 0 then
+      Order.send_email := StrToBool(FieldValue);
+
+    if AnsiCompareText('email', FieldName) = 0 then
+      Order.email := FieldValue;
+
+    if AnsiCompareText('sms_phone_number', FieldName) = 0 then
+      Order.sms_phone_number := FieldValue;
+  end;
+end;
+
 procedure TWebPrinterImpl.Print(Receipt: TSalesReceipt);
 
   function GetUnitCode(const UnitName: WideString): Integer;
@@ -2062,7 +2216,6 @@ begin
 	  Order.Send_email := Receipt.CustomerEmail <> '';
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;
-
     // Items
     for i := 0 to Receipt.Items.Count-1 do
     begin
@@ -2091,8 +2244,11 @@ begin
         Product.Owner_type := 0;
         Product.Comission_info.inn := '';
         Product.Comission_info.pinfl := '';
+        UpdateRecItemFields(Product);
       end;
     end;
+    // Apply receipt fields
+    UpdateReceiptFields(Order);
     if receipt.RecType in [rtSell, rtRetBuy] then
     begin
       FPrinter.CreateOrder(Order);

@@ -4,7 +4,12 @@ interface
 
 uses
   // VCL
-  Windows, Classes, SysUtils, Variants, TypInfo, Types, ObjAuto, RTLConsts;
+  Windows, Classes, SysUtils, Variants, TypInfo, Types, ObjAuto, RTLConsts,
+  // Tnt
+  TntClasses,
+  //
+  uLkJSON;
+
 
 type
   TChars = set of Char;
@@ -141,6 +146,10 @@ type
 
 function ObjectToJson(Instance: TJsonPersistent): string;
 procedure JsonToObject(const Text: string; Instance: TJsonPersistent);
+procedure SetJsonField(Root: TlkJSONbase; const FieldName, FieldValue: WideString);
+function GetJsonField(Root: TlkJSONbase; const FieldName: WideString): WideString;
+function GetJsonField2(const JsonText, FieldName: WideString): WideString;
+function UpdateJsonFields(const JsonText: WideString; Fields: TTntStrings): WideString;
 
 implementation
 
@@ -169,6 +178,26 @@ begin
   end;
 end;
 
+function UpdateJsonFields(const JsonText: WideString; Fields: TTntStrings): WideString;
+var
+  i: Integer;
+  json: TlkJSONbase;
+  FieldName: WideString;
+  FieldValue: WideString;
+begin
+  json := TlkJSON.ParseText(JsonText);
+  if json = nil then Exit;
+
+  for i := 0 to Fields.Count-1 do
+  begin
+    FieldName := Fields.Names[i];
+    FieldValue := Fields.ValueFromIndex[i];
+    SetJsonField(json, FieldName, FieldValue);
+  end;
+  Result := TlkJSON.GenerateText(json);
+  json.Free;
+end;
+
 procedure JsonToObject(const Text: string; Instance: TJsonPersistent);
 var
   Reader: TJsonReader;
@@ -187,6 +216,70 @@ begin
     Reader.Free;
     Stream.Free;
   end;
+end;
+
+function GetJsonField2(const JsonText, FieldName: WideString): WideString;
+var
+  json: TlkJSONbase;
+begin
+  Result := '';
+  json := TlkJSON.ParseText(JsonText);
+  if json <> nil then
+  begin
+    Result := GetJsonField(json, FieldName);
+    json.Free;
+  end;
+end;
+
+
+function GetJsonField(Root: TlkJSONbase; const FieldName: WideString): WideString;
+var
+  P: Integer;
+  S: WideString;
+  Field: WideString;
+begin
+  Result := '';
+  S := FieldName;
+  repeat
+    P := Pos('.', S);
+    if P <> 0 then
+    begin
+      Field := Copy(S, 1, P-1);
+      S := Copy(S, P+1, Length(S));
+    end else
+    begin
+      Field := S;
+    end;
+    Root := Root.Field[Field];
+    if Root = nil then Exit;
+  until P = 0;
+  Result := Root.Value;
+end;
+
+procedure SetJsonField(Root: TlkJSONbase; const FieldName, FieldValue: WideString);
+var
+  P: Integer;
+  S: WideString;
+  Field: WideString;
+begin
+  S := FieldName;
+  repeat
+    P := Pos('.', S);
+    if P <> 0 then
+    begin
+      Field := Copy(S, 1, P-1);
+      S := Copy(S, P+1, Length(S));
+    end else
+    begin
+      Field := S;
+    end;
+    Root := Root.Field[Field];
+    if Root = nil then
+    begin
+      Exit;
+    end;
+  until P = 0;
+  Root.Value := FieldValue;
 end;
 
 { TJsonCollectionItem }

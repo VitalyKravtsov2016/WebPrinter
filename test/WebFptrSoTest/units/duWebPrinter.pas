@@ -64,7 +64,7 @@ var
   Data: TWPInfoResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('infoResponse.json');
+  FPrinter.ResponseJson := ReadFileData('infoResponse.json');
   Data := FPrinter.ReadInfo2.Data;
 
   CheckEquals(Data.terminal_id, 'UZ170703100189', 'terminal_id');
@@ -83,7 +83,7 @@ begin
   CheckEquals(Data.is_updated, false, 'is_updated');
 
   FPrinter.RaiseErrors := True;
-  FPrinter.AnswerJson := ReadFileData('infoError.json');
+  FPrinter.ResponseJson := ReadFileData('infoError.json');
   try
     FPrinter.ReadInfo2;
     Fail('No Exception');
@@ -102,8 +102,8 @@ var
   Response: TWPOpenDayResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('OpenFiscalDay.json');
-  CheckEquals(FPrinter.AnswerJson, FPrinter.OpenFiscalDay(Now), 'OpenFiscalDay');
+  FPrinter.ResponseJson := ReadFileData('OpenFiscalDay.json');
+  CheckEquals(FPrinter.ResponseJson, FPrinter.OpenFiscalDay(Now), 'OpenFiscalDay');
   Response := FPrinter.OpenFiscalDay2(Now);
   CheckEquals(True, Response.is_success, 'is_success');
   CheckEquals('2020-04-24 13:01:02', Response.data.time, 'data.time');
@@ -115,8 +115,8 @@ var
   Response: TWPOpenDayResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('OpenFiscalDayError.json');
-  CheckEquals(FPrinter.AnswerJson, FPrinter.OpenFiscalDay(Now), 'OpenFiscalDay');
+  FPrinter.ResponseJson := ReadFileData('OpenFiscalDayError.json');
+  CheckEquals(FPrinter.ResponseJson, FPrinter.OpenFiscalDay(Now), 'OpenFiscalDay');
   Response := FPrinter.OpenFiscalDay2(Now);
   CheckEquals(False, Response.is_success, 'is_success');
   CheckEquals(9327, Response.error.code, 'error.code');
@@ -128,8 +128,8 @@ var
   Response: TWPCloseDayResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('CloseFiscalDay.json');
-  CheckEquals(FPrinter.AnswerJson, FPrinter.CloseFiscalDay(Now), 'CloseFiscalDay');
+  FPrinter.ResponseJson := ReadFileData('CloseFiscalDay.json');
+  CheckEquals(FPrinter.ResponseJson, FPrinter.CloseFiscalDay(Now), 'CloseFiscalDay');
   Response := FPrinter.CloseFiscalDay2(Now);
   CheckEquals(True, Response.is_success, 'is_success');
   CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
@@ -155,8 +155,8 @@ var
   Response: TWPCloseDayResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('CloseFiscalDayError.json');
-  CheckEquals(FPrinter.AnswerJson, FPrinter.CloseFiscalDay(Now), 'CloseFiscalDay');
+  FPrinter.ResponseJson := ReadFileData('CloseFiscalDayError.json');
+  CheckEquals(FPrinter.ResponseJson, FPrinter.CloseFiscalDay(Now), 'CloseFiscalDay');
   Response := FPrinter.CloseFiscalDay2(Now);
   CheckEquals(False, Response.is_success, 'is_success');
   CheckEquals(9326, Response.error.code, 'error.code');
@@ -179,7 +179,7 @@ begin
   Request := TWPCloseDayRequest.Create;
   try
     FPrinter.TestMode := True;
-    FPrinter.AnswerJson := ReadFileData('CloseFiscalDay.json');
+    FPrinter.ResponseJson := ReadFileData('CloseFiscalDay.json');
     Response := FPrinter.PrintZReport(Request);
     CheckEquals(True, Response.is_success, 'is_success');
     CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
@@ -211,7 +211,7 @@ begin
   Request := TWPCloseDayRequest.Create;
   try
     FPrinter.TestMode := True;
-    FPrinter.AnswerJson := ReadFileData('CloseFiscalDayError.json');
+    FPrinter.ResponseJson := ReadFileData('CloseFiscalDayError.json');
     Response := FPrinter.PrintZReport(Request);
     CheckEquals(False, Response.is_success, 'is_success');
     CheckEquals(9326, Response.error.code, 'error.code');
@@ -226,7 +226,7 @@ var
   Response: TWPCloseDayResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('CloseFiscalDay.json');
+  FPrinter.ResponseJson := ReadFileData('CloseFiscalDay.json');
   Response := FPrinter.ReadZReport.Result;
   CheckEquals(True, Response.is_success, 'is_success');
   CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
@@ -252,7 +252,7 @@ var
   Response: TWPCloseDayResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('CloseFiscalDayError.json');
+  FPrinter.ResponseJson := ReadFileData('CloseFiscalDayError.json');
   Response := FPrinter.ReadZReport.Result;
   CheckEquals(False, Response.is_success, 'is_success');
   CheckEquals(9326, Response.error.code, 'error.code');
@@ -264,7 +264,7 @@ var
   Response: TWPResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('OpenCashDrawer.json');
+  FPrinter.ResponseJson := ReadFileData('OpenCashDrawer.json');
   Response := FPrinter.OpenCashDrawer;
   CheckEquals(True, Response.is_success, 'is_success');
   CheckEquals(0, Response.error.code, 'error.code');
@@ -276,7 +276,7 @@ var
   Response: TWPResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('OpenCashDrawerError.json');
+  FPrinter.ResponseJson := ReadFileData('OpenCashDrawerError.json');
   Response := FPrinter.OpenCashDrawer;
   CheckEquals(False, Response.is_success, 'is_success');
   CheckEquals(9326, Response.error.code, 'error.code');
@@ -347,7 +347,7 @@ begin
 
     FPrinter.TestMode := True;
     RequestJson := ReadFileData('OrderRequest.json');
-    FPrinter.AnswerJson := ReadFileData('OrderResponse.json');
+    FPrinter.ResponseJson := ReadFileData('OrderResponse.json');
     Response := FPrinter.CreateOrder(Request);
     CheckEquals(RequestJson, FPrinter.RequestJson, 'RequestJson');
     CheckEquals(True, Response.is_success, 'is_success');
@@ -378,7 +378,7 @@ begin
 
     FPrinter.TestMode := True;
     RequestJson := ReadFileData('OrderRequest.json');
-    FPrinter.AnswerJson := ReadFileData('OrderResponse.json');
+    FPrinter.ResponseJson := ReadFileData('OrderResponse.json');
     Response := FPrinter.ReturnOrder(Request);
     CheckEquals(RequestJson, FPrinter.RequestJson, 'RequestJson');
     CheckEquals(True, Response.is_success, 'is_success');
@@ -401,7 +401,7 @@ var
   Response: TWPResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('PrintLastReceipt.json');
+  FPrinter.ResponseJson := ReadFileData('PrintLastReceipt.json');
   Response := FPrinter.PrintLastReceipt.result;
   CheckEquals(True, Response.is_success, 'is_success');
   CheckEquals(0, Response.error.code, 'error.code');
@@ -413,7 +413,7 @@ var
   Response: TWPResponse;
 begin
   FPrinter.TestMode := True;
-  FPrinter.AnswerJson := ReadFileData('PrintLastReceiptError.json');
+  FPrinter.ResponseJson := ReadFileData('PrintLastReceiptError.json');
   Response := FPrinter.PrintLastReceipt.result;
   CheckEquals(False, Response.is_success, 'is_success');
   CheckEquals(9326, Response.error.code, 'error.code');

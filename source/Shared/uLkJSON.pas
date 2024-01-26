@@ -270,7 +270,7 @@ type
       TlkJSONbase; virtual;
 
     function GetField(AName: Variant):TlkJSONbase; override;
-
+  public
     function _Add(obj: TlkJSONbase): Integer; virtual;
     procedure _Delete(iIndex: Integer); virtual;
     function _IndexOf(obj: TlkJSONbase): Integer; virtual;

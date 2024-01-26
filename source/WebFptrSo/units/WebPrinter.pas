@@ -405,9 +405,20 @@ type
     property cash_box_number: WideString read FCashBoxNumber write FCashBoxNumber;
   end;
 
+  { TWPCommand }
+
+  TWPCommand = class(TJsonPersistent)
+  private
+    FRequestJson: WideString;
+    FResponseJson: WideString;
+  public
+    property RequestJson: WideString read FRequestJson write FRequestJson;
+    property ResponseJson: WideString read FResponseJson write FResponseJson;
+  end;
+
   { TWPCreateOrderResponse }
 
-  TWPCreateOrderResponse = class(TJsonPersistent)
+  TWPCreateOrderResponse = class(TWPCommand)
   private
     Fdata: TWPCreateOrderResult;
     Ferror: TWPError;
@@ -660,8 +671,8 @@ type
 
     FRaiseErrors: Boolean;
     FTransport: TIdHTTP;
-    FAnswerJson: WideString;
     FRequestJson: WideString;
+    FResponseJson: WideString;
     FInfo: TWPInfoCommand;
     FResponse: TWPResponse;
     FOpenDayResponse: TWPOpenDayResponse;
@@ -706,12 +717,13 @@ type
     property TestMode: Boolean read FTestMode write FTestMode;
     property Address: WideString read FAddress write FAddress;
     property RaiseErrors: Boolean read FRaiseErrors write FRaiseErrors;
-    property AnswerJson: WideString read FAnswerJson write FAnswerJson;
     property RequestJson: WideString read FRequestJson write FRequestJson;
+    property ResponseJson: WideString read FResponseJson write FResponseJson;
     property OpenDayResponse: TWPOpenDayResponse read FOpenDayResponse;
     property CloseDayResponse: TWPCloseDayResponse read FCloseDayResponse;
     property CloseDayResponse2: TWPCloseDayResponse2 read FCloseDayResponse2;
     property ConnectTimeout: Integer read FConnectTimeout write FConnectTimeout;
+    property CreateOrderResponse: TWPCreateOrderResponse read FCreateOrderResponse;
   end;
 
 function WPDateTimeToStr(Time: TDateTime): string;
@@ -1171,8 +1183,8 @@ begin
 
   if FTestMode then
   begin
-    Result := FAnswerJson;
-    FLogger.Debug('<= ' + UTF8Decode(FAnswerJson));
+    Result := FResponseJson;
+    FLogger.Debug('<= ' + UTF8Decode(FResponseJson));
     Exit;
   end;
 
@@ -1199,7 +1211,7 @@ begin
         DstStream.ReadBuffer(Answer[1], DstStream.Size);
       end;
       Result := Answer;
-      FAnswerJson := Result;
+      FResponseJson := Result;
       FLogger.Debug('<= ' + UTF8Decode(Answer));
 
       if Answer = '' then
@@ -1479,7 +1491,10 @@ function TWebPrinter.CreateOrder(Request: TWPOrder): TWPCreateOrderResponse;
 var
   JsonText: WideString;
 begin
-  JsonText := PostJson(GetAddress + '/order/create/', ObjectToJson(Request));
+  JsonText := ObjectToJson(Request);
+  FCreateOrderResponse.RequestJson := JsonText;
+  JsonText := PostJson(GetAddress + '/order/create/', JsonText);
+  FCreateOrderResponse.RequestJson := JsonText;
   JsonToObject(JsonText, FCreateOrderResponse);
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;
@@ -1498,7 +1513,10 @@ function TWebPrinter.ReturnOrder(Request: TWPOrder): TWPCreateOrderResponse;
 var
   JsonText: WideString;
 begin
-  JsonText := PostJson(GetAddress + '/order/refuse/', ObjectToJson(Request));
+  JsonText := ObjectToJson(Request);
+  FCreateOrderResponse.RequestJson := JsonText;
+  JsonText := PostJson(GetAddress + '/order/refuse/', JsonText);
+  FCreateOrderResponse.RequestJson := JsonText;
   JsonToObject(JsonText, FCreateOrderResponse);
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;
