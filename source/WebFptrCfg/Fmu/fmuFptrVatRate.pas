@@ -8,7 +8,7 @@ uses
   // Tnt
   TntClasses, TntStdCtrls, TntRegistry,
   // This
-  FiscalPrinterDevice, PrinterParameters, FptrTypes, Spin, Mask;
+  FiscalPrinterDevice, PrinterParameters, FptrTypes, Spin, Mask, VatRate;
 
 type
   { TfmFptrVatCode }
@@ -44,6 +44,7 @@ procedure TfmFptrVatRate.UpdateItems;
 var
   i: Integer;
   Item: TListItem;
+  VatRate: TVatRate;
 begin
   with lvVatCodes do
   begin
@@ -52,10 +53,12 @@ begin
       Items.Clear;
 		  for i := 0 to Parameters.VatRates.Count-1 do
       begin
+        VatRate := Parameters.VatRates[i];
         Item := Items.Add;
-        Item.Caption := IntToStr(Parameters.VatRates[i].Code);
-        Item.SubItems.Add(Format('%.2f', [Parameters.VatRates[i].Rate]));
-        Item.SubItems.Add(Parameters.VatRates[i].Name);
+        Item.Data := Pointer(VatRate.Code);
+        Item.Caption := IntToStr(VatRate.Code);
+        Item.SubItems.Add(Format('%.2f', [VatRate.Rate]));
+        Item.SubItems.Add(VatRate.Name);
         if i = 0 then
         begin
           Item.Focused := True;
@@ -82,13 +85,16 @@ end;
 
 procedure TfmFptrVatRate.btnAddClick(Sender: TObject);
 var
+  Code: Integer;
   Item: TListItem;
 begin
   Parameters.VatRates.Add(seVatCode.Value, StrToFloat(edtVatRate.Text),
     edtVatName.Text);
 
+  Code := seVatCode.Value;
   Item := lvVatCodes.Items.Add;
-  Item.Caption := IntToStr(seVatCode.Value);
+  Item.Data := Pointer(Code);
+  Item.Caption := IntToStr(Code);
   Item.SubItems.Add(edtVatRate.Text);
   Item.SubItems.Add(edtVatName.Text);
 
@@ -100,25 +106,15 @@ end;
 
 procedure TfmFptrVatRate.btnDeleteClick(Sender: TObject);
 var
-  Index: Integer;
+  Code: Integer;
   Item: TListItem;
 begin
   Item := lvVatCodes.Selected;
   if Item <> nil then
   begin
-    Index := Item.Index;
-  	Parameters.VatRates[Index].Free;
-    Item.Delete;
-    if Index >= lvVatCodes.Items.Count then
-      Index := lvVatCodes.Items.Count-1;
-    if Index >= 0 then
-    begin
-      Item := lvVatCodes.Items[Index];
-      Item.Focused := True;
-      Item.Selected := True;
-	  	Modified;
-    end;
-    btnDelete.Enabled := lvVatCodes.Items.Count > 0;
+    Code := Integer(Item.Data);
+  	Parameters.VatRates.ItemByCode(Code).Free;
+    UpdatePage;
   end;
 end;
 

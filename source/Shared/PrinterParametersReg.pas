@@ -220,7 +220,14 @@ begin
           VatCode := Reg.ReadInteger('Code');
           VatRate := Reg.ReadFloat('Rate');
           VatName := Reg.ReadString('Name');
-          Parameters.VatRates.Add(VatCode, VatRate, VatName);
+          try
+            Parameters.VatRates.Add(VatCode, VatRate, VatName);
+          except
+            on E: Exception do
+            begin
+              Logger.Error('Failed to add VAT rate, ' + E.Message);
+            end;
+          end;
           Reg.CloseKey;
         end;
       end;

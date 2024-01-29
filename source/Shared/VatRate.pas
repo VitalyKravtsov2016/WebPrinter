@@ -17,6 +17,7 @@ type
   public
     constructor Create;
 
+    function ValidCode(ACode: Integer): Boolean;
     function ItemByCode(Code: Integer): TVatRate;
     function Add(ACode: Integer; ARate: Double; const AName: string): TVatRate;
     property Items[Index: Integer]: TVatRate read GetItem; default;
@@ -37,9 +38,9 @@ type
     function GetTax(Amount: Currency): Currency;
     procedure Assign(Source: TPersistent); override;
 
-    property Rate: Double read FRate write FRate;
-    property Code: Integer read FCode write FCode;
-    property Name: WideString read FName write FName;
+    property Rate: Double read FRate;
+    property Code: Integer read FCode;
+    property Name: WideString read FName;
     property Total: Currency read FTotal write FTotal;
   end;
 
@@ -52,8 +53,20 @@ begin
   inherited Create(TVatRate);
 end;
 
+function TVatRates.ValidCode(ACode: Integer): Boolean;
+begin
+  Result := ItemByCode(ACode) = nil;
+end;
+
 function TVatRates.Add(ACode: Integer; ARate: Double; const AName: string): TVatRate;
 begin
+  if ItemByCode(ACode) <> nil then
+    raise Exception.CreateFmt('Ќалогова€ ставка с кодом %d уже есть', [ACode]);
+  if (ARate <= 0)or(ARate >= 100) then
+    raise Exception.CreateFmt('Ќеверное значение налоговой ставки %.2f', [ARate]);
+  if (AName = '') then
+    raise Exception.Create('Ќазвание налоговой ставки не может быть пустым');
+
   Result := TVatRate.Create2(Self, ACode, ARate, AName);
 end;
 

@@ -49,7 +49,7 @@ begin
   CheckEquals(1, FParams.VatRates[0].Code, 'VatRates[0].Code');
   CheckEquals('ÍÄÑ 12%', FParams.VatRates[0].Name, 'VatRates[0].Name');
   CheckEquals(15, FParams.VatRates[1].Rate, 'VatRates[1].Rate');
-  CheckEquals(2, FParams.VatRates[1].Code, 'VatRates[1].Code');
+  CheckEquals(4, FParams.VatRates[1].Code, 'VatRates[1].Code');
   CheckEquals('ÍÄÑ 15%', FParams.VatRates[1].Name, 'VatRates[1].Name');
 
   CheckEquals(23, FParams.ItemUnits.Count, 'ItemUnits.Count');
@@ -60,7 +60,7 @@ end;
 procedure TParametersTest.CheckSaveParams;
 begin
   FParams.SetDefaults;
-  FParams.VatRates.Add(2, 15, 'ÍÄÑ 15%');
+  FParams.VatRates.Add(4, 15, 'ÍÄÑ 15%');
 
   CheckDefaultParams;
 

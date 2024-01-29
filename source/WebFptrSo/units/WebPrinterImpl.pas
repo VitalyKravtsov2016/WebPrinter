@@ -769,7 +769,7 @@ begin
       DIO_SET_DRIVER_PARAMETER:
       begin
         case pData of
-          DriverParameterBarcode: Receipt.Barcode := pString;
+          DriverParameterBarcode: Receipt.AddMarkCode(pString);
         end;
       end;
 

@@ -883,6 +883,10 @@ begin
             for i := 0 to Strings.Count-1 do
             begin
               WriteStr(Prefix + Indentation + '"' + Strings[i] + '"');
+              if i <> (Strings.Count-1) then
+              begin
+                WriteStr(Prefix + Indentation + ',');
+              end;
             end;
             WriteStr(Prefix + ']');
             Result := True;

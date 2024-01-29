@@ -51,7 +51,7 @@ begin
   FDriver.Params.VatRates.Clear;
   FDriver.Params.VatRates.Add(1, 10,  'НДС 10%');
   FDriver.Params.VatRates.Add(2, 12,  'НДС 12%');
-  FDriver.Params.VatRates.Add(3, 15,  'НДС 15%');
+  FDriver.Params.VatRates.Add(10, 15,  'НДС 15%');
 end;
 
 procedure TWebPrinterImplTest.TearDown;
@@ -153,9 +153,9 @@ begin
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  FptrCheck(Driver.DirectIO2(30, 80, '4780000000007'));
-  FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, '05367567230048c?eN1(o0029'));
-  FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 0, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(30, 80, '05367567230048c?eN1(o0029'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_BARCODE, 0, '4780000000007'));
+  FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 10, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_PERCENTAGE_DISCOUNT, 'Скидка бонусами', 1000, 4));
 

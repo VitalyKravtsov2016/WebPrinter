@@ -64,6 +64,7 @@ object fmFptrVatRate: TfmFptrVatRate
     HideSelection = False
     ReadOnly = True
     RowSelect = True
+    SortType = stText
     TabOrder = 6
     ViewStyle = vsReport
   end
