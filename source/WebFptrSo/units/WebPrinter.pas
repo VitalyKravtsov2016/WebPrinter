@@ -89,6 +89,8 @@ type
     FCode: Integer;
     FMessage: WideString;
     FData: WideString;
+  public
+    procedure Clear;
   published
     property code: Integer read FCode write FCode;
     property message: WideString read FMessage write FMessage;
@@ -692,6 +694,7 @@ type
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
 
+    procedure Clear;
     procedure Connect;
     procedure Disconnect;
     function ReadInfo: WideString;
@@ -1163,6 +1166,19 @@ begin
   end;
 end;
 
+procedure TWebPrinter.Clear;
+begin
+  FInfo.Error.Clear;
+  FResponse.Error.Clear;
+  FOpenDayResponse.error.Clear;
+  FCloseDayResponse.error.Clear;
+  FCloseDayResponse2.result.error.Clear;
+  FPaymentResponse.error.Clear;
+  FPaymentConfirmResponse.error.Clear;
+  FCreateOrderResponse.error.Clear;
+  FPrintLastReceipt.result.error.Clear;
+end;
+
 function TWebPrinter.SendJson(const AURL, Request: WideString;
   IsGetRequest: Boolean): WideString;
 var
@@ -1172,6 +1188,7 @@ var
   DstStream: TStream;
   Answer: AnsiString;
 begin
+  Clear;
   URL := AURL;
   FRequestJson := UTF8Decode(Request);
   if IsGetRequest then
@@ -1538,6 +1555,15 @@ begin
   JsonToObject(JsonText, FPrintLastReceipt);
   CheckForError(FPrintLastReceipt.result.error);
   Result := FPrintLastReceipt;
+end;
+
+{ TWPError }
+
+procedure TWPError.Clear;
+begin
+  FCode := 0;
+  FData := '';
+  FMessage := '';
 end;
 
 end.
