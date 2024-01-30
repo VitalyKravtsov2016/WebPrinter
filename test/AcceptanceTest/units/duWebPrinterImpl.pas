@@ -142,6 +142,9 @@ begin
   FptrCheck(Driver.PrintZReport);
 end;
 
+const
+  Barcode = '0104601662000016215d>9nB'#$1D'934x0v'#$0D;
+
 procedure TWebPrinterImplTest.TestFiscalReceipt;
 begin
   OpenClaimEnable;
@@ -153,7 +156,7 @@ begin
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  FptrCheck(Driver.DirectIO2(30, 80, '05367567230048c?eN1(o0029'));
+  FptrCheck(Driver.DirectIO2(30, 80, Barcode));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_BARCODE, 0, '4780000000007'));
   FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 10, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
@@ -197,7 +200,7 @@ begin
   FptrCheck(Driver.DirectIO2(DIO_SET_RECEIPT_QRCODE, 0, receipt_qr_code));
 
   FptrCheck(Driver.DirectIO2(30, 80, '4780000000007'));
-  FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, '05367567230048c?eN1(o0029'));
+  FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, Barcode));
   FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 0, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_PERCENTAGE_DISCOUNT, 'Скидка бонусами', 1000, 4));
