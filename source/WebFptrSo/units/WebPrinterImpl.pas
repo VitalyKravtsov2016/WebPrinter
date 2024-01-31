@@ -2127,10 +2127,10 @@ var
   FieldName: WideString;
   FieldValue: WideString;
 begin
-  for i := 0 to FRecItemFields.Count-1 do
+  for i := 0 to FReceiptFields.Count-1 do
   begin
-    FieldName := FRecItemFields.Names[i];
-    FieldValue := FRecItemFields.ValueFromIndex[i];
+    FieldName := FReceiptFields.Names[i];
+    FieldValue := FReceiptFields.ValueFromIndex[i];
 
     if AnsiCompareText('qr_code', FieldName) = 0 then
       Order.qr_code := FieldValue;
