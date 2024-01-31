@@ -197,7 +197,9 @@ begin
 
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
-  FptrCheck(Driver.DirectIO2(DIO_SET_RECEIPT_QRCODE, 0, receipt_qr_code));
+  //FptrCheck(Driver.DirectIO2(DIO_SET_RECEIPT_QRCODE, 0, receipt_qr_code));
+  FptrCheck(Driver.DirectIO2(DIO_SET_RECEIPT_JSON_FIELD, 0, 'qr_code;' + receipt_qr_code));
+
 
   FptrCheck(Driver.DirectIO2(30, 80, '4780000000007'));
   FptrCheck(Driver.DirectIO2(DIO_ADD_ITEM_CODE, 0, Barcode));

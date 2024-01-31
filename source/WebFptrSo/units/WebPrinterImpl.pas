@@ -2136,7 +2136,7 @@ begin
       Order.qr_code := FieldValue;
 
     if AnsiCompareText('number', FieldName) = 0 then
-      Order.qr_code := FieldValue;
+      Order.number := StrToInt(FieldValue);
 
     if AnsiCompareText('receipt_type', FieldName) = 0 then
       Order.receipt_type := FieldValue;
@@ -2216,6 +2216,7 @@ begin
 	  Order.Send_email := Receipt.CustomerEmail <> '';
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;
+    Order.qr_code := Receipt.QrCode;
     // Items
     for i := 0 to Receipt.Items.Count-1 do
     begin
@@ -2254,7 +2255,6 @@ begin
       FPrinter.CreateOrder(Order);
     end else
     begin
-      Order.qr_code := Receipt.QrCode;
       FPrinter.ReturnOrder(Order);
     end;
   finally
