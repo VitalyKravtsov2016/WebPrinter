@@ -69,6 +69,7 @@ type
     function CreateReceipt(FiscalReceiptType: Integer): TCustomReceipt;
     function GetQuantity(Value: Integer): Double;
 
+    property Printer: TWebPrinter read FPrinter;
     property Receipt: TCustomReceipt read FReceipt;
     property PrinterState: Integer read GetPrinterState write SetPrinterState;
   private
@@ -2033,14 +2034,17 @@ begin
       FParams.CheckPrameters;
       FPrinter.Connect;
 
-      FDayOpened := FPrinter.ReadZReport.result.data.open_time <> '';
-      PrinterTime := WPStrToDateTime(FPrinter.Info.Data.current_time);
-      FTimeDiff := PrinterTime - Now;
+      if not TestMode then
+      begin
+        FDayOpened := FPrinter.ReadZReport.result.data.open_time <> '';
+        PrinterTime := WPStrToDateTime(FPrinter.Info.Data.current_time);
+        FTimeDiff := PrinterTime - Now;
 
-      FOposDevice.PhysicalDeviceDescription := FOposDevice.PhysicalDeviceName +
-        Format(' terminal_id: %s, applet_version: %s, version_code: %s',
-        [FPrinter.Info.Data.terminal_id, FPrinter.Info.Data.applet_version,
-        FPrinter.Info.Data.version_code]);
+        FOposDevice.PhysicalDeviceDescription := FOposDevice.PhysicalDeviceName +
+          Format(' terminal_id: %s, applet_version: %s, version_code: %s',
+          [FPrinter.Info.Data.terminal_id, FPrinter.Info.Data.applet_version,
+          FPrinter.Info.Data.version_code]);
+      end;
     end else
     begin
       FPrinter.Disconnect;
@@ -2229,6 +2233,7 @@ begin
         Product.Amount := Round2(Item.Quantity * 1000);
         Product.Barcode := Item.Barcode;
         Product.Units := GetUnitCode(Item.UnitName);
+        Product.unit_name := Item.UnitName;
         Product.Price := Round2(Item.Price * 100);
         Product.Product_price := Round2(Item.UnitPrice * 100);
 

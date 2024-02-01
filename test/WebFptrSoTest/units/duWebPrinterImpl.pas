@@ -13,7 +13,7 @@ uses
   TestFramework,
   // This
   LogFile, FileUtils, WebPrinter, WebPrinterImpl, DriverError, JsonUtils,
-  DirectIOAPI;
+  DirectIOAPI, uLkJSON;
 
 type
   { TWebPrinterTest }
@@ -45,6 +45,8 @@ implementation
 procedure TWebPrinterImplTest.Setup;
 begin
   FDriver := TWebPrinterImpl.Create(nil);
+  FDriver.TestMode := True;
+  FDriver.Printer.TestMode := True;
   FDriver.Params.WebprinterAddress := 'http://fbox.ngrok.io'; // 8080 или 80
   FDriver.Params.LogFileEnabled := True;
   FDriver.Params.LogMaxCount := 10;
@@ -233,6 +235,9 @@ end;
 procedure TWebPrinterImplTest.TestRefundReceipt2;
 const
   receipt_qr_code = 'https://ofd.soliq.uz/check?t=UZ191211501001&r=1447&c=20220309125810&s=461313663448';
+var
+  Json: TlkJSONbase;
+  Item: TlkJSONbase;
 begin
   OpenClaimEnable;
   Driver.SetPOSID('POS1', 'Cahier 1');
@@ -258,7 +263,32 @@ begin
 
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+
+  Check(Driver.Printer.RequestJson <> '');
+  Json := TlkJSON.ParseText(Driver.Printer.RequestJson);
+  try
+    Check(Json <> nil, 'Json = nil');
+    CheckEquals(11, Json.Count, 'Json.Count');
+    CheckEquals('1', Json.Field['number'].Value, 'number');
+    CheckEquals('order', Json.Field['receipt_type'].Value, 'receipt_type');
+    CheckEquals('Cahier 1', Json.Field['cashier'].Value, 'cashier');
+    CheckEquals(6000, Json.Field['received_cash'].Value, 'received_cash');
+    CheckEquals(9000, Json.Field['change'].Value, 'change');
+    CheckEquals(3000, Json.Field['received_card'].Value, 'received_card');
+    CheckEquals(1, Json.Field['products'].Count, 'products');
+    Item := Json.Field['products'].Child[0];
+    CheckEquals('4780000000007', Item.Field['barcode'].Value, 'barcode');
+    CheckEquals('"Item 1"'#10#13, Item.Field['name'].Value, 'name');
+    CheckEquals(1000, Item.Field['amount'].Value, 'amount');
+    CheckEquals('', Item.Field['unit_name'].Value, 'unit_name');
+    CheckEquals(WP_UNIT_PEACE, Item.Field['units'].Value, 'units');
+
+  finally
+    Json.Free;
+  end;
 end;
+
 
 initialization
   RegisterTest('', TWebPrinterImplTest.Suite);

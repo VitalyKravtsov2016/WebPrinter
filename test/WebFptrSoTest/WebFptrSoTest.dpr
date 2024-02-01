@@ -51,8 +51,8 @@ uses
   CashOutReceipt in '..\..\source\WebFptrSo\units\CashOutReceipt.pas',
   SalesReceipt in '..\..\source\WebFptrSo\units\SalesReceipt.pas',
   TextDocument in '..\..\source\WebFptrSo\units\TextDocument.pas',
-  WebFptrSO_TLB in '..\..\source\WebFptrSo\WebFptrSO_TLB.pas';
-
+  WebFptrSO_TLB in '..\..\source\WebFptrSo\WebFptrSO_TLB.pas',
+  duWebPrinterImpl in 'units\duWebPrinterImpl.pas';
 
 {$R *.RES}
 

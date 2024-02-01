@@ -210,6 +210,7 @@ type
     Fbarcode: WideString;
     Famount: Int64;
     Funits: Integer;
+    Funit_name: WideString;
     Fprice: Int64;
     Fproduct_price: Int64;
     Fvat: Int64;
@@ -232,6 +233,7 @@ type
     property barcode: WideString read Fbarcode write Fbarcode;
     property amount: Int64 read Famount write Famount;
     property units: Integer read Funits write Funits;
+    property unit_name: WideString read Funit_name write Funit_name;
     property price: Int64 read Fprice write Fprice;
     property product_price: Int64 read Fproduct_price write Fproduct_price;
     property vat: Int64 read Fvat write Fvat;
@@ -744,13 +746,20 @@ var
   Year, Month, Day: Word;
   Hour, Min, Sec: Word;
 begin
-  Year := StrToInt(Copy(S, 1, 4));
-  Month := StrToInt(Copy(S, 6, 2));
-  Day := StrToInt(Copy(S, 9, 2));
-  Hour := StrToInt(Copy(S, 12, 2));
-  Min := StrToInt(Copy(S, 15, 2));
-  Sec := StrToInt(Copy(S, 18, 2));
-  Result := EncodeDate(Year, Month, Day) + EncodeTime(Hour, Min, Sec, 0);
+  if Length(S) < 19 then
+    raise Exception.Create('Invalid date format');
+
+  try
+    Year := StrToInt(Copy(S, 1, 4));
+    Month := StrToInt(Copy(S, 6, 2));
+    Day := StrToInt(Copy(S, 9, 2));
+    Hour := StrToInt(Copy(S, 12, 2));
+    Min := StrToInt(Copy(S, 15, 2));
+    Sec := StrToInt(Copy(S, 18, 2));
+    Result := EncodeDate(Year, Month, Day) + EncodeTime(Hour, Min, Sec, 0);
+  except
+    raise Exception.Create('Invalid date format');
+  end;
 end;
 
 { TWPResult }
