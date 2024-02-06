@@ -162,9 +162,9 @@ type
 
   TItemAdjustment = class(TAdjustment);
 
-  { TRecTexItem }
+  { TRecTextItem }
 
-  TRecTexItem = class(TReceiptItem)
+  TRecTextItem = class(TReceiptItem)
   private
     FStyle: Integer;
     FText: WideString;

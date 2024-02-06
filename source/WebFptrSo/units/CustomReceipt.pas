@@ -18,8 +18,6 @@ type
     FIsOpened: Boolean;
     FIsVoided: Boolean;
     FLines: TTntStrings;
-    FTrailer: TTntStrings;
-    FAfterTotal: Boolean;
     FFiscalSign: WideString;
     FCustomerINN: WideString;
     FCustomerEmail: WideString;
@@ -126,8 +124,6 @@ type
     procedure SetClassCode(const AClassCode: string); virtual;
 
     property Lines: TTntStrings read FLines;
-    property Trailer: TTntStrings read FTrailer;
-    property AfterTotal: Boolean read FAfterTotal;
     property FiscalSign: WideString read FFiscalSign write FFiscalSign;
     property Barcode: WideString read FBarcode write FBarcode;
     property PackageCode: Integer read FPackageCode write FPackageCode;
@@ -154,13 +150,11 @@ constructor TCustomReceipt.Create;
 begin
   inherited Create;
   FLines := TTntStringList.Create;
-  FTrailer := TTntStringList.Create;
 end;
 
 destructor TCustomReceipt.Destroy;
 begin
   FLines.Free;
-  FTrailer.Free;
   inherited Destroy;
 end;
 
@@ -312,13 +306,7 @@ end;
 
 procedure TCustomReceipt.PrintRecMessage(const Message: WideString);
 begin
-  if FAfterTotal then
-  begin
-    FTrailer.Add(Message);
-  end else
-  begin
-    FLines.Add(Message);
-  end;
+  FLines.Add(Message);
 end;
 
 procedure TCustomReceipt.Print(AVisitor: TObject);

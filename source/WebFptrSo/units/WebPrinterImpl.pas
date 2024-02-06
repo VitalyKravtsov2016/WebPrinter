@@ -2236,7 +2236,9 @@ var
   i: Integer;
   Order: TWPOrder;
   VatRate: Double;
+  Banner: TWPBanner;
   Product: TWPProduct;
+  TextItem: TRecTextItem;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
 begin
@@ -2284,6 +2286,14 @@ begin
         Product.Comission_info.inn := '';
         Product.Comission_info.pinfl := '';
         UpdateRecItemFields(Product);
+      end;
+      // Banners
+      if ReceiptItem is TRecTextItem then
+      begin
+        TextItem := ReceiptItem as TRecTextItem;
+        Banner := Order.banners.Add as TWPBanner;
+        Banner._type := 'text';
+        Banner.data := TextItem.Text;
       end;
     end;
     // Apply receipt fields

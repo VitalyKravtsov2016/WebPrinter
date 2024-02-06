@@ -149,6 +149,8 @@ const
   Barcode = '0104601662000016215d>9nB'#$1D'934x0v'#$0D;
 
 procedure TWebPrinterImplTest.TestFiscalReceipt;
+var
+  Order: TWPOrder;
 begin
   OpenClaimEnable;
   Driver.SetPOSID('POS1', 'Cahier 1');
@@ -159,6 +161,7 @@ begin
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
+  FptrCheck(Driver.PrintRecMessage('Message 1'));
   FptrCheck(Driver.DirectIO2(30, 80, Barcode));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_BARCODE, 0, '4780000000007'));
   FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 10, 100, 'шт'));
@@ -173,19 +176,42 @@ begin
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 9, 4));
 
+  FptrCheck(Driver.PrintRecMessage('Message 2'));
   FptrCheck(Driver.PrintRecItem('Item 4', 100, 1000, 3, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 8, 4));
 
+  FptrCheck(Driver.PrintRecMessage('Message 3'));
   FptrCheck(Driver.PrintRecTotal(400, 150, '0'));
   FptrCheck(Driver.PrintRecTotal(400, 100, '1'));
   FptrCheck(Driver.PrintRecTotal(400, 100, '2'));
   FptrCheck(Driver.PrintRecTotal(400, 100, '3'));
+  FptrCheck(Driver.PrintRecMessage('Message 4'));
 
   CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  WriteFileData('OrderRequest3.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(4, Order.banners.Count, 'Order.banners.Count');
+    CheckEquals('text', Order.banners[0]._type, 'Order.banners[0]._type');
+    CheckEquals('text', Order.banners[1]._type, 'Order.banners[1]._type');
+    CheckEquals('text', Order.banners[2]._type, 'Order.banners[2]._type');
+    CheckEquals('text', Order.banners[3]._type, 'Order.banners[3]._type');
+    CheckEquals('Message 1', Order.banners[0].data, 'Order.banners[0].data');
+    CheckEquals('Message 2', Order.banners[1].data, 'Order.banners[1].data');
+    CheckEquals('Message 3', Order.banners[2].data, 'Order.banners[2].data');
+    CheckEquals('Message 4', Order.banners[3].data, 'Order.banners[3].data');
+
+  finally
+    Order.Free;
+  end;
 end;
 
 procedure TWebPrinterImplTest.TestRefundReceipt;

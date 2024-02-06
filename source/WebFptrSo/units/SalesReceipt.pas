@@ -638,7 +638,6 @@ begin
   CheckAmount(Total);
   CheckAmount(Payment);
 
-  FAfterTotal := True;
   Index := StrToIntDef(Description, 0);
   if Index <> 0 then
   begin
@@ -651,17 +650,11 @@ end;
 
 procedure TSalesReceipt.PrintRecMessage(const Message: WideString);
 var
-  Item: TRecTexItem;
+  Item: TRecTextItem;
 begin
-  if FAfterTotal then
-  begin
-    FTrailer.Add(Message);
-  end else
-  begin
-    Item := TRecTexItem.Create(FItems);
-    Item.Text := Message;
-    Item.Style := STYLE_NORMAL;
-  end;
+  Item := TRecTextItem.Create(FItems);
+  Item.Text := Message;
+  Item.Style := STYLE_NORMAL;
 end;
 
 procedure TSalesReceipt.AddMarkCode(const MarkCode: string);

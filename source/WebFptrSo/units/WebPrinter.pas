@@ -228,6 +228,7 @@ type
   public
     constructor Create(Collection: TJsonCollection); override;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property name: WideString read Fname write Fname;
     property barcode: WideString read Fbarcode write Fbarcode;
@@ -304,6 +305,8 @@ type
   private
     F_type: WideString;
     Fdata: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property _type: WideString read F_type write F_type;
     property data: WideString read Fdata write Fdata;
@@ -326,6 +329,8 @@ type
     Fprice: Integer;
     Fvat_type: WideString;
     Fvat_price: Integer;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property name: WideString read Fname write Fname;
     property price: Integer read Fprice write Fprice;
@@ -460,6 +465,8 @@ type
   private
     FPrice: Int64;
     FName: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property name: WideString read FName write FName;
     property price: Int64 read FPrice write FPrice;
@@ -877,6 +884,34 @@ begin
   FLabels.Free;
   FComission_info.Free;
   inherited Destroy;
+end;
+
+procedure TWPProduct.Assign(Source: TPersistent);
+var
+  Src: TWPProduct;
+begin
+  if Source is TWPProduct then
+  begin
+    Src := Source as TWPProduct;
+
+    name := Src.name;
+    barcode := Src.barcode;
+    amount := Src.amount;
+    units := Src.units;
+    unit_name := Src.unit_name;
+    price := Src.price;
+    product_price := Src.product_price;
+    vat := Src.vat;
+    vat_percent := Src.vat_percent;
+    discount := Src.discount;
+    discount_percent := Src.discount_percent;
+    other := Src.other;
+    labels.Assign(Src.labels);
+    class_code := Src.class_code;
+    package_code := Src.package_code;
+    owner_type := Src.owner_type;
+    comission_info.Assign(Src.comission_info);
+  end;
 end;
 
 procedure TWPProduct.Setcomission_info(const Value: TWPComissionInfo);
@@ -1573,6 +1608,51 @@ begin
   FCode := 0;
   FData := '';
   FMessage := '';
+end;
+
+{ TWPBanner }
+
+procedure TWPBanner.Assign(Source: TPersistent);
+var
+  src: TWPBanner;
+begin
+  if Source is TWPBanner then
+  begin
+    src := Source as TWPBanner;
+    _type := src._type;
+    data := src.data;
+  end;
+end;
+
+{ TWPPrice }
+
+procedure TWPPrice.Assign(Source: TPersistent);
+var
+  src: TWPPrice;
+begin
+  if Source is TWPPrice then
+  begin
+    src := Source as TWPPrice;
+    name := src.name;
+    price := src.price;
+    vat_type := src.vat_type;
+    vat_price := src.vat_price;
+  end;
+end;
+
+{ TWPCurrency }
+
+procedure TWPCurrency.Assign(Source: TPersistent);
+var
+  src: TWPCurrency;
+begin
+  if Source is TWPCurrency then
+  begin
+    src := Source as TWPCurrency;
+
+    name := src.name;
+    price := src.price;
+  end;
 end;
 
 end.
