@@ -147,6 +147,9 @@ const
   Barcode = '0104601662000016215d>9nB'#$1D'934x0v'#$0D;
 
 procedure TWebPrinterImplTest.TestFiscalReceipt;
+var
+  pData: Integer;
+  pString: WideString;
 begin
   OpenClaimEnable;
   Driver.SetPOSID('POS1', 'Cahier 1');
@@ -184,6 +187,16 @@ begin
 
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  pData := 0;
+  pString := '';
+  FptrCheck(Driver.GetData(FPTR_GD_GRAND_TOTAL, pData, pString));
+  checkEquals(6300, StrToInt(pString), 'FPTR_GD_GRAND_TOTAL');
+
+  pData := 0;
+  pString := '';
+  FptrCheck(Driver.GetData(FPTR_GD_RECEIPT_NUMBER, pData, pString));
+  checkEquals(1, StrToInt(pString), 'FPTR_GD_RECEIPT_NUMBER');
 end;
 
 procedure TWebPrinterImplTest.TestRefundReceipt;

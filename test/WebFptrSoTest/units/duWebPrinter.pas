@@ -26,6 +26,7 @@ type
     procedure CheckReturnOrder;
   published
     procedure CheckInfoCommand;
+    procedure CheckInfoCommand2;
     procedure CheckOpenFiscalDay;
     procedure CheckOpenFiscalDayError;
     procedure CheckCloseFiscalDay;
@@ -96,6 +97,30 @@ begin
   end;
 end;
 
+procedure TWebPrinterTest.CheckInfoCommand2;
+var
+  Data: TWPInfoResponse;
+begin
+  FPrinter.TestMode := True;
+  FPrinter.ResponseJson := ReadFileData('infoResponse2.json');
+  Data := FPrinter.ReadInfo2.Data;
+
+  CheckEquals(Data.terminal_id, 'UZ191211501050', 'terminal_id');
+  CheckEquals(Data.applet_version, '0302', 'applet_version');
+  CheckEquals(Data.current_receipt_seq, '281', 'current_receipt_seq');
+  CheckEquals(Data.current_time, '2024-02-05 14:34:33', 'current_time');
+  CheckEquals(Data.last_operation_time, '2023-08-04 10:21:52', 'last_operation_time');
+  CheckEquals(Data.receipt_count, 0, 'receipt_count');
+  CheckEquals(Data.receipt_max_count, 858, 'receipt_max_count');
+  CheckEquals(Data.zreport_count, 32, 'zreport_count');
+  CheckEquals(Data.zreport_max_count, 832, 'zreport_max_count');
+  CheckEquals(Data.available_persistent_memory, 32767, 'available_persistent_memory');
+  CheckEquals(Data.available_reset_memory, 8918, 'available_reset_memory');
+  CheckEquals(Data.available_deselect_memory, 8918, 'available_deselect_memory');
+  CheckEquals(Data.cashbox_number, 0, 'cashbox_number');
+  CheckEquals(Data.version_code, '1.15.24', 'version_code');
+  CheckEquals(Data.is_updated, false, 'is_updated');
+end;
 
 procedure TWebPrinterTest.CheckOpenFiscalDay;
 var

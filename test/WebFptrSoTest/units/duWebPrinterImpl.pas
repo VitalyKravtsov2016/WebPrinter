@@ -264,9 +264,8 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-
-  Check(Driver.Printer.RequestJson <> '');
-  Json := TlkJSON.ParseText(Driver.Printer.RequestJson);
+  Check(Driver.Printer.CreateOrderResponse.RequestJson <> '');
+  Json := TlkJSON.ParseText(Driver.Printer.CreateOrderResponse.RequestJson);
   try
     Check(Json <> nil, 'Json = nil');
     CheckEquals(11, Json.Count, 'Json.Count');
@@ -281,9 +280,8 @@ begin
     CheckEquals('4780000000007', Item.Field['barcode'].Value, 'barcode');
     CheckEquals('"Item 1"'#10#13, Item.Field['name'].Value, 'name');
     CheckEquals(1000, Item.Field['amount'].Value, 'amount');
-    CheckEquals('', Item.Field['unit_name'].Value, 'unit_name');
+    CheckEquals('רע', Item.Field['unit_name'].Value, 'unit_name');
     CheckEquals(WP_UNIT_PEACE, Item.Field['units'].Value, 'units');
-
   finally
     Json.Free;
   end;

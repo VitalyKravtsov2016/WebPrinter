@@ -40,7 +40,6 @@ type
     FPOSID: WideString;
     FTimeDiff: TDateTime;
     FCashierID: WideString;
-    FCheckNumber: WideString;
     FLoadParamsEnabled: Boolean;
     FReceiptFields: TTntStrings;
     FRecItemFields: TTntStrings;
@@ -49,6 +48,7 @@ type
     procedure OpenFiscalDay;
     procedure UpdateRecItemFields(Product: TWPProduct);
     procedure UpdateReceiptFields(Order: TWPOrder);
+    procedure UpdateZReport;
   public
     function AmountToStr(Value: Currency): AnsiString;
     function AmountToOutStr(Value: Currency): AnsiString;
@@ -933,6 +933,9 @@ end;
 
 function TWebPrinterImpl.GetData(DataItem: Integer; out OptArgs: Integer;
   out Data: WideString): Integer;
+var
+  Amount: Currency;
+  DayResult: TWPDayResult;
 begin
   try
     case DataItem of
@@ -940,10 +943,20 @@ begin
       FPTR_GD_PRINTER_ID: Data := FPrinter.Info.Data.terminal_id;
       FPTR_GD_CURRENT_TOTAL: Data := AmountToOutStr(Receipt.GetTotal());
       FPTR_GD_DAILY_TOTAL: Data := AmountToOutStr(0);
-      FPTR_GD_GRAND_TOTAL: Data := AmountToOutStr(0);
+      FPTR_GD_GRAND_TOTAL:
+      begin
+        DayResult := FPrinter.CloseDayResponse2.result.data;
+        Amount := DayResult.total_sale_cash/100 - DayResult.total_refund_cash/100;
+        Data := AmountToOutStr(Amount);
+      end;
+
       FPTR_GD_MID_VOID: Data := AmountToOutStr(0);
       FPTR_GD_NOT_PAID: Data := AmountToOutStr(0);
-      FPTR_GD_RECEIPT_NUMBER: Data := FCheckNumber;
+      FPTR_GD_RECEIPT_NUMBER:
+      begin
+        DayResult := FPrinter.CloseDayResponse2.result.data;
+        Data := IntToStr(DayResult.total_sale_count);
+      end;
       FPTR_GD_REFUND: Data := AmountToOutStr(0);
       FPTR_GD_REFUND_VOID: Data := AmountToOutStr(0);
       FPTR_GD_Z_REPORT: Data := IntToStr(FPrinter.Info.Data.zreport_count);
@@ -1657,6 +1670,7 @@ begin
     Request.close_zreport := True;
     Request.name := 'Z ÎÒ×¨Ò';
     FPrinter.PrintZReport(Request);
+    UpdateZReport;
     FDayOpened := False;
     Result := ClearResult;
   except
@@ -1664,6 +1678,25 @@ begin
       Result := HandleException(E);
   end;
   Request.Free;
+end;
+
+procedure TWebPrinterImpl.UpdateZReport;
+var
+  RequestJson: WideString;
+  ResponseJson: WideString;
+begin
+  RequestJson := FPrinter.RequestJson;
+  ResponseJson := FPrinter.ResponseJson;
+  try
+    FPrinter.ReadZReport;
+  except
+    on E: Exception do
+    begin
+      Logger.Error(E.Message);
+    end;
+  end;
+  FPrinter.RequestJson := RequestJson;
+  FPrinter.ResponseJson := ResponseJson;
 end;
 
 function TWebPrinterImpl.Release1: Integer;
@@ -2262,6 +2295,7 @@ begin
     begin
       FPrinter.ReturnOrder(Order);
     end;
+    UpdateZReport;
   finally
     Order.Free;
   end;

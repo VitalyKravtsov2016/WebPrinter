@@ -1520,7 +1520,7 @@ begin
   JsonText := ObjectToJson(Request);
   FCreateOrderResponse.RequestJson := JsonText;
   JsonText := PostJson(GetAddress + '/order/create/', JsonText);
-  FCreateOrderResponse.RequestJson := JsonText;
+  FCreateOrderResponse.ResponseJson := JsonText;
   JsonToObject(JsonText, FCreateOrderResponse);
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;
@@ -1542,7 +1542,7 @@ begin
   JsonText := ObjectToJson(Request);
   FCreateOrderResponse.RequestJson := JsonText;
   JsonText := PostJson(GetAddress + '/order/refuse/', JsonText);
-  FCreateOrderResponse.RequestJson := JsonText;
+  FCreateOrderResponse.ResponseJson := JsonText;
   JsonToObject(JsonText, FCreateOrderResponse);
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;

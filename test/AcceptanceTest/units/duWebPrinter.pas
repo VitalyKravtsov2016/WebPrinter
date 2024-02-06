@@ -147,9 +147,10 @@ var
   Request: TWPCloseDayRequest;
   Response: TWPCloseDayResponse;
 begin
+  FPrinter.ReadInfo2;
   Request := TWPCloseDayRequest.Create;
   try
-    Request.Time := Now;
+    Request.Time := WPStrToDateTime(FPrinter.Info.Data.current_time);
     Request.close_zreport := True;
     Request.name := 'X מעקוע';
     Response := FPrinter.PrintZReport(Request);
@@ -164,9 +165,23 @@ var
   Response: TWPCloseDayResponse;
 begin
   Response := FPrinter.ReadZReport.Result;
+  if Response.data.open_time <> '' then
+  begin
+    CheckPrintZReport;
+    Response := FPrinter.ReadZReport.Result;
+  end;
+
   CheckEquals(True, Response.is_success, 'is_success');
   CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
   CheckEquals('UZ170703100597', Response.data.terminal_id, 'data.terminal_id');
+  CheckEquals(0, Response.data.total_refund_vat, 'total_refund_vat');
+  CheckEquals(0, Response.data.total_refund_card, 'total_refund_card');
+  CheckEquals(0, Response.data.total_refund_cash, 'total_refund_cash');
+  CheckEquals(0, Response.data.total_refund_count, 'total_refund_count');
+  CheckEquals(0, Response.data.total_sale_vat, 'total_sale_vat');
+  CheckEquals(0, Response.data.total_sale_card, 'total_sale_card');
+  CheckEquals(0, Response.data.total_sale_cash, 'total_sale_cash');
+  CheckEquals(0, Response.data.total_sale_count, 'total_sale_count');
 end;
 
 procedure TWebPrinterTest2.CheckOpenCashDrawer;

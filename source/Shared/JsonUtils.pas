@@ -751,7 +751,7 @@ begin
           't': Result := Result + #9;
           'u':
             begin
-              Result := Result + code2utf(strtoint('$' + copy(s, j + 1, 4)));
+              Result := Result + code2utf(StrToIntDef('$' + copy(s, j + 1, 4), 0));
               inc(j, 4);
             end;
         end;
@@ -1097,7 +1097,7 @@ begin
   PropType := PPropInfo(PropInfo)^.PropType^;
   case PropType^.Kind of
     tkInteger:
-      SetOrdProp(Instance, PropInfo, StrToInt(ReadWideString));
+      SetOrdProp(Instance, PropInfo, StrToIntDef(ReadWideString, 0));
     tkChar:
       SetOrdProp(Instance, PropInfo, Ord(ReadWideString[1]));
     tkEnumeration:
@@ -1111,7 +1111,7 @@ begin
     //tkSet:
      // SetOrdProp(Instance, PropInfo, ReadSet(PropType));
     tkInt64:
-      SetInt64Prop(Instance, PropInfo, StrToInt64(ReadWideString));
+      SetInt64Prop(Instance, PropInfo, StrToInt64Def(ReadWideString, 0));
     tkClass:
     begin
       Item := TObject(GetOrdProp(Instance, PropInfo));

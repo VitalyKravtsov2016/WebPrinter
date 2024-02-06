@@ -1,0 +1,21 @@
+{
+	"data": {
+		"terminal_id": "UZ191211501050",
+		"applet_version": "0302",
+		"current_receipt_seq": "281",
+		"current_time": "2024-02-05 14:34:33",
+		"last_operation_time": "2023-08-04 10:21:52",
+		"receipt_count": 0,
+		"receipt_max_count": 858,
+		"zreport_count": 32,
+		"zreport_max_count": 832,
+		"available_persistent_memory": 32767,
+		"available_reset_memory": 8918,
+		"available_deselect_memory": 8918,
+		"cashbox_number": "",
+		"version_code": "1.15.24",
+		"is_updated": false
+	},
+	"error": null,
+	"is_success": true
+}
