@@ -597,7 +597,9 @@ var
   I, Count: Integer;
   PropInfo: PPropInfo;
   PropList: PPropList;
+  NeedComma: Boolean;
 begin
+  NeedComma := False;
   Count := GetTypeData(Instance.ClassInfo)^.PropCount;
   if Count > 0 then
   begin
@@ -612,15 +614,15 @@ begin
 
         if IsStoredProp(Instance, PropInfo) then
         begin
+          if IsValidProperty(Instance, PropInfo) and NeedComma then
+          begin
+            WriteStr(',' + CRLF);
+            NeedComma := False;
+          end;
+
           if (WriteProperty(Instance, PropInfo, Prefix)) then
           begin
-            if (i <> (Count-1)) then
-            begin
-              if IsValidProperty(Instance, PropList^[I+1]) then
-              begin
-                WriteStr(',' + CRLF);
-              end;
-            end;
+            NeedComma := True;
           end;
           if (i = (Count-1)) then
           begin

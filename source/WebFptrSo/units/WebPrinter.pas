@@ -91,6 +91,7 @@ type
     FData: WideString;
   public
     procedure Clear;
+    procedure Assign(Source: TPersistent); override;
   published
     property code: Integer read FCode write FCode;
     property message: WideString read FMessage write FMessage;
@@ -107,6 +108,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property error: TWPError read FError write SetError;
     property is_success: Boolean read Fis_success write Fis_success;
@@ -121,6 +123,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property result: TWPResponse read Fresult write SetResult;
   end;
@@ -144,6 +147,8 @@ type
     Fcashbox_number: Integer;               // Cashbox number
     Fversion_code: WideString;              // Version code
     Fis_updated: Boolean;                   // Is updated
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property terminal_id: WideString read Fterminal_id write Fterminal_id;
     property applet_version: WideString read Fapplet_version write Fapplet_version;
@@ -168,6 +173,8 @@ type
   private
     Fpinfl: WideString;
     Finn: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property inn: WideString read Finn write Finn;
     property pinfl: WideString read Fpinfl write Fpinfl;
@@ -179,6 +186,8 @@ type
   private
     FTime: WideString;
     FVersion: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property time: WideString read FTime write FTime;
     property applet_version: WideString read FVersion write FVersion;
@@ -196,6 +205,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property data: TWPTime read FData write SetData;
     property error: TWPError read FError write SetError;
@@ -374,6 +384,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
     function IsRequiredField(const Field: WideString): Boolean; override;
   published
     property qr_code: WideString read Fqr_code write Fqr_code;
@@ -404,6 +415,8 @@ type
     FDateTime: WideString;
     FAppletVersion: WideString;
     FCashBoxNumber: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property terminal_id: WideString read FTerminalID write FTerminalID;
     property receipt_count: Integer read FReceiptCount write FReceiptCount;
@@ -437,6 +450,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property data: TWPCreateOrderResult read FData write SetData;
     property error: TWPError read FError write SetError;
@@ -454,6 +468,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property Error: TWPError read FError write SetError;
     property Data: TWPInfoResponse read FData write SetData;
@@ -493,6 +508,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
     property Time: TDateTime read FTime write FTime;
   published
     property name: WideString read Fname write Fname;
@@ -520,6 +536,8 @@ type
     Fterminal_id: WideString;
     Fopen_time: WideString;
     Fclose_time: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property applet_version: WideString read Fapplet_version write Fapplet_version;
     property terminal_id: WideString read Fterminal_id write Fterminal_id;
@@ -552,6 +570,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property data: TWPDayResult read FData write SetData;
     property error: TWPError read FError write SetError;
@@ -567,6 +586,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property result: TWPCloseDayResponse read Fresult write SetResult;
   end;
@@ -577,6 +597,8 @@ type
   private
     FAmount: Int64;
     FQRCode: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property amount: Int64 read FAmount write FAmount;
     property qr_code: WideString read FQRCode write FQRCode;
@@ -596,6 +618,8 @@ type
     FInn: WideString;
     FQRCode: WideString;
     FKKMID: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property amount: Int64 read FAmount write FAmount;
     property transaction_id: WideString read FTransactionID write FTransactionID;
@@ -621,6 +645,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property error: TWPError read FError write SetError;
     property data: TWPPaymentResult read FData write SetData;
@@ -633,6 +658,8 @@ type
   private
     FQRCode: WideString;
     FPaymentID: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property qr_code: WideString read FQRCode write FQRCode;
     property payment_id: WideString read FPaymentID write FPaymentID;
@@ -646,6 +673,8 @@ type
     FStatus: WideString;
     Finn: WideString;
     FQRCode: WideString;
+  public
+    procedure Assign(Source: TPersistent); override;
   published
     property inn: WideString read Finn write Finn;
     property payment_id: WideString read FPaymentID write FPaymentID;
@@ -665,6 +694,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
   published
     property error: TWPError read FError write SetError;
     property is_success: Boolean read FSuccess write FSuccess;
@@ -771,6 +801,17 @@ end;
 
 { TWPResult }
 
+procedure TWPResult.Assign(Source: TPersistent);
+var
+  src: TWPResult;
+begin
+  if source is TWPResult then
+  begin
+    src := source as TWPResult;
+    result := src.result;
+  end;
+end;
+
 constructor TWPResult.Create;
 begin
   inherited Create;
@@ -815,7 +856,47 @@ begin
   FError.Assign(Value);
 end;
 
+procedure TWPInfoCommand.Assign(Source: TPersistent);
+var
+  src: TWPInfoCommand;
+begin
+  if source is TWPInfoCommand then
+  begin
+    src := source as TWPInfoCommand;
+
+    Error := src.Error;
+    Data := src.Data;
+  end;
+end;
+
+
 { TWPOrder }
+
+procedure TWPOrder.Assign(Source: TPersistent);
+var
+  src: TWPOrder;
+begin
+  if source is TWPOrder then
+  begin
+    src := source as TWPOrder;
+
+    qr_code := src.qr_code;
+	  number := src.number;
+	  receipt_type := src.receipt_type;
+	  products := src.products;
+	  time := src.time;
+	  cashier := src.cashier;
+	  received_cash := src.received_cash;
+	  change := src.change;
+	  received_card := src.received_card;
+	  open_cashbox := src.open_cashbox;
+	  send_email := src.send_email;
+	  email := src.email;
+	  banners := src.banners;
+	  prices := src.prices;
+	  sms_phone_number := src.sms_phone_number;
+  end;
+end;
 
 constructor TWPOrder.Create;
 begin
@@ -906,11 +987,11 @@ begin
     discount := Src.discount;
     discount_percent := Src.discount_percent;
     other := Src.other;
-    labels.Assign(Src.labels);
+    labels := Src.labels;
     class_code := Src.class_code;
     package_code := Src.package_code;
     owner_type := Src.owner_type;
-    comission_info.Assign(Src.comission_info);
+    comission_info := Src.comission_info;
   end;
 end;
 
@@ -961,6 +1042,20 @@ begin
   inherited Destroy;
 end;
 
+procedure TWPOpenDayResponse.Assign(Source: TPersistent);
+var
+  src: TWPOpenDayResponse;
+begin
+  if source is TWPOpenDayResponse then
+  begin
+    src := source as TWPOpenDayResponse;
+
+    data := src.data;
+    error := src.error;
+    is_success := src.is_success;
+  end;
+end;
+
 procedure TWPOpenDayResponse.SetData(const Value: TWPTime);
 begin
   FData.Assign(Value);
@@ -972,6 +1067,14 @@ begin
 end;
 
 { TWPCloseDayResponse2 }
+
+procedure TWPCloseDayResponse2.Assign(Source: TPersistent);
+begin
+  if source is TWPCloseDayResponse2 then
+  begin
+    result := (source as TWPCloseDayResponse2).result;
+  end;
+end;
 
 constructor TWPCloseDayResponse2.Create;
 begin
@@ -1009,6 +1112,19 @@ begin
   FPrices.Assign(Value);
 end;
 
+procedure TWPCloseDayRequest.Assign(Source: TPersistent);
+var
+  src: TWPCloseDayRequest;
+begin
+  if source is TWPCloseDayRequest then
+  begin
+    src := source as TWPCloseDayRequest;
+    name := src.name;
+    prices := src.prices;
+    close_zreport := src.close_zreport;
+  end;
+end;
+
 { TWPCurrencies }
 
 function TWPCurrencies.GetItem(Index: Integer): TWPCurrency;
@@ -1042,7 +1158,34 @@ begin
   FError.Assign(Value);
 end;
 
+procedure TWPCloseDayResponse.Assign(Source: TPersistent);
+var
+  src: TWPCloseDayResponse;
+begin
+  if source is TWPCloseDayResponse then
+  begin
+    src := source as TWPCloseDayResponse;
+
+    data := src.data;
+    error := src.error;
+    is_success := src.is_success;
+  end;
+end;
+
 { TWPResponse }
+
+procedure TWPResponse.Assign(Source: TPersistent);
+var
+  src: TWPResponse;
+begin
+  if Source is TWPResponse then
+  begin
+    src := Source as TWPResponse;
+
+    error := src.error;
+    is_success := src.is_success;
+  end;
+end;
 
 constructor TWPResponse.Create;
 begin
@@ -1062,6 +1205,20 @@ begin
 end;
 
 { TWPPaymentResponse }
+
+procedure TWPPaymentResponse.Assign(Source: TPersistent);
+var
+  src: TWPPaymentResponse;
+begin
+  if source is TWPPaymentResponse then
+  begin
+    src := source as TWPPaymentResponse;
+
+    error := src.error;
+    data := src.data;
+    is_success := src.is_success;
+  end;
+end;
 
 constructor TWPPaymentResponse.Create;
 begin
@@ -1114,6 +1271,20 @@ begin
   FError.Assign(Value);
 end;
 
+procedure TWPPaymentConfirmResponse.Assign(Source: TPersistent);
+var
+  src: TWPPaymentConfirmResponse;
+begin
+  if source is TWPPaymentConfirmResponse then
+  begin
+    src := source as TWPPaymentConfirmResponse;
+
+    error := src.error;
+    is_success := src.is_success;
+    data := src.data;
+  end;
+end;
+
 { TWPCreateOrderResponse }
 
 constructor TWPCreateOrderResponse.Create;
@@ -1128,6 +1299,20 @@ begin
   FData.Free;
   FError.Free;
   inherited Destroy;
+end;
+
+procedure TWPCreateOrderResponse.Assign(Source: TPersistent);
+var
+  src: TWPCreateOrderResponse;
+begin
+  if source is TWPCreateOrderResponse then
+  begin
+    src := source as TWPCreateOrderResponse;
+
+    data := src.data;
+    error := src.error;
+    is_success := src.is_success;
+  end;
 end;
 
 procedure TWPCreateOrderResponse.SetData(
@@ -1603,6 +1788,20 @@ end;
 
 { TWPError }
 
+procedure TWPError.Assign(Source: TPersistent);
+var
+  src: TWPError;
+begin
+  if source is TWPError then
+  begin
+    src := source as TWPError;
+
+    code := src.code;
+    data := src.data;
+    message := src.message;
+  end;
+end;
+
 procedure TWPError.Clear;
 begin
   FCode := 0;
@@ -1652,6 +1851,182 @@ begin
 
     name := src.name;
     price := src.price;
+  end;
+end;
+
+{ TWPInfoResponse }
+
+procedure TWPInfoResponse.Assign(Source: TPersistent);
+var
+  src: TWPInfoResponse;
+begin
+  if source is TWPInfoResponse then
+  begin
+    src := source as TWPInfoResponse;
+
+    terminal_id := src.terminal_id;
+    applet_version := src.applet_version;
+    current_receipt_seq := src.current_receipt_seq;
+    current_time := src.current_time;
+    last_operation_time := src.last_operation_time;
+    receipt_count := src.receipt_count;
+    receipt_max_count := src.receipt_max_count;
+    zreport_count := src.zreport_count;
+    zreport_max_count := src.zreport_max_count;
+    available_persistent_memory := src.available_persistent_memory;
+    available_reset_memory := src.available_reset_memory;
+    available_deselect_memory := src.available_deselect_memory;
+    cashbox_number := src.cashbox_number;
+    version_code := src.version_code;
+    is_updated := src.is_updated;
+  end;
+end;
+
+{ TWPComissionInfo }
+
+procedure TWPComissionInfo.Assign(Source: TPersistent);
+var
+  src: TWPComissionInfo;
+begin
+  if source is TWPComissionInfo then
+  begin
+    src := source as TWPComissionInfo;
+
+    inn := src.inn;
+    pinfl := src.pinfl;
+  end;
+end;
+
+{ TWPTime }
+
+procedure TWPTime.Assign(Source: TPersistent);
+var
+  Src: TWPTime;
+begin
+  if Source is TWPTime then
+  begin
+    src := Source as TWPTime;
+
+    time := src.time;
+    applet_version := src.applet_version;
+  end;
+end;
+
+{ TWPCreateOrderResult }
+
+procedure TWPCreateOrderResult.Assign(Source: TPersistent);
+var
+  src: TWPCreateOrderResult;
+begin
+  if Source is TWPCreateOrderResult then
+  begin
+    src := source as TWPCreateOrderResult;
+
+    terminal_id := src.terminal_id;
+    receipt_count := src.receipt_count;
+    date_time := src.date_time;
+    fiscal_sign := src.fiscal_sign;
+    applet_version := src.applet_version;
+    qr_url := src.qr_url;
+    cash_box_number := src.cash_box_number;
+  end;
+end;
+
+{ TWPDayResult }
+
+procedure TWPDayResult.Assign(Source: TPersistent);
+var
+  Src: TWPDayResult;
+begin
+  if source is TWPDayResult then
+  begin
+    src := source as TWPDayResult;
+
+    applet_version := src.applet_version;
+    terminal_id := src.terminal_id;
+    number := src.number;
+    count := src.count;
+    last_receipt_seq := src.last_receipt_seq;
+    first_receipt_seq := src.first_receipt_seq;
+    open_time := src.open_time;
+    close_time := src.close_time;
+    total_refund_vat := src.total_refund_vat;
+    total_refund_card := src.total_refund_card;
+    total_refund_cash := src.total_refund_cash;
+    total_refund_count := src.total_refund_count;
+    total_sale_vat := src.total_sale_vat;
+    total_sale_card := src.total_sale_card;
+    total_sale_cash := src.total_sale_cash;
+    total_sale_count := src.total_sale_count;
+  end;
+end;
+
+{ TWPPaymentRequest }
+
+procedure TWPPaymentRequest.Assign(Source: TPersistent);
+var
+  src: TWPPaymentRequest;
+begin
+  if source is TWPPaymentRequest then
+  begin
+    src := source as TWPPaymentRequest;
+
+    amount := src.amount;
+    qr_code := src.qr_code;
+  end;
+end;
+
+{ TWPPaymentResult }
+
+procedure TWPPaymentResult.Assign(Source: TPersistent);
+var
+  src: TWPPaymentResult;
+begin
+  if source is TWPPaymentResult then
+  begin
+    src := source as TWPPaymentResult;
+
+    amount := src.amount;
+    transaction_id := src.transaction_id;
+    payment_id := src.payment_id;
+    inn := src.inn;
+    qr_code := src.qr_code;
+    kkm_id := src.kkm_id;
+    device_id := src.device_id;
+    status := src.status;
+    message := src.message;
+    client_phone_number := src.client_phone_number;
+  end;
+end;
+
+{ TWPPaymentConfirmRequest }
+
+procedure TWPPaymentConfirmRequest.Assign(Source: TPersistent);
+var
+  src: TWPPaymentConfirmRequest;
+begin
+  if source is TWPPaymentConfirmRequest then
+  begin
+    src := source as TWPPaymentConfirmRequest;
+
+    qr_code := src.qr_code;
+    payment_id := src.payment_id;
+  end;
+end;
+
+{ TWPPaymentConfirmResult }
+
+procedure TWPPaymentConfirmResult.Assign(Source: TPersistent);
+var
+  src: TWPPaymentConfirmResult;
+begin
+  if source is TWPPaymentConfirmResult then
+  begin
+    src := source as TWPPaymentConfirmResult;
+    inn := src.inn;
+    payment_id := src.payment_id;
+    qr_code := src.qr_code;
+    status := src.status;
   end;
 end;
 
