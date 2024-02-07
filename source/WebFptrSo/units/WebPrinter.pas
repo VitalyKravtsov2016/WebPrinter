@@ -13,6 +13,47 @@ uses
   LogFile, JsonUtils, DriverError, uLkJSON;
 
 const
+  // ТАБЛИЦА ЗНАЧЕНИЙ, ВОЗВРАЩАЮЩАЯСЯ С ФИСКАЛЬНОГО МОДУЛЯ
+  WP_SUCCESS = $9000; // Успешно
+  WP_ERROR_RECEIPT_COUNT_ZERO = $9006; // Количество чеков равно нулю
+  WP_ERROR_RECEIPT_INDEX_OUT_OF_BOUNDS = $9007; // Номер чека не правильный
+  WP_ERROR_RECEIPT_NOT_FOUND = $9008; // Чек не найден
+  WP_ERROR_DATA_SIZE_NOT_SUPPORTED = $9009; // Размер информации не поддерживается
+  WP_ERROR_RECEIPT_FORMAT_INVALID = $900D; // Формат чека не правильный
+  WP_ERROR_RECEIPT_TOTAL_PRICE_OVERFLOW	= $900E; // Общая сумма превышает максимального значения
+  WP_ERROR_RECEIPT_TOTAL_PRICE_MISMATCH	= $900F; // Общая сумма превышает стоимость по товарным позициям
+  WP_ERROR_RECEIPT_MEMORY_FULL = $9016; // Память чека заполнена
+  WP_ERROR_RECEIPT_TIME_PAST = $9018; // Время чека старое
+  WP_ERROR_RECEIPT_STORE_DAYS_LIMIT_EXCEEDED	= $9019; // Кол-во дней хранения чеков превышено, следует отправить чеки
+  WP_ERROR_LAST_TRANSACTION_TIME_FORMAT_INVALID = $901A; // Формат времени последней транзакции ошибочна
+  WP_ERROR_FIRST_RECEIPT_TRANSACTION_TIME_FORMAT_INVALID = $901B; // Формат времени чека ошибочная
+  WP_ERROR_ACKNOWLEGE_WRONG_LENGTH = $901C; // Ошибка сервера ОФД по длине строк
+  WP_ERROR_ACKNOWLEGE_SIGNATURE_INVALID = $901D; // Ошибка сервера ОФД по подписи чека
+  WP_ERROR_ACKNOWLEGE_TERMINAL_ID_MISMATCH = $901E; // Ошибка сервера ОФД по номеру ФМ (все три позиции связаны с несанкционированным доступом к серверу ОФД)
+  WP_ERROR_ZREPORT_PARTITION_INVALID = $901F;
+  WP_ERROR_OPEN_CLOSE_ZREPORT_WRONG_LENGTH = $9020; // Ошибка связана с длиной строки Z-отчета
+  WP_ERROR_CLOSE_ZREPORT_TIME_PAST = $9021; // Время закрытие чека старое
+  WP_ERROR_ZREPORT_SPACE_IS_FULL = $9022; // Память Z-отчета заполнена
+  WP_ERROR_CURRENT_TIME_FORMAT_INVALID = $9023; // Ошибка формат текущего времени
+  WP_ERROR_RECEIPT_TRANSACTION_TIME_FORMAT_INVALID = $9024; // Ошибка формат времени последнего отправленного чека ошибочна
+  WP_ERROR_ZREPORT_INDEX_OUT_OF_BOUNDS 	= $9026; // Номер Z-report не правильный
+  WP_ERROR_LOCK_CHALLENGE_INVALID 	= $9027;
+  WP_ERROR_LOCKED_FOREVER = $9028; // Фискальный модуль заблокирован
+  WP_ERROR_CONFIGURE_WRONG_LENGTH = $9029;
+  WP_ERROR_CONFIGURE_SIGNATURE_INVALID = $902A;
+  WP_ERROR_CURRENT_ZREPORT_IS_EMPTY = $902B; // Текущий Z-report пустой
+  WP_ERROR_RECEIPT_TOTAL_PRICE_ZERO	= $902C; // Общая сумма чека не может быть нулем
+  WP_ERROR_ZREPORT_IS_NOT_OPEN = $902D; // Z-report не открыт
+  WP_ERROR_ZREPORT_OPEN_TIME_FORMAT_INVALID	= $902E; // Формат времени открытия Z-report ошибочна
+  WP_ERROR_SALE_REFUND_COUNT_OVERFLOW = $902F; // Превышено кол-во операций (продажи и возврата) в Z- отчете
+  WP_ERROR_ZREPORT_IS_ALREADY_OPEN = $9030; // Z-отчет (смена) уже открыта
+  WP_ERROR_NOT_ENOUGH_CASH_FOR_REFUND = $9031; // Не достаточно средств для возврата (наличка)
+  WP_ERROR_NOT_ENOUGH_CARD_FOR_REFUND = $9032; // Не достаточно средств для возврата (пластик)
+  WP_ERROR_NOT_ENOUGH_VAT_FOR_REFUND = $9033; // Не достаточно средств для возврата (НДС)
+  WP_ERROR_OPEN_ZREPORT_TIME_PAST = $9034; // Время открытия Z- report старое
+  WP_ERROR_MAINTENANCE_REQUIRED = $9035; // Требуется обслуживание со стороны ОФД
+
+
   //////////////////////////////////////////////////////////////////////////////
   // Receipt type constants
 
