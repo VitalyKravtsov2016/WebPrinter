@@ -36,6 +36,7 @@ type
     procedure CheckReturnOrder;
     procedure CheckPrintLastReceipt;
     procedure CheckParamsEncode;
+    procedure CheckPrintText;
   end;
 
 implementation
@@ -295,7 +296,7 @@ begin
     CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
     CheckEquals('https://ofd.soliq.uz/check?t=UZ170703100189&r=643&c=20200518221403&s=248429044289',
       Response.data.qr_url, 'data.qr_url');
-*)      
+*)
   finally
     Request.Free;
   end;
@@ -314,6 +315,60 @@ end;
 procedure TWebPrinterTest2.CheckParamsEncode;
 begin
   CheckEquals('time=2024-01-09%2015:53:15', TIdURI.ParamsEncode('time=2024-01-09 15:53:15'));
+end;
+
+procedure TWebPrinterTest2.CheckPrintText;
+const
+  TextData =
+  'Safe Drop Receipt                         ' + CRLF +
+  '==========================================' + CRLF +
+  'Emploee ID....:                     199192' + CRLF +
+  'Date..........:                 12/01/2021' + CRLF +
+  'Store ID......:                       UZ11' + CRLF +
+  'Time..........:                      20:40' + CRLF +
+  'Pos ID........:                  UZ11POS04' + CRLF +
+  '' + CRLF +
+  '------------------------------------------' + CRLF +
+  '' + CRLF +
+  '       100.00 * 20          2,000.00 UZS  ' + CRLF +
+  '     1,000.00 * 13         13,000.00 UZS  ' + CRLF +
+  '     5,000.00 * 25        125,000.00 UZS  ' + CRLF +
+  '    10,000.00 * 11        100,000.00 UZS  ' + CRLF +
+  '' + CRLF +
+  '             Total:       250,000.00 UZS  ' + CRLF +
+  '' + CRLF +
+  '==========================================' + CRLF +
+  '' + CRLF +
+  'Total Local Amount:       250,000.00 UZS  ' + CRLF +
+  '' + CRLF +
+  '==========================================' + CRLF +
+  '' + CRLF +
+  'Cashier                 Store Mamager     ' + CRLF +
+  'Name Surname:           Name Surname:     ' + CRLF +
+  '' + CRLF +
+  '' + CRLF +
+  'Signature:              Signature:        ' + CRLF +
+  '' + CRLF +
+  '' + CRLF +
+  '' + CRLF +
+  '==========================================';
+
+var
+  Text: TWPText;
+  Banner: TWPBanner;
+  Response: TWPResponse;
+begin
+  Text := TWPText.Create;
+  try
+    Banner := Text.banners.Add as TWPBanner;
+    Banner._type := 'text';
+    Banner.Cut := true;
+    Banner.data := TextData;
+    Response := FPrinter.PrintText(Text);
+    Check(Response.is_success, 'Response.is_success');
+  finally
+    Text.Free;
+  end;
 end;
 
 initialization

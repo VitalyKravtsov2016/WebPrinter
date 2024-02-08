@@ -5,6 +5,8 @@ interface
 uses
   // VCL
   Windows, SysUtils, Classes, IniFiles,
+  // Tnt
+  TntClasses,
   // Indy
   IdURI,
   // Opos
@@ -36,6 +38,7 @@ type
     procedure TestFiscalReceipt;
     procedure TestRefundReceipt;
     procedure TestRefundReceipt2;
+    procedure TestNonfiscalReceipt;
   end;
 
 implementation
@@ -313,6 +316,21 @@ begin
   end;
 end;
 
+
+procedure TWebPrinterImplTest.TestNonfiscalReceipt;
+var
+  Text: WideString;
+begin
+  OpenClaimEnable;
+  FptrCheck(Driver.BeginNonFiscal, 'Driver.BeginNonFiscal');
+  FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, 'Line1'), 'PrintNormal');
+  FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, 'Line2'), 'PrintNormal');
+  FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, 'Line3'), 'PrintNormal');
+  FptrCheck(Driver.EndNonFiscal, 'Driver.EndNonFiscal');
+
+  Text := ReadFileData('PrintTextRequest.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'RequestJson');
+end;
 
 initialization
   RegisterTest('', TWebPrinterImplTest.Suite);

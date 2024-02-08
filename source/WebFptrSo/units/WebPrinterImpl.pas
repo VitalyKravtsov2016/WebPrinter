@@ -30,6 +30,7 @@ type
   TWebPrinterImpl = class(TComponent, IFiscalPrinterService_1_12)
   private
     FLogger: ILogFile;
+    FLines: TTntStrings;
     FPrinter: TWebPrinter;
     FReceipt: TCustomReceipt;
     FParams: TPrinterParameters;
@@ -346,6 +347,7 @@ constructor TWebPrinterImpl.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FLogger := TLogFile.Create;
+  FLines := TTntStringList.Create;
   FReceipt := TCustomReceipt.Create;
   FPrinter := TWebPrinter.Create(FLogger);
   FParams := TPrinterParameters.Create(FLogger);
@@ -364,6 +366,7 @@ begin
   if FOposDevice.Opened then
     Close;
 
+  FLines.Free;
   FParams.Free;
   FReceipt.Free;
   FPrinter.Free;
@@ -650,6 +653,8 @@ begin
     CheckEnabled;
     CheckState(FPTR_PS_MONITOR);
     SetPrinterState(FPTR_PS_NONFISCAL);
+    FLines.Clear;
+
     Result := ClearResult;
   except
     on E: Exception do
@@ -892,16 +897,28 @@ begin
 end;
 
 function TWebPrinterImpl.EndNonFiscal: Integer;
+var
+  Text: TWPText;
+  Banner: TWPBanner;
 begin
+  Text := TWPText.Create;
   try
     CheckEnabled;
     CheckState(FPTR_PS_NONFISCAL);
     SetPrinterState(FPTR_PS_MONITOR);
+
+
+    Banner := Text.banners.Add as TWPBanner;
+    Banner._type := 'text';
+    Banner.data := FLines.Text;
+    Banner.Cut := True;
+    FPrinter.PrintText(Text);
     Result := ClearResult;
   except
     on E: Exception do
       Result := HandleException(E);
   end;
+  Text.Free;
 end;
 
 function TWebPrinterImpl.EndRemoval: Integer;
@@ -1267,6 +1284,8 @@ begin
   try
     CheckEnabled;
     CheckState(FPTR_PS_NONFISCAL);
+    FLines.Add(AData);
+
     Result := ClearResult;
   except
     on E: Exception do

@@ -356,12 +356,15 @@ type
   private
     F_type: WideString;
     Fdata: WideString;
+    FCut: Boolean;
   public
     procedure Assign(Source: TPersistent); override;
+    function IsRequiredField(const Field: WideString): Boolean; override;
   published
     property _type: WideString read F_type write F_type;
     property data: WideString read Fdata write Fdata;
-  end;
+    property Cut: Boolean read FCut write FCut default false;
+  end;
 
   { TWPBanners }
 
@@ -742,6 +745,20 @@ type
     property data: TWPPaymentConfirmResult read FData write SetData;
   end;
 
+  { TWPText }
+
+  TWPText = class(TJsonPersistent)
+  private
+    Fbanners: TWPBanners;
+    procedure SetBanners(const Value: TWPBanners);
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Assign(Source: TPersistent); override;
+  published
+	  property banners: TWPBanners read Fbanners write SetBanners;
+  end;
+
   { TWebPrinter }
 
   TWebPrinter = class
@@ -791,6 +808,7 @@ type
     function CreateOrder(Request: TWPOrder): TWPCreateOrderResponse;
     function ReturnOrder(Request: TWPOrder): TWPCreateOrderResponse;
     function PrintLastReceipt: TWPResult;
+    function PrintText(const Text: TWPText): TWPResponse;
 
     function GetJson(const AURL: WideString): WideString;
     function PostJson(const AURL, Request: WideString): WideString;
@@ -1367,6 +1385,292 @@ begin
   FError.Assign(Value);
 end;
 
+{ TWPError }
+
+procedure TWPError.Assign(Source: TPersistent);
+var
+  src: TWPError;
+begin
+  if source is TWPError then
+  begin
+    src := source as TWPError;
+
+    code := src.code;
+    data := src.data;
+    message := src.message;
+  end;
+end;
+
+procedure TWPError.Clear;
+begin
+  FCode := 0;
+  FData := '';
+  FMessage := '';
+end;
+
+{ TWPBanner }
+
+procedure TWPBanner.Assign(Source: TPersistent);
+var
+  src: TWPBanner;
+begin
+  if Source is TWPBanner then
+  begin
+    src := Source as TWPBanner;
+    _type := src._type;
+    data := src.data;
+    Cut := src.Cut;
+  end;
+end;
+
+function TWPBanner.IsRequiredField(const Field: WideString): Boolean;
+var
+  i: Integer;
+const
+  OptionalFields: array [0..1] of string = (
+    'type', 'data');
+begin
+  for i := Low(OptionalFields) to High(OptionalFields) do
+  begin
+    Result := AnsiCompareText(Field, OptionalFields[i]) = 0;
+    if Result then Break;
+  end;
+end;
+
+{ TWPPrice }
+
+procedure TWPPrice.Assign(Source: TPersistent);
+var
+  src: TWPPrice;
+begin
+  if Source is TWPPrice then
+  begin
+    src := Source as TWPPrice;
+    name := src.name;
+    price := src.price;
+    vat_type := src.vat_type;
+    vat_price := src.vat_price;
+  end;
+end;
+
+{ TWPCurrency }
+
+procedure TWPCurrency.Assign(Source: TPersistent);
+var
+  src: TWPCurrency;
+begin
+  if Source is TWPCurrency then
+  begin
+    src := Source as TWPCurrency;
+
+    name := src.name;
+    price := src.price;
+  end;
+end;
+
+{ TWPInfoResponse }
+
+procedure TWPInfoResponse.Assign(Source: TPersistent);
+var
+  src: TWPInfoResponse;
+begin
+  if source is TWPInfoResponse then
+  begin
+    src := source as TWPInfoResponse;
+
+    terminal_id := src.terminal_id;
+    applet_version := src.applet_version;
+    current_receipt_seq := src.current_receipt_seq;
+    current_time := src.current_time;
+    last_operation_time := src.last_operation_time;
+    receipt_count := src.receipt_count;
+    receipt_max_count := src.receipt_max_count;
+    zreport_count := src.zreport_count;
+    zreport_max_count := src.zreport_max_count;
+    available_persistent_memory := src.available_persistent_memory;
+    available_reset_memory := src.available_reset_memory;
+    available_deselect_memory := src.available_deselect_memory;
+    cashbox_number := src.cashbox_number;
+    version_code := src.version_code;
+    is_updated := src.is_updated;
+  end;
+end;
+
+{ TWPComissionInfo }
+
+procedure TWPComissionInfo.Assign(Source: TPersistent);
+var
+  src: TWPComissionInfo;
+begin
+  if source is TWPComissionInfo then
+  begin
+    src := source as TWPComissionInfo;
+
+    inn := src.inn;
+    pinfl := src.pinfl;
+  end;
+end;
+
+{ TWPTime }
+
+procedure TWPTime.Assign(Source: TPersistent);
+var
+  Src: TWPTime;
+begin
+  if Source is TWPTime then
+  begin
+    src := Source as TWPTime;
+
+    time := src.time;
+    applet_version := src.applet_version;
+  end;
+end;
+
+{ TWPCreateOrderResult }
+
+procedure TWPCreateOrderResult.Assign(Source: TPersistent);
+var
+  src: TWPCreateOrderResult;
+begin
+  if Source is TWPCreateOrderResult then
+  begin
+    src := source as TWPCreateOrderResult;
+
+    terminal_id := src.terminal_id;
+    receipt_count := src.receipt_count;
+    date_time := src.date_time;
+    fiscal_sign := src.fiscal_sign;
+    applet_version := src.applet_version;
+    qr_url := src.qr_url;
+    cash_box_number := src.cash_box_number;
+  end;
+end;
+
+{ TWPDayResult }
+
+procedure TWPDayResult.Assign(Source: TPersistent);
+var
+  Src: TWPDayResult;
+begin
+  if source is TWPDayResult then
+  begin
+    src := source as TWPDayResult;
+
+    applet_version := src.applet_version;
+    terminal_id := src.terminal_id;
+    number := src.number;
+    count := src.count;
+    last_receipt_seq := src.last_receipt_seq;
+    first_receipt_seq := src.first_receipt_seq;
+    open_time := src.open_time;
+    close_time := src.close_time;
+    total_refund_vat := src.total_refund_vat;
+    total_refund_card := src.total_refund_card;
+    total_refund_cash := src.total_refund_cash;
+    total_refund_count := src.total_refund_count;
+    total_sale_vat := src.total_sale_vat;
+    total_sale_card := src.total_sale_card;
+    total_sale_cash := src.total_sale_cash;
+    total_sale_count := src.total_sale_count;
+  end;
+end;
+
+{ TWPPaymentRequest }
+
+procedure TWPPaymentRequest.Assign(Source: TPersistent);
+var
+  src: TWPPaymentRequest;
+begin
+  if source is TWPPaymentRequest then
+  begin
+    src := source as TWPPaymentRequest;
+
+    amount := src.amount;
+    qr_code := src.qr_code;
+  end;
+end;
+
+{ TWPPaymentResult }
+
+procedure TWPPaymentResult.Assign(Source: TPersistent);
+var
+  src: TWPPaymentResult;
+begin
+  if source is TWPPaymentResult then
+  begin
+    src := source as TWPPaymentResult;
+
+    amount := src.amount;
+    transaction_id := src.transaction_id;
+    payment_id := src.payment_id;
+    inn := src.inn;
+    qr_code := src.qr_code;
+    kkm_id := src.kkm_id;
+    device_id := src.device_id;
+    status := src.status;
+    message := src.message;
+    client_phone_number := src.client_phone_number;
+  end;
+end;
+
+{ TWPPaymentConfirmRequest }
+
+procedure TWPPaymentConfirmRequest.Assign(Source: TPersistent);
+var
+  src: TWPPaymentConfirmRequest;
+begin
+  if source is TWPPaymentConfirmRequest then
+  begin
+    src := source as TWPPaymentConfirmRequest;
+
+    qr_code := src.qr_code;
+    payment_id := src.payment_id;
+  end;
+end;
+
+{ TWPPaymentConfirmResult }
+
+procedure TWPPaymentConfirmResult.Assign(Source: TPersistent);
+var
+  src: TWPPaymentConfirmResult;
+begin
+  if source is TWPPaymentConfirmResult then
+  begin
+    src := source as TWPPaymentConfirmResult;
+    inn := src.inn;
+    payment_id := src.payment_id;
+    qr_code := src.qr_code;
+    status := src.status;
+  end;
+end;
+
+{ TWPText }
+
+constructor TWPText.Create;
+begin
+  inherited Create;
+  FBanners := TWPBanners.Create(TWPBanner);
+end;
+
+destructor TWPText.Destroy;
+begin
+  FBanners.Free;
+  inherited Destroy;
+end;
+
+procedure TWPText.SetBanners(const Value: TWPBanners);
+begin
+  banners.Assign(Value);
+end;
+
+procedure TWPText.Assign(Source: TPersistent);
+begin
+  if Source is TWPText then
+  begin
+    Banners := (Source as TWPText).Banners;
+  end;
+end;
+
 { TWebPrinter }
 
 constructor TWebPrinter.Create(ALogger: ILogFile);
@@ -1827,248 +2131,29 @@ begin
   Result := FPrintLastReceipt;
 end;
 
-{ TWPError }
+(*
+http://fbox.ngrok.io/print/banner POST
+{"banners":
+[
+  {
+  "type":"text",
+  "data": "Safe Drop Receipt                         \r\n\r\n==========================================\r\nEmploee ID....:                     199192\r\nDate..........:                 12/01/2021\r\nStore ID......:                       UZ11\r\nTime..........:                      20:40\r\nPos ID........:                  UZ11POS04\r\n\r\n------------------------------------------\r\n\r\n       100.00 * 20          2,000.00 UZS  \r\n     1,000.00 * 13         13,000.00 UZS  \r\n     5,000.00 * 25        125,000.00 UZS  \r\n    10,000.00 * 11        100,000.00 UZS  \r\n\r\n             Total:       250,000.00 UZS  \r\n\r\n==========================================\r\n\r\nTotal Local Amount:       250,000.00 UZS  \r\n\r\n==========================================\r\n\r\nCashier                 Store Mamager     \r\nName Surname:           Name Surname:     \r\n\r\n\r\n\r\nSignature:              Signature:        \r\n\r\n\r\n\r\n========================================== "
+  }
+]}
+{ "type": "text", "data": "R12020000000002544", "cut": true}
+*)
 
-procedure TWPError.Assign(Source: TPersistent);
+function TWebPrinter.PrintText(const Text: TWPText): TWPResponse;
 var
-  src: TWPError;
+  JsonText: WideString;
 begin
-  if source is TWPError then
-  begin
-    src := source as TWPError;
-
-    code := src.code;
-    data := src.data;
-    message := src.message;
-  end;
+  JsonText := ObjectToJson(Text);
+  JsonText := PostJson(GetAddress + '/print/banner/', JsonText);
+  JsonToObject(JsonText, FResponse);
+  CheckForError(FResponse.error);
+  Result := FResponse;
 end;
 
-procedure TWPError.Clear;
-begin
-  FCode := 0;
-  FData := '';
-  FMessage := '';
-end;
 
-{ TWPBanner }
-
-procedure TWPBanner.Assign(Source: TPersistent);
-var
-  src: TWPBanner;
-begin
-  if Source is TWPBanner then
-  begin
-    src := Source as TWPBanner;
-    _type := src._type;
-    data := src.data;
-  end;
-end;
-
-{ TWPPrice }
-
-procedure TWPPrice.Assign(Source: TPersistent);
-var
-  src: TWPPrice;
-begin
-  if Source is TWPPrice then
-  begin
-    src := Source as TWPPrice;
-    name := src.name;
-    price := src.price;
-    vat_type := src.vat_type;
-    vat_price := src.vat_price;
-  end;
-end;
-
-{ TWPCurrency }
-
-procedure TWPCurrency.Assign(Source: TPersistent);
-var
-  src: TWPCurrency;
-begin
-  if Source is TWPCurrency then
-  begin
-    src := Source as TWPCurrency;
-
-    name := src.name;
-    price := src.price;
-  end;
-end;
-
-{ TWPInfoResponse }
-
-procedure TWPInfoResponse.Assign(Source: TPersistent);
-var
-  src: TWPInfoResponse;
-begin
-  if source is TWPInfoResponse then
-  begin
-    src := source as TWPInfoResponse;
-
-    terminal_id := src.terminal_id;
-    applet_version := src.applet_version;
-    current_receipt_seq := src.current_receipt_seq;
-    current_time := src.current_time;
-    last_operation_time := src.last_operation_time;
-    receipt_count := src.receipt_count;
-    receipt_max_count := src.receipt_max_count;
-    zreport_count := src.zreport_count;
-    zreport_max_count := src.zreport_max_count;
-    available_persistent_memory := src.available_persistent_memory;
-    available_reset_memory := src.available_reset_memory;
-    available_deselect_memory := src.available_deselect_memory;
-    cashbox_number := src.cashbox_number;
-    version_code := src.version_code;
-    is_updated := src.is_updated;
-  end;
-end;
-
-{ TWPComissionInfo }
-
-procedure TWPComissionInfo.Assign(Source: TPersistent);
-var
-  src: TWPComissionInfo;
-begin
-  if source is TWPComissionInfo then
-  begin
-    src := source as TWPComissionInfo;
-
-    inn := src.inn;
-    pinfl := src.pinfl;
-  end;
-end;
-
-{ TWPTime }
-
-procedure TWPTime.Assign(Source: TPersistent);
-var
-  Src: TWPTime;
-begin
-  if Source is TWPTime then
-  begin
-    src := Source as TWPTime;
-
-    time := src.time;
-    applet_version := src.applet_version;
-  end;
-end;
-
-{ TWPCreateOrderResult }
-
-procedure TWPCreateOrderResult.Assign(Source: TPersistent);
-var
-  src: TWPCreateOrderResult;
-begin
-  if Source is TWPCreateOrderResult then
-  begin
-    src := source as TWPCreateOrderResult;
-
-    terminal_id := src.terminal_id;
-    receipt_count := src.receipt_count;
-    date_time := src.date_time;
-    fiscal_sign := src.fiscal_sign;
-    applet_version := src.applet_version;
-    qr_url := src.qr_url;
-    cash_box_number := src.cash_box_number;
-  end;
-end;
-
-{ TWPDayResult }
-
-procedure TWPDayResult.Assign(Source: TPersistent);
-var
-  Src: TWPDayResult;
-begin
-  if source is TWPDayResult then
-  begin
-    src := source as TWPDayResult;
-
-    applet_version := src.applet_version;
-    terminal_id := src.terminal_id;
-    number := src.number;
-    count := src.count;
-    last_receipt_seq := src.last_receipt_seq;
-    first_receipt_seq := src.first_receipt_seq;
-    open_time := src.open_time;
-    close_time := src.close_time;
-    total_refund_vat := src.total_refund_vat;
-    total_refund_card := src.total_refund_card;
-    total_refund_cash := src.total_refund_cash;
-    total_refund_count := src.total_refund_count;
-    total_sale_vat := src.total_sale_vat;
-    total_sale_card := src.total_sale_card;
-    total_sale_cash := src.total_sale_cash;
-    total_sale_count := src.total_sale_count;
-  end;
-end;
-
-{ TWPPaymentRequest }
-
-procedure TWPPaymentRequest.Assign(Source: TPersistent);
-var
-  src: TWPPaymentRequest;
-begin
-  if source is TWPPaymentRequest then
-  begin
-    src := source as TWPPaymentRequest;
-
-    amount := src.amount;
-    qr_code := src.qr_code;
-  end;
-end;
-
-{ TWPPaymentResult }
-
-procedure TWPPaymentResult.Assign(Source: TPersistent);
-var
-  src: TWPPaymentResult;
-begin
-  if source is TWPPaymentResult then
-  begin
-    src := source as TWPPaymentResult;
-
-    amount := src.amount;
-    transaction_id := src.transaction_id;
-    payment_id := src.payment_id;
-    inn := src.inn;
-    qr_code := src.qr_code;
-    kkm_id := src.kkm_id;
-    device_id := src.device_id;
-    status := src.status;
-    message := src.message;
-    client_phone_number := src.client_phone_number;
-  end;
-end;
-
-{ TWPPaymentConfirmRequest }
-
-procedure TWPPaymentConfirmRequest.Assign(Source: TPersistent);
-var
-  src: TWPPaymentConfirmRequest;
-begin
-  if source is TWPPaymentConfirmRequest then
-  begin
-    src := source as TWPPaymentConfirmRequest;
-
-    qr_code := src.qr_code;
-    payment_id := src.payment_id;
-  end;
-end;
-
-{ TWPPaymentConfirmResult }
-
-procedure TWPPaymentConfirmResult.Assign(Source: TPersistent);
-var
-  src: TWPPaymentConfirmResult;
-begin
-  if source is TWPPaymentConfirmResult then
-  begin
-    src := source as TWPPaymentConfirmResult;
-    inn := src.inn;
-    payment_id := src.payment_id;
-    qr_code := src.qr_code;
-    status := src.status;
-  end;
-end;
 
 end.

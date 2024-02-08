@@ -5,6 +5,8 @@ interface
 uses
   // VCL
   Windows, SysUtils, Classes, IniFiles,
+  // Tnt
+  TntClasses,
   // Indy
   IdURI,
   // Opos
@@ -36,6 +38,7 @@ type
     procedure TestFiscalReceipt;
     procedure TestRefundReceipt;
     procedure TestRefundReceipt2;
+    procedure TestNonFiscalReceipt;
   end;
 
 implementation
@@ -271,6 +274,61 @@ begin
 
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+end;
+
+procedure TWebPrinterImplTest.TestNonFiscalReceipt;
+const
+  TextData =
+  'Safe Drop Receipt                         ' + CRLF +
+  '==========================================' + CRLF +
+  'Emploee ID....:                     199192' + CRLF +
+  'Date..........:                 12/01/2021' + CRLF +
+  'Store ID......:                       UZ11' + CRLF +
+  'Time..........:                      20:40' + CRLF +
+  'Pos ID........:                  UZ11POS04' + CRLF +
+  '' + CRLF +
+  '------------------------------------------' + CRLF +
+  '' + CRLF +
+  '       100.00 * 20          2,000.00 UZS  ' + CRLF +
+  '     1,000.00 * 13         13,000.00 UZS  ' + CRLF +
+  '     5,000.00 * 25        125,000.00 UZS  ' + CRLF +
+  '    10,000.00 * 11        100,000.00 UZS  ' + CRLF +
+  '' + CRLF +
+  '             Total:       250,000.00 UZS  ' + CRLF +
+  '' + CRLF +
+  '==========================================' + CRLF +
+  '' + CRLF +
+  'Total Local Amount:       250,000.00 UZS  ' + CRLF +
+  '' + CRLF +
+  '==========================================' + CRLF +
+  '' + CRLF +
+  'Cashier                 Store Mamager     ' + CRLF +
+  'Name Surname:           Name Surname:     ' + CRLF +
+  '' + CRLF +
+  '' + CRLF +
+  'Signature:              Signature:        ' + CRLF +
+  '' + CRLF +
+  '' + CRLF +
+  '' + CRLF +
+  '==========================================';
+var
+  i: Integer;
+  Lines: TTntStrings;
+begin
+  Lines := TTntStringList.Create;
+  try
+    Lines.Text := TextData;
+
+    OpenClaimEnable;
+    FptrCheck(Driver.BeginNonFiscal, 'Driver.BeginNonFiscal');
+    for i := 0 to Lines.Count-1 do
+    begin
+      FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, Lines[i]), 'PrintNormal');
+    end;
+    FptrCheck(Driver.EndNonFiscal, 'Driver.EndNonFiscal');
+  finally
+    Lines.Free;
+  end;
 end;
 
 initialization
