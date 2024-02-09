@@ -52,7 +52,7 @@ implementation
 
 uses
   fmuFptrConnection, fmuFptrLog, fmuFptrVatRate, fmuFptrPayType,
-  fmuFptrCashDrawer, fmuFptrUnit;
+  fmuFptrCashDrawer, fmuFptrUnit, fmuFptrPrint;
 
 { TFiscalPrinterDevice }
 
@@ -99,6 +99,7 @@ begin
     //
     AddPage(fm, TfmFptrConnection);
     AddPage(fm, TfmFptrLog);
+    AddPage(fm, TfmFptrPrint);
     AddPage(fm, TfmFptrVatRate);
     AddPage(fm, TfmFptrPayType);
     AddPage(fm, TfmFptrCashDrawer);

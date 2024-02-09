@@ -38,9 +38,9 @@ type
     function GetTax(Amount: Currency): Currency;
     procedure Assign(Source: TPersistent); override;
 
-    property Rate: Double read FRate;
     property Code: Integer read FCode;
     property Name: WideString read FName;
+    property Rate: Double read FRate write FRate;
     property Total: Currency read FTotal write FTotal;
   end;
 

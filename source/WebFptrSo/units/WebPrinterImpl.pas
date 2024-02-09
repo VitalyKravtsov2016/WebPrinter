@@ -96,7 +96,6 @@ type
     FCapRecNearEndSensor: Boolean;
     FCapRecPresent: Boolean;
     FCapJrnPresent: Boolean;
-    FRecLineChars: Integer;
     FCapAdditionalLines: Boolean;
     FCapAmountAdjustment: Boolean;
     FCapAmountNotPaid: Boolean;
@@ -508,7 +507,7 @@ begin
   FCapReservedWord := False;
   FCapSetPOSID := True;
   FCapSetStoreFiscalID := False;
-  FCapSetVatTable := False;
+  FCapSetVatTable := True;
   FCapSlpFiscalDocument := False;
   FCapSlpFullSlip := False;
   FCapSlpValidation := False;
@@ -1055,7 +1054,7 @@ begin
       PIDXFptr_CountryCode            : Result := FCountryCode;
       PIDXFptr_CoverOpen              : Result := BoolToInt[FCoverOpen];
       PIDXFptr_DayOpened              : Result := BoolToInt[FDayOpened];
-      PIDXFptr_DescriptionLength      : Result := FRecLineChars;
+      PIDXFptr_DescriptionLength      : Result := Params.MessageLength;
       PIDXFptr_DuplicateReceipt       : Result := BoolToInt[FDuplicateReceipt];
       PIDXFptr_ErrorLevel             : Result := FErrorLevel;
       PIDXFptr_ErrorOutID             : Result := FErrorOutID;
@@ -1064,10 +1063,10 @@ begin
       PIDXFptr_FlagWhenIdle           : Result := BoolToInt[FFlagWhenIdle];
       PIDXFptr_JrnEmpty               : Result := BoolToInt[FJrnEmpty];
       PIDXFptr_JrnNearEnd             : Result := BoolToInt[FJrnNearEnd];
-      PIDXFptr_MessageLength          : Result := FRecLineChars;
+      PIDXFptr_MessageLength          : Result := Params.MessageLength;
       PIDXFptr_NumHeaderLines         : Result := 0;
       PIDXFptr_NumTrailerLines        : Result := 0;
-      PIDXFptr_NumVatRates            : Result := 0;
+      PIDXFptr_NumVatRates            : Result := Params.VatRates.Count;
       PIDXFptr_PrinterState           : Result := FPrinterState.State;
       PIDXFptr_QuantityDecimalPlaces  : Result := FQuantityDecimalPlaces;
       PIDXFptr_QuantityLength         : Result := FQuantityLength;
@@ -1917,10 +1916,20 @@ end;
 
 function TWebPrinterImpl.SetVatValue(VatID: Integer;
   const VatValue: WideString): Integer;
+var
+  VatValueInt: Integer;
 begin
   try
     CheckEnabled;
     CheckCapSetVatTable;
+    // Check parameters
+    if (VatID < 0)or(VatID >= Params.VatRates.Count) then
+      InvalidParameterValue('VatID', IntToStr(VatID));
+    VatValueInt := StrToInt(VatValue);
+    if VatValueInt > 9999 then
+      InvalidParameterValue('VatValue', VatValue);
+
+    Params.VatRates[VatID].Rate := VatValueInt/100;
     Result := ClearResult;
   except
     on E: Exception do

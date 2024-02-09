@@ -186,6 +186,9 @@ begin
       if Reg.ValueExists('OpenCashbox') then
         Parameters.OpenCashbox := Reg.ReadBool('OpenCashbox');
 
+      if Reg.ValueExists('MessageLength') then
+        Parameters.MessageLength := Reg.ReadInteger('MessageLength');
+
       Reg.CloseKey;
     end;
     ReadVatRates(Reg, KeyName + '\' + REG_KEY_VATRATES);
@@ -298,6 +301,7 @@ begin
     Reg.WriteBool('VatRateEnabled', FParameters.VatRateEnabled);
     Reg.WriteBool('VatRateEnabled', FParameters.VatRateEnabled);
     Reg.WriteBool('OpenCashbox', FParameters.OpenCashbox);
+    Reg.WriteInteger('MessageLength', FParameters.MessageLength);
     Reg.CloseKey;
     // VatRates
     Reg.DeleteKey(KeyName + '\' + REG_KEY_VATRATES);

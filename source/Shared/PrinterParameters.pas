@@ -22,6 +22,10 @@ const
   EncodingMin = EncodingWindows;
   EncodingMax = Encoding866;
 
+  MinMessageLength = 24;
+  MaxMessageLength = 120;
+  DefMessageLength = 80;
+
   FiscalPrinterProgID = 'OposWebPrinter.FiscalPrinter';
 
   DefLogMaxCount = 10;
@@ -48,6 +52,8 @@ type
     FItemUnits: TItemUnits;
     FVatRateEnabled: Boolean;
     FOpenCashbox: Boolean;
+    FMessageLength: Integer;
+    procedure SetMessageLength(const Value: Integer);
   public
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
@@ -72,6 +78,7 @@ type
     property PaymentType3: Integer read FPaymentType3 write FPaymentType3;
     property PaymentType4: Integer read FPaymentType4 write FPaymentType4;
     property OpenCashbox: Boolean read FOpenCashbox write FOpenCashbox;
+    property MessageLength: Integer read FMessageLength write SetMessageLength;
   end;
 
 implementation
@@ -108,6 +115,7 @@ begin
   PaymentType2 := 1;
   PaymentType3 := 2;
   PaymentType4 := 3;
+  MessageLength := DefMessageLength;
   // VatRates
   VatRates.Clear;
   VatRates.Add(1, 12, 'ÍÄÑ 12%'); // ÍÄÑ 12%
@@ -157,6 +165,8 @@ begin
   Logger.Debug('PaymentType4: ' + IntToStr(PaymentType4));
   Logger.Debug('VatRateEnabled: ' + BoolToStr(VatRateEnabled));
   Logger.Debug('OpenCashbox: ' + BoolToStr(OpenCashbox));
+  Logger.Debug('MessageLength: ' + IntToStr(MessageLength));
+
   // VatRates
   for i := 0 to VatRates.Count-1 do
   begin
@@ -191,6 +201,7 @@ begin
     VatRateEnabled := Src.VatRateEnabled;
     VatRates.Assign(VatRates);
     OpenCashbox := Src.OpenCashbox;
+    MessageLength := Src.MessageLength;
   end else
     inherited Assign(Source);
 end;
@@ -203,6 +214,12 @@ end;
 procedure TPrinterParameters.Save(const DeviceName: WideString);
 begin
 
+end;
+
+procedure TPrinterParameters.SetMessageLength(const Value: Integer);
+begin
+  if (Value >= 24)and(Value <= 120) then
+    FMessageLength := Value;
 end;
 
 end.
