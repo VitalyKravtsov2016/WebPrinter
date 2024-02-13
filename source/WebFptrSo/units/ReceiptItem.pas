@@ -80,6 +80,7 @@ type
     FNumber: Integer;
     FMarkCodes: TStrings;
     FPackageCode: Integer;
+    FProviderINN: WideString;
   public
     constructor Create(AOwner: TReceiptItems); override;
     destructor Destroy; override;
@@ -109,6 +110,7 @@ type
     property ClassCode: string read FClassCode write FClassCode;
     property PackageCode: Integer read FPackageCode write FPackageCode;
     property MarkCodes: TStrings read FMarkCodes;
+    property ProviderINN: WideString read FProviderINN write FProviderINN;
   end;
 
   { TAdjustments }

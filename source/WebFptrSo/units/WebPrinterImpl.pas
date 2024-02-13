@@ -778,9 +778,19 @@ begin
         end;
       end;
 
+      DIO_STLV_WRITE_OP:
+      begin
+
+      end;
+
       DIO_WRITE_FS_STRING_TAG_OP:
       begin
         case pData of
+          1171: ; // номера контактных телефонов поставщика
+	        1222: ; // признак агента по предмету расчета
+          1225: ; // наименование поставщика
+          // ИНН поставщика '5213500887'
+	        1226: FReceipt.SetProviderINN(pString);
           1228: FReceipt.CustomerINN := pString;
           1008:
           begin
@@ -2183,6 +2193,12 @@ begin
 
     if AnsiCompareText('owner_type', FieldName) = 0 then
       Product.owner_type := StrToInt(FieldValue);
+
+    if AnsiCompareText('comission_info.inn', FieldName) = 0 then
+      Product.comission_info.inn := FieldValue;
+
+    if AnsiCompareText('comission_info.pinfl', FieldName) = 0 then
+      Product.comission_info.pinfl := FieldValue;
   end;
 end;
 
@@ -2311,7 +2327,7 @@ begin
         Product.Class_code := Item.ClassCode;
         Product.Package_code := Item.PackageCode;
         Product.Owner_type := 0;
-        Product.Comission_info.inn := '';
+        Product.Comission_info.inn := Item.ProviderINN;
         Product.Comission_info.pinfl := '';
         UpdateRecItemFields(Product);
       end;

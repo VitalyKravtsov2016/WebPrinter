@@ -130,6 +130,7 @@ type
     procedure PrintRecMessage(const Message: WideString); override;
     procedure AddMarkCode(const MarkCode: string); override;
     procedure SetClassCode(const AClassCode: string); override;
+    procedure SetProviderINN(const AProviderINN: string); override;
 
     function GetCashPayment: Currency;
     function GetCashlessPayment: Currency;
@@ -665,6 +666,11 @@ end;
 procedure TSalesReceipt.SetClassCode(const AClassCode: string);
 begin
   GetLastItem.ClassCode := AClassCode;
+end;
+
+procedure TSalesReceipt.SetProviderINN(const AProviderINN: string);
+begin
+  GetLastItem.ProviderINN := AProviderINN;
 end;
 
 end.

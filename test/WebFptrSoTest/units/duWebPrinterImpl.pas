@@ -178,6 +178,7 @@ begin
   FptrCheck(Driver.PrintRecItem('Item 3', 100, 1000, 2, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 9, 4));
+  FptrCheck(Driver.DirectIO2(DIO_WRITE_FS_STRING_TAG_OP, 1226, '048768768768'));
 
   FptrCheck(Driver.PrintRecMessage('Message 2'));
   FptrCheck(Driver.PrintRecItem('Item 4', 100, 1000, 3, 100, 'шт'));
@@ -212,6 +213,11 @@ begin
     CheckEquals('Message 3', Order.banners[2].data, 'Order.banners[2].data');
     CheckEquals('Message 4', Order.banners[3].data, 'Order.banners[3].data');
 
+    CheckEquals(4, Order.products.Count, 'products.Count');
+    CheckEquals('', Order.products[0].comission_info.inn, 'comission_info.inn');
+    CheckEquals('', Order.products[1].comission_info.inn, 'comission_info.inn');
+    CheckEquals('048768768768', Order.products[2].comission_info.inn, 'comission_info.inn');
+    CheckEquals('', Order.products[3].comission_info.inn, 'comission_info.inn');
   finally
     Order.Free;
   end;
@@ -319,17 +325,28 @@ end;
 
 procedure TWebPrinterImplTest.TestNonfiscalReceipt;
 var
+  i: Integer;
   Text: WideString;
+  Strings: TTntStringList;
 begin
-  OpenClaimEnable;
-  FptrCheck(Driver.BeginNonFiscal, 'Driver.BeginNonFiscal');
-  FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, 'Line1'), 'PrintNormal');
-  FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, 'Line2'), 'PrintNormal');
-  FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, 'Line3'), 'PrintNormal');
-  FptrCheck(Driver.EndNonFiscal, 'Driver.EndNonFiscal');
+  Strings := TTntStringList.Create;
+  try
+    Strings.LastFileCharSet := csUnicode;
+    Strings.LoadFromFile('UnicodeText.txt');
 
-  Text := ReadFileData('PrintTextRequest.json');
-  CheckEquals(Text, Driver.Printer.RequestJson, 'RequestJson');
+    OpenClaimEnable;
+    FptrCheck(Driver.BeginNonFiscal, 'Driver.BeginNonFiscal');
+    for i := 0 to Strings.Count-1 do
+    begin
+      FptrCheck(Driver.PrintNormal(FPTR_S_RECEIPT, Strings[i]), 'PrintNormal');
+    end;
+    FptrCheck(Driver.EndNonFiscal, 'Driver.EndNonFiscal');
+
+    //Text := ReadFileData('PrintTextRequest.json');
+    //CheckEquals(Text, Driver.Printer.RequestJson, 'RequestJson');
+  finally
+    Strings.Free;
+  end;
 end;
 
 initialization

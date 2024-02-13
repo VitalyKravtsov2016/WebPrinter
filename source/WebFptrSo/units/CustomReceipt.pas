@@ -122,6 +122,7 @@ type
     procedure Print(AVisitor: TObject); virtual;
     procedure AddMarkCode(const AMarkCode: string); virtual;
     procedure SetClassCode(const AClassCode: string); virtual;
+    procedure SetProviderINN(const AProviderINN: string); virtual;
 
     property Lines: TTntStrings read FLines;
     property FiscalSign: WideString read FFiscalSign write FFiscalSign;
@@ -341,6 +342,12 @@ begin
 end;
 
 procedure TCustomReceipt.SetClassCode(const AClassCode: string);
+begin
+
+end;
+
+
+procedure TCustomReceipt.SetProviderINN(const AProviderINN: string);
 begin
 
 end;
