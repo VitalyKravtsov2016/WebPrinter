@@ -18,6 +18,7 @@ type
   TSMFiscalPrinter = class(TOPOSFiscalPrinter)
   public
     procedure Check(AResultCode: Integer);
+    function DirectIO2(Command: Integer; const pData: Integer; const pString: WideString): Integer;
   end;
 
   { FiscalPrinterError }
@@ -32,6 +33,16 @@ begin
   begin
     raise FiscalPrinterError.Create(OposFptrGetErrorText(OleObject));
   end;
+end;
+
+function TSMFiscalPrinter.DirectIO2(Command: Integer; const pData: Integer; const pString: WideString): Integer;
+var
+  pData2: Integer;
+  pString2: WideString;
+begin
+  pData2 := pData;
+  pString2 := pString;
+  Result := DirectIO(Command, pData2, pString2);
 end;
 
 end.

@@ -4,7 +4,7 @@ uses
   Forms,
   TestFramework,
   GUITestRunner,
-  duWebPrinterImpl in 'units\duWebPrinterImpl.pas',
+  duOleDriver in 'units\duOleDriver.pas',
   WebPrinter in '..\..\source\WebFptrSo\Units\WebPrinter.pas',
   LogFile in '..\..\source\Shared\LogFile.pas',
   WException in '..\..\source\Shared\WException.pas',
@@ -48,7 +48,10 @@ uses
   CashOutReceipt in '..\..\source\WebFptrSo\units\CashOutReceipt.pas',
   SalesReceipt in '..\..\source\WebFptrSo\units\SalesReceipt.pas',
   TextDocument in '..\..\source\WebFptrSo\units\TextDocument.pas',
-  uLkJSON in '..\..\source\Shared\uLkJSON.pas';
+  uLkJSON in '..\..\source\Shared\uLkJSON.pas',
+  duWebPrinterImpl in 'units\duWebPrinterImpl.pas',
+  SMFiscalPrinter in '..\..\source\Opos\SMFiscalPrinter.pas',
+  OposFiscalPrinter_1_13_Lib_TLB in '..\..\source\Opos\OposFiscalPrinter_1_13_Lib_TLB.pas';
 
 {$R *.RES}
 

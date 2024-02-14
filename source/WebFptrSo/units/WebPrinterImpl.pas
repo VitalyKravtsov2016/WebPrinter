@@ -2152,52 +2152,52 @@ begin
     FieldName := FRecItemFields.Names[i];
     FieldValue := FRecItemFields.ValueFromIndex[i];
 
-    if AnsiCompareText('name', FieldName) = 0 then
+    if WideCompareText('name', FieldName) = 0 then
       Product.name := FieldValue;
 
-    if AnsiCompareText('barcode', FieldName) = 0 then
+    if WideCompareText('barcode', FieldName) = 0 then
       Product.barcode := FieldValue;
 
-    if AnsiCompareText('amount', FieldName) = 0 then
+    if WideCompareText('amount', FieldName) = 0 then
       Product.amount := StrToInt64(FieldValue);
 
-    if AnsiCompareText('units', FieldName) = 0 then
+    if WideCompareText('units', FieldName) = 0 then
       Product.units := StrToInt(FieldValue);
 
-    if AnsiCompareText('price', FieldName) = 0 then
+    if WideCompareText('price', FieldName) = 0 then
       Product.price := StrToInt64(FieldValue);
 
-    if AnsiCompareText('product_price', FieldName) = 0 then
+    if WideCompareText('product_price', FieldName) = 0 then
       Product.product_price := StrToInt64(FieldValue);
 
-    if AnsiCompareText('vat', FieldName) = 0 then
+    if WideCompareText('vat', FieldName) = 0 then
       Product.vat := StrToInt64(FieldValue);
 
-    if AnsiCompareText('vat_percent', FieldName) = 0 then
+    if WideCompareText('vat_percent', FieldName) = 0 then
       Product.vat_percent := StrToInt(FieldValue);
 
-    if AnsiCompareText('discount', FieldName) = 0 then
+    if WideCompareText('discount', FieldName) = 0 then
       Product.discount := StrToInt64(FieldValue);
 
-    if AnsiCompareText('discount_percent', FieldName) = 0 then
+    if WideCompareText('discount_percent', FieldName) = 0 then
       Product.discount_percent := StrToInt(FieldValue);
 
-    if AnsiCompareText('other', FieldName) = 0 then
+    if WideCompareText('other', FieldName) = 0 then
       Product.other := StrToInt64(FieldValue);
 
-    if AnsiCompareText('class_code', FieldName) = 0 then
+    if WideCompareText('class_code', FieldName) = 0 then
       Product.class_code := FieldValue;
 
-    if AnsiCompareText('package_code', FieldName) = 0 then
+    if WideCompareText('package_code', FieldName) = 0 then
       Product.package_code := StrToInt(FieldValue);
 
-    if AnsiCompareText('owner_type', FieldName) = 0 then
+    if WideCompareText('owner_type', FieldName) = 0 then
       Product.owner_type := StrToInt(FieldValue);
 
-    if AnsiCompareText('comission_info.inn', FieldName) = 0 then
+    if WideCompareText('comission_info.inn', FieldName) = 0 then
       Product.comission_info.inn := FieldValue;
 
-    if AnsiCompareText('comission_info.pinfl', FieldName) = 0 then
+    if WideCompareText('comission_info.pinfl', FieldName) = 0 then
       Product.comission_info.pinfl := FieldValue;
   end;
 end;
@@ -2213,40 +2213,40 @@ begin
     FieldName := FReceiptFields.Names[i];
     FieldValue := FReceiptFields.ValueFromIndex[i];
 
-    if AnsiCompareText('qr_code', FieldName) = 0 then
+    if WideCompareText('qr_code', FieldName) = 0 then
       Order.qr_code := FieldValue;
 
-    if AnsiCompareText('number', FieldName) = 0 then
+    if WideCompareText('number', FieldName) = 0 then
       Order.number := StrToInt(FieldValue);
 
-    if AnsiCompareText('receipt_type', FieldName) = 0 then
+    if WideCompareText('receipt_type', FieldName) = 0 then
       Order.receipt_type := FieldValue;
 
-    if AnsiCompareText('time', FieldName) = 0 then
+    if WideCompareText('time', FieldName) = 0 then
       Order.time := FieldValue;
 
-    if AnsiCompareText('cashier', FieldName) = 0 then
+    if WideCompareText('cashier', FieldName) = 0 then
       Order.cashier := FieldValue;
 
-    if AnsiCompareText('received_cash', FieldName) = 0 then
+    if WideCompareText('received_cash', FieldName) = 0 then
       Order.received_cash := StrToInt64(FieldValue);
 
-    if AnsiCompareText('change', FieldName) = 0 then
+    if WideCompareText('change', FieldName) = 0 then
       Order.change := StrToInt64(FieldValue);
 
-    if AnsiCompareText('received_card', FieldName) = 0 then
+    if WideCompareText('received_card', FieldName) = 0 then
       Order.received_card := StrToInt(FieldValue);
 
-    if AnsiCompareText('open_cashbox', FieldName) = 0 then
+    if WideCompareText('open_cashbox', FieldName) = 0 then
       Order.open_cashbox := StrToBool(FieldValue);
 
-    if AnsiCompareText('send_email', FieldName) = 0 then
+    if WideCompareText('send_email', FieldName) = 0 then
       Order.send_email := StrToBool(FieldValue);
 
-    if AnsiCompareText('email', FieldName) = 0 then
+    if WideCompareText('email', FieldName) = 0 then
       Order.email := FieldValue;
 
-    if AnsiCompareText('sms_phone_number', FieldName) = 0 then
+    if WideCompareText('sms_phone_number', FieldName) = 0 then
       Order.sms_phone_number := FieldValue;
   end;
 end;

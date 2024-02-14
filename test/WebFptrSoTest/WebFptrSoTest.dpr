@@ -52,6 +52,7 @@ uses
   SalesReceipt in '..\..\source\WebFptrSo\units\SalesReceipt.pas',
   TextDocument in '..\..\source\WebFptrSo\units\TextDocument.pas',
   WebFptrSO_TLB in '..\..\source\WebFptrSo\WebFptrSO_TLB.pas',
+  duLogFile in 'units\duLogFile.pas',
   duWebPrinterImpl in 'units\duWebPrinterImpl.pas';
 
 {$R *.RES}

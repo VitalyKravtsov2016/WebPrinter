@@ -603,7 +603,7 @@ end;
 
 class function TLogFile.StrToText(const Text: WideString): WideString;
 var
-  Code: Byte;
+  Code: Word;
   i: Integer;
   IsPrevCharNormal: Boolean;
 begin
@@ -651,9 +651,9 @@ begin
       varOleStr,
       varStrArg,
       varString:
-        Result := StrToText(VarToStr(V));
+        Result := '''' + VarToWideStr(V) + '''';
     else
-      Result := VarToStr(V);
+      Result := VarToWideStr(V);
     end;
   end;
 end;
@@ -719,7 +719,7 @@ end;
 
 procedure TLogFile.LogParam(const ParamName: WideString; const ParamValue: Variant);
 begin
-  Debug(ParamName + ': ' + VarToStr(ParamValue));
+  Debug(ParamName + ': ' + VarToWideStr(ParamValue));
 end;
 
 

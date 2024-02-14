@@ -9,6 +9,7 @@ uses
 type
   TSetOfChar = set of char;
 
+function WideStrToHex(const S: WideString): WideString;
 function StrToHex(const S: AnsiString): AnsiString;
 function StrToHexText(const S: AnsiString): AnsiString;
 function HexToStr(const Data: AnsiString): AnsiString;
@@ -164,6 +165,21 @@ function BinToInt64(const Data: AnsiString; Index, Size: Integer): Int64;
 begin
   Result := 0;
   Move(Data[Index], Result, Size);
+end;
+
+function WideStrToHex(const S: WideString): WideString;
+var
+  i: Integer;
+  C: Word;
+begin
+  Result := '';
+  for i := 1 to Length(S) do
+  begin
+    if i <> 1 then Result := Result + ' ';
+
+    C := Ord(S[i]);
+    Result := Result + IntToHex(Lo(C), 2) + ' ' + IntToHex(Hi(C), 2);
+  end;
 end;
 
 function StrToHex(const S: AnsiString): AnsiString;
