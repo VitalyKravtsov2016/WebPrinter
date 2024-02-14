@@ -108,6 +108,7 @@ See http://www.suigeneris.org/want/ for details.
       <writeableconst value="true" />
       <align value="false" />
       <optimize value="false" />
+      <optimization value="false" />
       <warnings value="true" />
       <warning name="SYMBOL_PLATFORM" value="off" />
       <warning name="SYMBOL_DEPRECATED" value="off" />
@@ -144,6 +145,7 @@ See http://www.suigeneris.org/want/ for details.
       <writeableconst value="true" />
       <align value="false" />
       <optimize value="false" />
+      <optimization value="false" />
       <warnings value="true" />
       <warning name="SYMBOL_PLATFORM" value="off" />
       <warning name="SYMBOL_DEPRECATED" value="off" />
@@ -183,6 +185,7 @@ See http://www.suigeneris.org/want/ for details.
       <stackframes value="true" />
       <align value="false" />
       <optimize value="false" />
+      <optimization value="false" />
       <warnings value="true" />
       <warning name="SYMBOL_PLATFORM" value="off" />
       <warning name="SYMBOL_DEPRECATED" value="off" />
@@ -210,6 +213,8 @@ See http://www.suigeneris.org/want/ for details.
       <debug     value="true" />
       <console   value="true" />
       <writeableconst value="true" />
+      <optimize value="false" />
+      <optimization value="false" />
       <warnings value="true" />    
       <warning name="SYMBOL_PLATFORM" value="off" />
       <warning name="SYMBOL_DEPRECATED" value="off" />

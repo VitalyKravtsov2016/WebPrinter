@@ -23,7 +23,6 @@ OutputDir="."
 OutputBaseFilename=Setup
 [Components]
 Name: "main"; Description: "Driver files"; Types: full compact custom; Flags: fixed
-Name: "source"; Description: "Samples and source code"; 
 [Files]
 ; Version history
 Source: "History.txt"; DestDir: "{app}"; Flags: ignoreversion; components: main;
