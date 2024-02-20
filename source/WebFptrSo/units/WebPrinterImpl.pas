@@ -18,7 +18,7 @@ uses
   PrinterParametersX, CashInReceipt, CashOutReceipt, SalesReceipt,
   ReceiptItem, StringUtils, DebugUtils, VatRate, FileUtils,
   PrinterTypes, DirectIOAPI, PrinterParametersReg, WebPrinter,
-  WebFptrSO_TLB, MathUtils, ItemUnit, JsonUtils, uLkJSON;
+  WebFptrSO_TLB, MathUtils, ItemUnit, JsonUtils, uLkJSON, TLVItem;
 
 const
   AmountDecimalPlaces = 2;
@@ -31,6 +31,7 @@ type
   private
     FLogger: ILogFile;
     FLines: TTntStrings;
+    FTLVItems: TTLVItems;
     FPrinter: TWebPrinter;
     FReceipt: TCustomReceipt;
     FParams: TPrinterParameters;
@@ -50,6 +51,7 @@ type
     procedure UpdateRecItemFields(Product: TWPProduct);
     procedure UpdateReceiptFields(Order: TWPOrder);
     procedure UpdateZReport;
+    procedure WriteOperationTag(pData: Integer; const pString: string);
   public
     function AmountToStr(Value: Currency): AnsiString;
     function AmountToOutStr(Value: Currency): AnsiString;
@@ -355,6 +357,7 @@ begin
   FPrinterState := TFiscalPrinterState.Create;
   FReceiptFields := TTntStringList.Create;
   FRecItemFields := TTntStringList.Create;
+  FTLVItems := TTLVItems.Create;
 
   FLoadParamsEnabled := True;
   FTimeDiff := 0;
@@ -369,6 +372,7 @@ begin
   FParams.Free;
   FReceipt.Free;
   FPrinter.Free;
+  FTLVItems.Free;
   FOposDevice.Free;
   FPrinterState.Free;
   FReceiptFields.Free;
@@ -760,6 +764,8 @@ end;
 function TWebPrinterImpl.DirectIO(Command: Integer; var pData: Integer;
   var pString: WideString): Integer;
 var
+  i: Integer;
+  TLVItem: TTLVItem;
   FieldName: WideString;
   FieldValue: WideString;
 begin
@@ -778,28 +784,35 @@ begin
         end;
       end;
 
-      DIO_STLV_WRITE_OP:
+      DIO_STLV_BEGIN:
+      begin
+        FTLVItems.Start(pData);
+      end;
+
+      // Write STLV
+      DIO_STLV_WRITE:
       begin
 
       end;
 
+      // Write STLV to operation
+      DIO_STLV_WRITE_OP:
+      begin
+        for i := 0 to FTLVItems.Count-1 do
+        begin
+          TLVItem := FTLVItems[i];
+          WriteOperationTag(TLVItem.ID, TLVItem.Data);
+        end;
+      end;
+
+      DIO_STLV_ADD_TAG:
+      begin
+        FTLVItems.Add(pData, pString);
+      end;
+
       DIO_WRITE_FS_STRING_TAG_OP:
       begin
-        case pData of
-          1171: ; // номера контактных телефонов поставщика
-	        1222: ; // признак агента по предмету расчета
-          1225: ; // наименование поставщика
-          // ИНН поставщика '5213500887'
-	        1226: FReceipt.SetProviderINN(pString);
-          1228: FReceipt.CustomerINN := pString;
-          1008:
-          begin
-            if Pos('@', pString) <> 0 then
-              FReceipt.CustomerEmail := pString
-            else
-              FReceipt.CustomerPhone := pString;
-          end;
-        end;
+        WriteOperationTag(pData, pString);
       end;
       DIO_SET_RECEIPT_QRCODE:
       begin
@@ -846,6 +859,25 @@ begin
   except
     on E: Exception do
       Result := HandleException(E);
+  end;
+end;
+
+procedure TWebPrinterImpl.WriteOperationTag(pData: Integer; const pString: string);
+begin
+  case pData of
+    1171: ; // номера контактных телефонов поставщика
+    1222: ; // признак агента по предмету расчета
+    1225: ; // наименование поставщика
+    // ИНН поставщика '5213500887'
+    1226: FReceipt.SetProviderINN(pString);
+    1228: FReceipt.CustomerINN := pString;
+    1008:
+    begin
+      if Pos('@', pString) <> 0 then
+        FReceipt.CustomerEmail := pString
+      else
+        FReceipt.CustomerPhone := pString;
+    end;
   end;
 end;
 

@@ -184,6 +184,10 @@ begin
   FptrCheck(Driver.PrintRecItem('Item 4', 100, 1000, 3, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 8, 4));
+  FptrCheck(Driver.DirectIO2(DIO_STLV_BEGIN, 1224, ''));
+  FptrCheck(Driver.DirectIO2(DIO_STLV_ADD_TAG, 1226, '827364827346'));
+  FptrCheck(Driver.DirectIO2(DIO_STLV_WRITE_OP, 0, ''));
+
 
   FptrCheck(Driver.PrintRecMessage('Message 3'));
   FptrCheck(Driver.PrintRecTotal(400, 150, '0'));
@@ -217,7 +221,7 @@ begin
     CheckEquals('', Order.products[0].comission_info.inn, 'comission_info.inn');
     CheckEquals('', Order.products[1].comission_info.inn, 'comission_info.inn');
     CheckEquals('048768768768', Order.products[2].comission_info.inn, 'comission_info.inn');
-    CheckEquals('', Order.products[3].comission_info.inn, 'comission_info.inn');
+    CheckEquals('827364827346', Order.products[3].comission_info.inn, 'comission_info.inn');
   finally
     Order.Free;
   end;

@@ -51,7 +51,8 @@ uses
   uLkJSON in '..\..\source\Shared\uLkJSON.pas',
   duWebPrinterImpl in 'units\duWebPrinterImpl.pas',
   SMFiscalPrinter in '..\..\source\Opos\SMFiscalPrinter.pas',
-  OposFiscalPrinter_1_13_Lib_TLB in '..\..\source\Opos\OposFiscalPrinter_1_13_Lib_TLB.pas';
+  OposFiscalPrinter_1_13_Lib_TLB in '..\..\source\Opos\OposFiscalPrinter_1_13_Lib_TLB.pas',
+  TLVItem in '..\..\source\WebFptrSo\units\TLVItem.pas';
 
 {$R *.RES}
 
