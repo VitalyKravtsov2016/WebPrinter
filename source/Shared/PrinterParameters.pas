@@ -35,6 +35,14 @@ const
   DefVatRateEnabled = True;
 
 type
+  { TCashParams }
+
+  TCashParams = record
+    Line: WideString;
+    PreLine: WideString;
+    PostLine: WideString;
+  end;
+
   { TPrinterParameters }
 
   TPrinterParameters = class(TPersistent)
@@ -53,6 +61,11 @@ type
     FVatRateEnabled: Boolean;
     FOpenCashbox: Boolean;
     FMessageLength: Integer;
+    FCashIn: TCashParams;
+    FCashout: TCashParams;
+    FCashInAmount: Currency;
+    FCashOutAmount: Currency;
+
     procedure SetMessageLength(const Value: Integer);
   public
     constructor Create(ALogger: ILogFile);
@@ -79,6 +92,14 @@ type
     property PaymentType4: Integer read FPaymentType4 write FPaymentType4;
     property OpenCashbox: Boolean read FOpenCashbox write FOpenCashbox;
     property MessageLength: Integer read FMessageLength write SetMessageLength;
+    property CashInLine: WideString read FCashin.Line write FCashin.Line;
+    property CashInPreLine: WideString read FCashin.PreLine write FCashin.PreLine;
+    property CashInPostLine: WideString read FCashin.PostLine write FCashin.PostLine;
+    property CashoutLine: WideString read FCashout.Line write FCashout.Line;
+    property CashoutPreLine: WideString read FCashout.PreLine write FCashout.PreLine;
+    property CashoutPostLine: WideString read FCashout.PostLine write FCashout.PostLine;
+    property CashInAmount: Currency read FCashInAmount write FCashInAmount;
+    property CashOutAmount: Currency read FCashOutAmount write FCashOutAmount;
   end;
 
 implementation
@@ -146,6 +167,14 @@ begin
   ItemUnits.Add(42, '‰ÂÌ¸');
   ItemUnits.Add(43, 'ÏÂÒˇˆ');
   ItemUnits.Add(49, 'ÛÎÓÌ');
+
+  CashinLine := '¬Õ≈—≈ÕŒ';
+  CashinPreLine := '“»œ Œœ≈–¿÷»»: ¬Õ≈—≈Õ»≈';
+  CashinPostLine := '';
+
+  CashoutLine := '»«⁄ﬂ“Œ';
+  CashoutPreLine := '“»œ Œœ≈–¿÷»»: »«⁄ﬂ“»≈';
+  CashoutPostLine := '';
 end;
 
 procedure TPrinterParameters.WriteLogParameters;
@@ -174,6 +203,14 @@ begin
     Logger.Debug(Format('VAT: code=%d, rate=%.2f, name="%s"', [
       VatRate.Code, VatRate.Rate, VatRate.Name]));
   end;
+
+  Logger.Debug('CashinLine: ' + CashinLine);
+  Logger.Debug('CashinPreLine: ' + CashinPreLine);
+  Logger.Debug('CashinPostLine: ' + CashinPostLine);
+  Logger.Debug('CashoutLine: ' + CashoutLine);
+  Logger.Debug('CashoutPreLine: ' + CashoutPreLine);
+  Logger.Debug('CashoutPostLine: ' + CashoutPostLine);
+
   Logger.Debug(Logger.Separator);
 end;
 
@@ -202,6 +239,14 @@ begin
     VatRates.Assign(VatRates);
     OpenCashbox := Src.OpenCashbox;
     MessageLength := Src.MessageLength;
+
+    CashinLine := Src.CashinLine;
+    CashinPreLine := Src.CashinPreLine;
+    CashinPostLine := Src.CashinPostLine;
+    CashoutLine := Src.CashoutLine;
+    CashoutPreLine := Src.CashoutPreLine;
+    CashoutPostLine := Src.CashoutPostLine;
+
   end else
     inherited Assign(Source);
 end;

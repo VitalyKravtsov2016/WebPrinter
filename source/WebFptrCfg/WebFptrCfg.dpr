@@ -54,10 +54,11 @@ uses
   WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
   fmuFptrUnit in 'Fmu\fmuFptrUnit.pas' {fmFptrUnit},
   fmuFptrCashDrawer in 'Fmu\fmuFptrCashDrawer.pas' {fmFptrCashDrawer},
-  fmuFptrPrint in 'Fmu\fmuFptrPrint.pas' {fmFptrPrint},
+  fmuFptrCash in 'Fmu\fmuFptrCash.pas' {fmFptrCash},
   VatRate in '..\Shared\VatRate.pas',
   fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate},
-  fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType};
+  fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType},
+  fmuFptrPrint in 'Fmu\fmuFptrPrint.pas' {fmFptrPrint};
 
 {$R *.RES}
 {$R Windows.RES}

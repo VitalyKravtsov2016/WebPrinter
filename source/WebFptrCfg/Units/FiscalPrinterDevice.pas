@@ -52,7 +52,7 @@ implementation
 
 uses
   fmuFptrConnection, fmuFptrLog, fmuFptrVatRate, fmuFptrPayType,
-  fmuFptrCashDrawer, fmuFptrUnit, fmuFptrPrint;
+  fmuFptrCashDrawer, fmuFptrUnit, fmuFptrPrint, fmuFptrCash;
 
 { TFiscalPrinterDevice }
 
@@ -94,7 +94,7 @@ begin
   fm := TfmPages.Create(nil);
   try
     fm.Device := Self;
-    fm.Caption := 'Fiscal printer';
+    fm.Caption := 'Фискальный принтер';
     LoadParameters(Parameters, DeviceName, Logger);
     //
     AddPage(fm, TfmFptrConnection);
@@ -104,6 +104,7 @@ begin
     AddPage(fm, TfmFptrPayType);
     AddPage(fm, TfmFptrCashDrawer);
     AddPage(fm, TfmFptrUnit);
+    AddPage(fm, TfmFptrCash);
 
     fm.Init;
     fm.UpdatePage;

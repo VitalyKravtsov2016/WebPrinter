@@ -1,6 +1,6 @@
 object fmFptrLog: TfmFptrLog
-  Left = 536
-  Top = 304
+  Left = 766
+  Top = 223
   AutoScroll = False
   BorderIcons = [biSystemMenu]
   Caption = #1051#1086#1075

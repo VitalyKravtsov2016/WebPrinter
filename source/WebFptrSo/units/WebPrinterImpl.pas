@@ -53,7 +53,6 @@ type
     procedure UpdateZReport;
     procedure WriteOperationTag(pData: Integer; const pString: string);
   public
-    function AmountToStr(Value: Currency): AnsiString;
     function AmountToOutStr(Value: Currency): AnsiString;
     function AmountToStrEq(Value: Currency): AnsiString;
   public
@@ -383,20 +382,6 @@ end;
 function TWebPrinterImpl.GetPrinterDate: TDateTime;
 begin
   Result := Now + FTimeDiff;
-end;
-
-function TWebPrinterImpl.AmountToStr(Value: Currency): AnsiString;
-begin
-  Result := Format('%.*f', [2, Value]);
-(*
-  if Params.AmountDecimalPlaces = 0 then
-  begin
-    Result := IntToStr(Round(Value));
-  end else
-  begin
-    Result := Format('%.*f', [Params.AmountDecimalPlaces, Value]);
-  end;
-*)
 end;
 
 function TWebPrinterImpl.AmountToOutStr(Value: Currency): AnsiString;
@@ -1698,6 +1683,7 @@ end;
 
 function TWebPrinterImpl.PrintXReport: Integer;
 var
+  Item: TWPCurrency;
   Request: TWPCloseDayRequest;
 begin
   Request := TWPCloseDayRequest.Create;
@@ -1708,6 +1694,15 @@ begin
     Request.Time := GetPrinterDate;
     Request.close_zreport := False;
     Request.name := 'X ÎÒ×¨Ò';
+    // Cashin
+    Item := Request.prices.Add as TWPCurrency;
+    Item.name := Params.CashInLine;
+    Item.price := Round2(Params.CashInAmount * 100);
+    // Cashout
+    Item := Request.prices.Add as TWPCurrency;
+    Item.name := Params.CashOutLine;
+    Item.price := Round2(Params.CashOutAmount * 100);
+
     FPrinter.PrintZReport(Request);
     Result := ClearResult;
   except
@@ -1719,6 +1714,7 @@ end;
 
 function TWebPrinterImpl.PrintZReport: Integer;
 var
+  Item: TWPCurrency;
   Request: TWPCloseDayRequest;
 begin
   Request := TWPCloseDayRequest.Create;
@@ -1729,7 +1725,21 @@ begin
     Request.Time := GetPrinterDate;
     Request.close_zreport := True;
     Request.name := 'Z ÎÒ×¨Ò';
+    // Cashin
+    Item := Request.prices.Add as TWPCurrency;
+    Item.name := Params.CashInLine;
+    Item.price := Round2(Params.CashInAmount * 100);
+    // Cashout
+    Item := Request.prices.Add as TWPCurrency;
+    Item.name := Params.CashOutLine;
+    Item.price := Round2(Params.CashOutAmount * 100);
+
     FPrinter.PrintZReport(Request);
+    // Clear Cash in and out
+    Params.CashInAmount := 0;
+    Params.CashOutAmount := 0;
+    SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+
     UpdateZReport;
     FDayOpened := False;
     Result := ClearResult;
@@ -2164,13 +2174,67 @@ begin
 end;
 
 procedure TWebPrinterImpl.Print(Receipt: TCashInReceipt);
+var
+  Text: TWPText;
+  Line: WideString;
+  Banner: TWPBanner;
+  Lines: TTntStrings;
 begin
-  { !!! }
+  if Receipt.IsVoided then Exit;
+
+  Text := TWPText.Create;
+  Lines := TTntStringList.Create;
+  try
+    Lines.AddStrings(Receipt.Lines);
+    Lines.Add(Params.CashInPreLine);
+    Line := AlignLines(Params.CashInLine, AmountToStrEq(Receipt.GetTotal), Params.MessageLength);
+    Lines.Add(Line);
+    Lines.Add(Params.CashInPostLine);
+
+    Banner := Text.banners.Add as TWPBanner;
+    Banner._type := 'text';
+    Banner.data := Lines.Text;
+    Banner.Cut := True;
+    FPrinter.PrintText(Text);
+    // Save cashin
+    Params.CashInAmount := Params.CashInAmount + Receipt.GetTotal;
+    SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+  finally
+    Text.Free;
+    Lines.Free;
+  end;
 end;
 
 procedure TWebPrinterImpl.Print(Receipt: TCashOutReceipt);
+var
+  Text: TWPText;
+  Line: WideString;
+  Banner: TWPBanner;
+  Lines: TTntStrings;
 begin
-  { !!! }
+  if Receipt.IsVoided then Exit;
+
+  Text := TWPText.Create;
+  Lines := TTntStringList.Create;
+  try
+    Lines.AddStrings(Receipt.Lines);
+    Lines.Add(Params.CashOutPreLine);
+    Line := AlignLines(Params.CashOutLine, AmountToStrEq(Receipt.GetTotal), Params.MessageLength);
+    Lines.Add(Line);
+    Lines.Add(Params.CashOutPostLine);
+
+    Banner := Text.banners.Add as TWPBanner;
+    Banner._type := 'text';
+    Banner.data := Lines.Text;
+    Banner.Cut := True;
+    FPrinter.PrintText(Text);
+    // Save cashout
+    Params.CashOutAmount := Params.CashOutAmount + Receipt.GetTotal;
+    SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+  finally
+    Text.Free;
+    Lines.Free;
+  end;
 end;
 
 procedure TWebPrinterImpl.UpdateRecItemFields(Product: TWPProduct);

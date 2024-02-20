@@ -39,6 +39,8 @@ type
     procedure TestRefundReceipt;
     procedure TestRefundReceipt2;
     procedure TestNonfiscalReceipt;
+    procedure TestCashinReceipt;
+    procedure TestCashoutReceipt;
   end;
 
 implementation
@@ -330,7 +332,7 @@ end;
 procedure TWebPrinterImplTest.TestNonfiscalReceipt;
 var
   i: Integer;
-  Text: WideString;
+  //Text: WideString;
   Strings: TTntStringList;
 begin
   Strings := TTntStringList.Create;
@@ -351,6 +353,102 @@ begin
   finally
     Strings.Free;
   end;
+end;
+
+procedure TWebPrinterImplTest.TestCashinReceipt;
+var
+  Text: WideString;
+begin
+  Driver.Params.CashInLine := 'CashInLine';
+  Driver.Params.CashInPreLine := 'CashInPreLine';
+  Driver.Params.CashInPostLine := 'CashInPostLine';
+  Driver.Params.CashoutLine := 'CashoutLine';
+  Driver.Params.CashoutPreLine := 'CashoutPreLine';
+  Driver.Params.CashoutPostLine := 'CashoutPostLine';
+
+  OpenClaimEnable;
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_IN);
+  CheckEquals(FPTR_RT_CASH_IN, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.PrintRecMessage('Message 1'));
+  FptrCheck(Driver.PrintRecMessage('Message 2'));
+  FptrCheck(Driver.PrintRecCash(12345));
+  FptrCheck(Driver.PrintRecTotal(12345, 12345, ''));
+  FptrCheck(Driver.PrintRecMessage('Message 3'));
+  FptrCheck(Driver.PrintRecMessage('Message 4'));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  //WriteFileData('CashIn.json', Driver.Printer.RequestJson)
+  Text := ReadFileData('CashIn.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashIn.json');
+
+  FptrCheck(Driver.PrintXReport);
+  //WriteFileData('CashinXReport.json', Driver.Printer.RequestJson);
+  Text := ReadFileData('CashinXReport.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashinXReport.json');
+
+  FptrCheck(Driver.PrintZReport);
+  //WriteFileData('CashinZReport.json', Driver.Printer.RequestJson);
+  Text := ReadFileData('CashinZReport.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashinZReport.json');
+
+  FptrCheck(Driver.PrintXReport);
+  //WriteFileData('CashinXReport2.json', Driver.Printer.RequestJson);
+  Text := ReadFileData('CashinXReport2.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashinXReport2.json');
+end;
+
+procedure TWebPrinterImplTest.TestCashoutReceipt;
+var
+  Text: WideString;
+begin
+  Driver.Params.CashInLine := 'CashInLine';
+  Driver.Params.CashInPreLine := 'CashInPreLine';
+  Driver.Params.CashInPostLine := 'CashInPostLine';
+  Driver.Params.CashoutLine := 'CashoutLine';
+  Driver.Params.CashoutPreLine := 'CashoutPreLine';
+  Driver.Params.CashoutPostLine := 'CashoutPostLine';
+
+  OpenClaimEnable;
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_OUT);
+  CheckEquals(FPTR_RT_CASH_OUT, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.PrintRecMessage('Message 1'));
+  FptrCheck(Driver.PrintRecMessage('Message 2'));
+  FptrCheck(Driver.PrintRecCash(12345));
+  FptrCheck(Driver.PrintRecTotal(12345, 12345, ''));
+  FptrCheck(Driver.PrintRecMessage('Message 3'));
+  FptrCheck(Driver.PrintRecMessage('Message 4'));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  //WriteFileData('CashOut.json', Driver.Printer.RequestJson)
+  Text := ReadFileData('CashOut.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashOut.json');
+
+  FptrCheck(Driver.PrintXReport);
+  //WriteFileData('CashoutXReport.json', Driver.Printer.RequestJson);
+  Text := ReadFileData('CashoutXReport.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutXReport.json');
+
+  FptrCheck(Driver.PrintZReport);
+  //WriteFileData('CashoutZReport.json', Driver.Printer.RequestJson);
+  Text := ReadFileData('CashoutZReport.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutZReport.json');
+
+  FptrCheck(Driver.PrintXReport);
+  //WriteFileData('CashoutXReport2.json', Driver.Printer.RequestJson);
+  Text := ReadFileData('CashoutXReport2.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutXReport2.json');
 end;
 
 initialization

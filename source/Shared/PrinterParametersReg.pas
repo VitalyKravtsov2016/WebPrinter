@@ -189,6 +189,21 @@ begin
       if Reg.ValueExists('MessageLength') then
         Parameters.MessageLength := Reg.ReadInteger('MessageLength');
 
+      if Reg.ValueExists('CashinLine') then
+        Parameters.CashinLine := Reg.ReadString('CashinLine');
+      if Reg.ValueExists('CashinPreLine') then
+        Parameters.CashinPreLine := Reg.ReadString('CashinPreLine');
+      if Reg.ValueExists('CashinPostLine') then
+        Parameters.CashinPostLine := Reg.ReadString('CashinPostLine');
+
+      if Reg.ValueExists('CashoutLine') then
+        Parameters.CashoutLine := Reg.ReadString('CashoutLine');
+      if Reg.ValueExists('CashoutPreLine') then
+        Parameters.CashoutPreLine := Reg.ReadString('CashoutPreLine');
+      if Reg.ValueExists('CashoutPostLine') then
+        Parameters.CashoutPostLine := Reg.ReadString('CashoutPostLine');
+
+
       Reg.CloseKey;
     end;
     ReadVatRates(Reg, KeyName + '\' + REG_KEY_VATRATES);
@@ -302,6 +317,15 @@ begin
     Reg.WriteBool('VatRateEnabled', FParameters.VatRateEnabled);
     Reg.WriteBool('OpenCashbox', FParameters.OpenCashbox);
     Reg.WriteInteger('MessageLength', FParameters.MessageLength);
+
+    Reg.WriteString('CashinLine', FParameters.CashinLine);
+    Reg.WriteString('CashinPreLine', FParameters.CashinPreLine);
+    Reg.WriteString('CashinPostLine', FParameters.CashinPostLine);
+
+    Reg.WriteString('CashoutLine', FParameters.CashoutLine);
+    Reg.WriteString('CashoutPreLine', FParameters.CashoutPreLine);
+    Reg.WriteString('CashoutPostLine', FParameters.CashoutPostLine);
+
     Reg.CloseKey;
     // VatRates
     Reg.DeleteKey(KeyName + '\' + REG_KEY_VATRATES);
@@ -347,11 +371,43 @@ begin
 end;
 
 procedure TPrinterParametersReg.LoadUsrParameters(const DeviceName: WideString);
+var
+  Reg: TTntRegistry;
+  KeyName: WideString;
 begin
+  Reg := TTntRegistry.Create;
+  try
+    Reg.Access := KEY_ALL_ACCESS;
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
+    KeyName := GetUsrKeyName(DeviceName);
+    if Reg.OpenKey(KeyName, False) then
+    begin
+      Parameters.CashInAmount := Reg.ReadCurrency('CashInAmount');
+      Parameters.CashOutAmount := Reg.ReadCurrency('CashOutAmount');
+    end;
+  finally
+    Reg.Free;
+  end;
 end;
 
 procedure TPrinterParametersReg.SaveUsrParameters(const DeviceName: WideString);
+var
+  Reg: TTntRegistry;
+  KeyName: WideString;
 begin
+  Reg := TTntRegistry.Create;
+  try
+    Reg.Access := KEY_ALL_ACCESS;
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
+    KeyName := GetUsrKeyName(DeviceName);
+    if not Reg.OpenKey(KeyName, True) then
+      raiseOpenKeyError(KeyName);
+
+    Reg.WriteCurrency('CashInAmount', Parameters.CashInAmount);
+    Reg.WriteCurrency('CashOutAmount', Parameters.CashOutAmount);
+  finally
+    Reg.Free;
+  end;
 end;
 
 end.
