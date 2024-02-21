@@ -23,6 +23,7 @@ type
     procedure TearDown; override;
   published
     procedure CheckSaveParams;
+    procedure CheckSaveUsrParams;
   end;
 
 implementation
@@ -72,6 +73,25 @@ begin
   CheckDefaultParams;
 end;
 
+
+procedure TParametersTest.CheckSaveUsrParams;
+begin
+  CheckEquals(0, FParams.CashInAmount, 'FParams.CashInAmount');
+  CheckEquals(0, FParams.CashOutAmount, 'FParams.CashOutAmount');
+  FParams.CashInAmount := 123.45;
+  FParams.CashOutAmount := 234.56;
+  FParams.SetDefaults;
+  CheckEquals(0, FParams.CashInAmount, 'FParams.CashInAmount');
+  CheckEquals(0, FParams.CashOutAmount, 'FParams.CashOutAmount');
+
+  FParams.CashInAmount := 123.45;
+  FParams.CashOutAmount := 234.56;
+  SaveUsrParameters(FParams, 'Device1', FLogger);
+  FParams.SetDefaults;
+  LoadParameters(FParams, 'Device1', FLogger);
+  CheckEquals(123.45, FParams.CashInAmount, 'FParams.CashInAmount');
+  CheckEquals(234.56, FParams.CashOutAmount, 'FParams.CashOutAmount');
+end;
 
 initialization
   RegisterTest('', TParametersTest.Suite);

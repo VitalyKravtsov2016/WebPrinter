@@ -10,7 +10,7 @@ uses
   // Opos
   Opos, Oposhi, OposException,
   // This
-  WException, LogFile, FileUtils, VatRate, ReceiptItem, ItemUnit;
+  WException, LogFile, FileUtils, VatRate, ReceiptItem, ItemUnit, StringUtils;
 
 const
   /////////////////////////////////////////////////////////////////////////////
@@ -175,6 +175,8 @@ begin
   CashoutLine := '»«⁄ﬂ“Œ';
   CashoutPreLine := '“»œ Œœ≈–¿÷»»: »«⁄ﬂ“»≈';
   CashoutPostLine := '';
+  CashInAmount := 0;
+  CashOutAmount := 0;
 end;
 
 procedure TPrinterParameters.WriteLogParameters;
@@ -210,6 +212,8 @@ begin
   Logger.Debug('CashoutLine: ' + CashoutLine);
   Logger.Debug('CashoutPreLine: ' + CashoutPreLine);
   Logger.Debug('CashoutPostLine: ' + CashoutPostLine);
+  Logger.Debug('CashInAmount: ' + AmountToStr(CashInAmount));
+  Logger.Debug('CashOutAmount: ' + AmountToStr(CashOutAmount));
 
   Logger.Debug(Logger.Separator);
 end;
