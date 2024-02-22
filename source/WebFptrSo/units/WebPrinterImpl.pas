@@ -883,6 +883,7 @@ end;
 
 procedure TWebPrinterImpl.OpenFiscalDay;
 begin
+  FDayOpened := FPrinter.ReadZReport.result.data.open_time <> '';
   if not FDayOpened then
   begin
     FPrinter.OpenFiscalDay2(GetPrinterDate);
@@ -990,6 +991,7 @@ begin
       begin
         DayResult := FPrinter.CloseDayResponse2.result.data;
         Amount := DayResult.total_sale_cash/100 - DayResult.total_refund_cash/100;
+        Amount := Amount + Params.CashInAmount - Params.CashOutAmount;
         Data := AmountToOutStr(Amount);
       end;
 
@@ -2381,7 +2383,10 @@ var
   TextItem: TRecTextItem;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
+  ItemDiscount: Currency;
+  ReceiptDiscount: Currency;
 begin
+  ReceiptDiscount := Receipt.Discount;
   Order := TWPOrder.Create;
   try
 	  Order.Number := 1;
@@ -2416,7 +2421,13 @@ begin
         Product.VAT := Round2(Item.GetVatAmount(VatRate) * 100);
         Product.vat_percent := Round(VatRate);
 
-        Product.discount := Abs(Round2((Item.Discounts.GetTotal - Item.Charges.GetTotal) * 100));
+        ItemDiscount := Abs(Item.Discounts.GetTotal);
+        if (ReceiptDiscount <> 0) and (Item.Price >= (ItemDiscount + ReceiptDiscount)) then
+        begin
+          ItemDiscount := ItemDiscount + ReceiptDiscount;
+          ReceiptDiscount := 0;
+        end;
+        Product.discount := Abs(Round2(ItemDiscount * 100));
         Product.Discount_percent := Round(Item.GetDiscountPercent);
         Product.Other := 0;
         Product.Labels.Assign(Item.MarkCodes);

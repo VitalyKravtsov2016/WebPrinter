@@ -169,7 +169,7 @@ begin
   FptrCheck(Driver.PrintRecMessage('Message 1'));
   FptrCheck(Driver.DirectIO2(30, 80, Barcode));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_BARCODE, 0, '4780000000007'));
-  FptrCheck(Driver.PrintRecItem('"Item 1"'#10#13, 100, 1000, 10, 100, 'шт'));
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 10, 100, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_PERCENTAGE_DISCOUNT, 'Скидка бонусами', 1000, 4));
 
@@ -190,12 +190,14 @@ begin
   FptrCheck(Driver.DirectIO2(DIO_STLV_ADD_TAG, 1226, '827364827346'));
   FptrCheck(Driver.DirectIO2(DIO_STLV_WRITE_OP, 0, ''));
 
+  // Скидка на чек
+  FptrCheck(Driver.PrintRecSubtotalAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка на чек', 10));
 
   FptrCheck(Driver.PrintRecMessage('Message 3'));
-  FptrCheck(Driver.PrintRecTotal(400, 150, '0'));
-  FptrCheck(Driver.PrintRecTotal(400, 100, '1'));
-  FptrCheck(Driver.PrintRecTotal(400, 100, '2'));
-  FptrCheck(Driver.PrintRecTotal(400, 100, '3'));
+  FptrCheck(Driver.PrintRecTotal(390, 90, '0'));
+  FptrCheck(Driver.PrintRecTotal(390, 100, '1'));
+  FptrCheck(Driver.PrintRecTotal(390, 100, '2'));
+  FptrCheck(Driver.PrintRecTotal(390, 100, '3'));
   FptrCheck(Driver.PrintRecMessage('Message 4'));
 
   CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
@@ -209,6 +211,24 @@ begin
   Order := TWPOrder.Create;
   try
     JsonToObject(Driver.Printer.RequestJson, Order);
+
+
+    CheckEquals(4, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals('Item 2', Order.products[1].name, 'Order.products[1].name');
+    CheckEquals('Item 3', Order.products[2].name, 'Order.products[2].name');
+    CheckEquals('Item 4', Order.products[3].name, 'Order.products[3].name');
+
+    CheckEquals(10000, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(10000, Order.products[1].Price, 'Order.products[1].Price');
+    CheckEquals(10000, Order.products[2].Price, 'Order.products[2].Price');
+    CheckEquals(10000, Order.products[3].Price, 'Order.products[3].Price');
+
+    CheckEquals(2000, Order.products[0].Discount, 'Order.products[0].Discount');
+    CheckEquals(1000, Order.products[1].Discount, 'Order.products[1].Discount');
+    CheckEquals(900, Order.products[2].Discount, 'Order.products[2].Discount');
+    CheckEquals(800, Order.products[3].Discount, 'Order.products[3].Discount');
+
     CheckEquals(4, Order.banners.Count, 'Order.banners.Count');
     CheckEquals('text', Order.banners[0]._type, 'Order.banners[0]._type');
     CheckEquals('text', Order.banners[1]._type, 'Order.banners[1]._type');
@@ -357,7 +377,9 @@ end;
 
 procedure TWebPrinterImplTest.TestCashinReceipt;
 var
+  pData: Integer;
   Text: WideString;
+  pString: WideString;
 begin
   Driver.Params.CashInLine := 'CashInLine';
   Driver.Params.CashInPreLine := 'CashInPreLine';
@@ -367,6 +389,13 @@ begin
   Driver.Params.CashoutPostLine := 'CashoutPostLine';
 
   OpenClaimEnable;
+
+  // Check grand total
+  pData := 0;
+  pString := '';
+  FptrCheck(Driver.GetData(FPTR_GD_GRAND_TOTAL, pData, pString));
+  CheckEquals('0', pString, 'pString <> 0');
+
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_IN);
   CheckEquals(FPTR_RT_CASH_IN, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
@@ -375,8 +404,8 @@ begin
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   FptrCheck(Driver.PrintRecMessage('Message 1'));
   FptrCheck(Driver.PrintRecMessage('Message 2'));
-  FptrCheck(Driver.PrintRecCash(12345));
-  FptrCheck(Driver.PrintRecTotal(12345, 12345, ''));
+  FptrCheck(Driver.PrintRecCash(123.45));
+  FptrCheck(Driver.PrintRecTotal(123.45, 123.45, ''));
   FptrCheck(Driver.PrintRecMessage('Message 3'));
   FptrCheck(Driver.PrintRecMessage('Message 4'));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
@@ -386,6 +415,12 @@ begin
   //WriteFileData('CashIn.json', Driver.Printer.RequestJson)
   Text := ReadFileData('CashIn.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashIn.json');
+
+  // Check grand total
+  pData := 0;
+  pString := '';
+  FptrCheck(Driver.GetData(FPTR_GD_GRAND_TOTAL, pData, pString));
+  CheckEquals('12345', pString, 'pString <> 12345');
 
   FptrCheck(Driver.PrintXReport);
   //WriteFileData('CashinXReport.json', Driver.Printer.RequestJson);

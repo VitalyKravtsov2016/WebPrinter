@@ -562,9 +562,10 @@ procedure TSalesReceipt.SubtotalCharge(Amount: Currency; const Description: Wide
 var
   Adjustment: TAdjustment;
 begin
+  raise Exception.Create('Subtotal charge not supported');
+
   Adjustment := TTotalAdjustment.Create(FItems);
   FCharges.Add(Adjustment);
-
   Adjustment.Total := RoundAmount(Amount);
   Adjustment.Amount := Adjustment.Total;
   Adjustment.VatInfo := 0;
