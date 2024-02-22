@@ -882,11 +882,23 @@ begin
 end;
 
 procedure TWebPrinterImpl.OpenFiscalDay;
+var
+  Response: TWPOpenDayResponse;
 begin
-  FDayOpened := FPrinter.ReadZReport.result.data.open_time <> '';
   if not FDayOpened then
   begin
-    FPrinter.OpenFiscalDay2(GetPrinterDate);
+    FPrinter.RaiseErrors := False;
+    try
+      Response := FPrinter.OpenFiscalDay2(GetPrinterDate);
+    finally
+      FPrinter.RaiseErrors := True;
+    end;
+    if Response.error.code = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then
+    begin
+      FDayOpened := True;
+      Exit;
+    end;
+    FPrinter.CheckForError(Response.error);
     FDayOpened := True;
   end;
 end;
@@ -2385,6 +2397,7 @@ var
   ReceiptItem: TReceiptItem;
   ItemDiscount: Currency;
   ReceiptDiscount: Currency;
+  Response: TWPCreateOrderResponse;
 begin
   ReceiptDiscount := Receipt.Discount;
   Order := TWPOrder.Create;
@@ -2449,16 +2462,32 @@ begin
     end;
     // Apply receipt fields
     UpdateReceiptFields(Order);
-    if receipt.RecType in [rtSell, rtRetBuy] then
+
+    FPrinter.RaiseErrors := False;
+    for i := 1 to 2 do
     begin
-      FPrinter.CreateOrder(Order);
-    end else
-    begin
-      FPrinter.ReturnOrder(Order);
+      if receipt.RecType in [rtSell, rtRetBuy] then
+      begin
+        Response := FPrinter.CreateOrder(Order);
+      end else
+      begin
+        Response := FPrinter.ReturnOrder(Order);
+      end;
+      FPrinter.RaiseErrors := True;
+      if Response.error.code = WP_ERROR_ZREPORT_IS_NOT_OPEN then
+      begin
+        FDayOpened := False;
+        OpenFiscalDay;
+      end else
+      begin
+        FPrinter.CheckForError(Response.error);
+        Break;
+      end;
     end;
     UpdateZReport;
   finally
     Order.Free;
+    FPrinter.RaiseErrors := True;
   end;
 end;
 

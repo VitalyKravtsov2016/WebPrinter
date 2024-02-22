@@ -786,7 +786,6 @@ type
     function GetAddress: WideString;
     function SendJson(const AURL, Request: WideString;
       IsGetRequest: Boolean): WideString;
-    procedure CheckForError(const Error: TWPError);
   public
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
@@ -794,6 +793,7 @@ type
     procedure Clear;
     procedure Connect;
     procedure Disconnect;
+    procedure CheckForError(const Error: TWPError);
     function ReadInfo: WideString;
     function ReadInfo2: TWPInfoCommand;
     function OpenFiscalDay(Time: TDateTime): WideString;
