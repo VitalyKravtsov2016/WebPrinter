@@ -392,6 +392,9 @@ begin
 
   OpenClaimEnable;
 
+  Driver.Printer.Info.Data.terminal_id := 'terminal_id';
+  FptrCheck(Driver.SetPOSID('PosID: 2', 'CashierID: Ivanov'));
+
   // Check grand total
   pData := 0;
   pString := '';
@@ -452,9 +455,14 @@ begin
   Driver.Params.CashoutPostLine := 'CashoutPostLine';
 
   OpenClaimEnable;
+
+  Driver.Printer.Info.Data.terminal_id := 'terminal_id';
+  FptrCheck(Driver.SetPOSID('PosID: 2', 'CashierID: Ivanov'));
+
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_OUT);
   CheckEquals(FPTR_RT_CASH_OUT, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+
 
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));

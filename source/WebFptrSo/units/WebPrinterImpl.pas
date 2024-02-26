@@ -1673,7 +1673,7 @@ begin
 
     Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := False;
-    Request.name := 'X ÎÒ×¨Ò';
+    Request.name := 'X ÎÒ×¨Ò' + CRLF + FPrinter.Info.Data.terminal_id + CRLF + FPosID;
     // Cashin
     Item := Request.prices.Add as TWPCurrency;
     Item.name := Params.CashInLine;
@@ -1703,7 +1703,7 @@ begin
 
     Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := True;
-    Request.name := 'Z ÎÒ×¨Ò';
+    Request.name := 'Z ÎÒ×¨Ò' + CRLF + FPrinter.Info.Data.terminal_id + CRLF + FPosID;
     // Cashin
     Item := Request.prices.Add as TWPCurrency;
     Item.name := Params.CashInLine;
