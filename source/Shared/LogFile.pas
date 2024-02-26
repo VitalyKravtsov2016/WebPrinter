@@ -264,7 +264,7 @@ end;
 procedure ODS(const S: WideString);
 begin
 {$IFDEF DEBUG}
-  //OutputDebugString(PChar(S));
+  OutputDebugStringW(PWideChar(S));
 {$ENDIF}
 end;
 
@@ -360,7 +360,7 @@ begin
       FileCreated := not IsFileExists(FileName);
 
       FHandle := CreateFileW(PWideChar(FileName), GENERIC_READ or GENERIC_WRITE,
-        FILE_SHARE_READ, nil, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+        FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 
       if Opened then
       begin

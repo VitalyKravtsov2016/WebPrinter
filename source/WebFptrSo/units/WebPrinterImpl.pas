@@ -11,6 +11,7 @@ uses
   Opos, Oposhi, OposFptr, OposFptrHi, OposEvents, OposEventsRCS,
   OposException, OposFptrUtils, OposServiceDevice19, OposUtils,
   // gnugettext
+
   gnugettext,
   // This
   LogFile, WException, VersionInfo, DriverError, FiscalPrinterState,
@@ -40,36 +41,33 @@ type
 
     FTestMode: Boolean;
     FPOSID: WideString;
-    FTimeDiff: TDateTime;
     FCashierID: WideString;
     FLoadParamsEnabled: Boolean;
     FReceiptFields: TTntStrings;
     FRecItemFields: TTntStrings;
 
-    function GetPrinterDate: TDateTime;
-    procedure OpenFiscalDay;
     procedure UpdateRecItemFields(Product: TWPProduct);
     procedure UpdateReceiptFields(Order: TWPOrder);
     procedure UpdateZReport;
     procedure WriteOperationTag(pData: Integer; const pString: string);
   public
-    function AmountToOutStr(Value: Currency): AnsiString;
-    function AmountToStrEq(Value: Currency): AnsiString;
-  public
     procedure Initialize;
     procedure CheckEnabled;
-    function IllegalError: Integer;
+    procedure CheckCapSetVatTable;
     procedure CheckState(AState: Integer);
     procedure SetPrinterState(Value: Integer);
-    function DoClose: Integer;
     procedure Print(Receipt: TCashInReceipt); overload;
     procedure Print(Receipt: TCashOutReceipt); overload;
     procedure Print(Receipt: TSalesReceipt); overload;
-    function GetPrinterState: Integer;
+
+    function DoClose: Integer;
     function DoRelease: Integer;
-    procedure CheckCapSetVatTable;
-    function CreateReceipt(FiscalReceiptType: Integer): TCustomReceipt;
+    function IllegalError: Integer;
+    function GetPrinterState: Integer;
     function GetQuantity(Value: Integer): Double;
+    function AmountToStrEq(Value: Currency): AnsiString;
+    function AmountToOutStr(Value: Currency): AnsiString;
+    function CreateReceipt(FiscalReceiptType: Integer): TCustomReceipt;
 
     property Printer: TWebPrinter read FPrinter;
     property Receipt: TCustomReceipt read FReceipt;
@@ -79,7 +77,6 @@ type
     FPreLine: WideString;
     FCheckTotal: Boolean;
     // boolean
-    FDayOpened: Boolean;
     FCoverOpen: Boolean;
     FJrnEmpty: Boolean;
     FJrnNearEnd: Boolean;
@@ -357,9 +354,7 @@ begin
   FReceiptFields := TTntStringList.Create;
   FRecItemFields := TTntStringList.Create;
   FTLVItems := TTLVItems.Create;
-
   FLoadParamsEnabled := True;
-  FTimeDiff := 0;
 end;
 
 destructor TWebPrinterImpl.Destroy;
@@ -376,12 +371,8 @@ begin
   FPrinterState.Free;
   FReceiptFields.Free;
   FRecItemFields.Free;
+  FLogger := nil;
   inherited Destroy;
-end;
-
-function TWebPrinterImpl.GetPrinterDate: TDateTime;
-begin
-  Result := Now + FTimeDiff;
 end;
 
 function TWebPrinterImpl.AmountToOutStr(Value: Currency): AnsiString;
@@ -464,7 +455,6 @@ end;
 
 procedure TWebPrinterImpl.Initialize;
 begin
-  FDayOpened := False;
   FCapSlpEmptySensor := False;
   FCapSlpNearEndSensor := False;
   FCapSlpPresent := False;
@@ -881,33 +871,10 @@ begin
   Result := IllegalError;
 end;
 
-procedure TWebPrinterImpl.OpenFiscalDay;
-var
-  Response: TWPOpenDayResponse;
-begin
-  if not FDayOpened then
-  begin
-    FPrinter.RaiseErrors := False;
-    try
-      Response := FPrinter.OpenFiscalDay2(GetPrinterDate);
-    finally
-      FPrinter.RaiseErrors := True;
-    end;
-    if Response.error.code = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then
-    begin
-      FDayOpened := True;
-      Exit;
-    end;
-    FPrinter.CheckForError(Response.error);
-    FDayOpened := True;
-  end;
-end;
-
 function TWebPrinterImpl.EndFiscalReceipt(PrintHeader: WordBool): Integer;
 begin
   try
     FPrinterState.CheckState(FPTR_PS_FISCAL_RECEIPT_ENDING);
-    OpenFiscalDay;
 
     FReceipt.EndFiscalReceipt(PrintHeader);
     FReceipt.Print(Self);
@@ -1046,7 +1013,7 @@ begin
     case FDateType of
       FPTR_DT_RTC:
       begin
-        DecodeDateTime(GetPrinterDate, Year, Month, Day, Hour, Minute, Second, MilliSecond);
+        DecodeDateTime(FPrinter.GetPrinterDate, Year, Month, Day, Hour, Minute, Second, MilliSecond);
         Date := Format('%.2d%.2d%.4d%.2d%.2d',[Day, Month, Year, Hour, Minute]);
       end;
     else
@@ -1094,7 +1061,7 @@ begin
       PIDXFptr_CheckTotal             : Result := BoolToInt[FCheckTotal];
       PIDXFptr_CountryCode            : Result := FCountryCode;
       PIDXFptr_CoverOpen              : Result := BoolToInt[FCoverOpen];
-      PIDXFptr_DayOpened              : Result := BoolToInt[FDayOpened];
+      PIDXFptr_DayOpened              : Result := BoolToInt[FPrinter.DayOpened];
       PIDXFptr_DescriptionLength      : Result := Params.MessageLength;
       PIDXFptr_DuplicateReceipt       : Result := BoolToInt[FDuplicateReceipt];
       PIDXFptr_ErrorLevel             : Result := FErrorLevel;
@@ -1704,8 +1671,7 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
-    OpenFiscalDay;
-    Request.Time := GetPrinterDate;
+    Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := False;
     Request.name := 'X ÎÒ×¨Ò';
     // Cashin
@@ -1735,8 +1701,7 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
-    OpenFiscalDay;
-    Request.Time := GetPrinterDate;
+    Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := True;
     Request.name := 'Z ÎÒ×¨Ò';
     // Cashin
@@ -1749,13 +1714,13 @@ begin
     Item.price := Round2(Params.CashOutAmount * 100);
 
     FPrinter.PrintZReport(Request);
+
     // Clear Cash in and out
     Params.CashInAmount := 0;
     Params.CashOutAmount := 0;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
 
     UpdateZReport;
-    FDayOpened := False;
     Result := ClearResult;
   except
     on E: Exception do
@@ -2151,26 +2116,18 @@ procedure TWebPrinterImpl.SetDeviceEnabled(Value: Boolean);
     Result := Pos(IntToStr(CharacterSet), CharacterSetList) <> 0;
   end;
 
-var
-  PrinterTime: TDateTime;
 begin
   if Value <> FOposDevice.DeviceEnabled then
   begin
     if Value then
     begin
       FParams.CheckPrameters;
-      FPrinter.Connect;
-
       if not TestMode then
       begin
-        FDayOpened := FPrinter.ReadZReport.result.data.open_time <> '';
-        PrinterTime := WPStrToDateTime(FPrinter.Info.Data.current_time);
-        FTimeDiff := PrinterTime - Now;
+        FPrinter.Connect;
 
         FOposDevice.PhysicalDeviceDescription := FOposDevice.PhysicalDeviceName +
-          Format(' terminal_id: %s, applet_version: %s, version_code: %s',
-          [FPrinter.Info.Data.terminal_id, FPrinter.Info.Data.applet_version,
-          FPrinter.Info.Data.version_code]);
+          ' ' + FPrinter.DeviceDescription;
       end;
     end else
     begin
@@ -2397,14 +2354,13 @@ var
   ReceiptItem: TReceiptItem;
   ItemDiscount: Currency;
   ReceiptDiscount: Currency;
-  Response: TWPCreateOrderResponse;
 begin
   ReceiptDiscount := Receipt.Discount;
   Order := TWPOrder.Create;
   try
 	  Order.Number := 1;
 	  Order.Receipt_type := WP_RECEIPT_TYPE_ORDER;
-	  Order.Time := WPDateTimeToStr(GetPrinterDate);
+	  Order.Time := WPDateTimeToStr(FPrinter.GetPrinterDate);
 	  Order.Cashier := FCashierID;
 	  Order.Received_cash := Round2(Receipt.GetCashPayment * 100);
 	  Order.Received_card := Round2(Receipt.GetCashlessPayment * 100);
@@ -2463,31 +2419,16 @@ begin
     // Apply receipt fields
     UpdateReceiptFields(Order);
 
-    FPrinter.RaiseErrors := False;
-    for i := 1 to 2 do
+    if receipt.RecType in [rtSell, rtRetBuy] then
     begin
-      if receipt.RecType in [rtSell, rtRetBuy] then
-      begin
-        Response := FPrinter.CreateOrder(Order);
-      end else
-      begin
-        Response := FPrinter.ReturnOrder(Order);
-      end;
-      FPrinter.RaiseErrors := True;
-      if Response.error.code = WP_ERROR_ZREPORT_IS_NOT_OPEN then
-      begin
-        FDayOpened := False;
-        OpenFiscalDay;
-      end else
-      begin
-        FPrinter.CheckForError(Response.error);
-        Break;
-      end;
+      FPrinter.CreateOrder(Order);
+    end else
+    begin
+      FPrinter.ReturnOrder(Order);
     end;
     UpdateZReport;
   finally
     Order.Free;
-    FPrinter.RaiseErrors := True;
   end;
 end;
 

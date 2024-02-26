@@ -154,6 +154,7 @@ begin
   FEventThread.Free;
   FEvents.Free;
   FSemaphore.Free;
+  FLogger := nil;
   FOposEvents := nil;
   inherited Destroy;
 end;

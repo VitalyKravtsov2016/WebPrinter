@@ -29,6 +29,7 @@ type
     property Parameters: TPrinterParameters read FParameters;
   public
     constructor Create(AParameters: TPrinterParameters; ALogger: ILogFile);
+    destructor Destroy; override;
 
     procedure Load(const DeviceName: WideString);
     procedure Save(const DeviceName: WideString);
@@ -123,6 +124,12 @@ begin
   inherited Create;
   FParameters := AParameters;
   FLogger := ALogger;
+end;
+
+destructor TPrinterParametersReg.Destroy;
+begin
+  FLogger := nil;
+  inherited Destroy;
 end;
 
 class function TPrinterParametersReg.GetSysKeyName(const DeviceName: WideString): WideString;

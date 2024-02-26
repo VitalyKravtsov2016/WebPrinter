@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=..\Bin
+OutputDir=
 UnitOutputDir=DCU
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -101,7 +101,7 @@ DebugSourceDirs=
 UsePackages=0
 [Parameters]
 RunParams=
-HostApplication=D:\projects\WebPrinter\source\bin\WebFptrTst.exe
+HostApplication=D:\projects\WebPrinter\source\Bin\WebFptrTst.exe
 Launcher=
 UseLauncher=0
 DebugCWD=
@@ -122,7 +122,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=13
 Release=0
-Build=120
+Build=128
 Debug=0
 PreRelease=0
 Special=0
@@ -133,7 +133,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SHTRIH-M
 FileDescription=WebKassa OPOS fiscal printer service
-FileVersion=1.13.0.120
+FileVersion=1.13.0.128
 InternalName=WebKassa OPOS fiscal printer driver
 LegalCopyright=SHTRIH-M © 2022
 LegalTrademarks=
@@ -142,7 +142,8 @@ ProductName=OPOS drivers
 ProductVersion=1.13
 Comments=http://www.shtrih-m.ru
 [Excluded Packages]
-C:\Program Files (x86)\Borland\Delphi7\Projects\Bpl\PngComponentsD7.bpl=Png components
+C:\Program Files (x86)\Borland\Delphi7\Projects\Bpl\JvControlsDesign70.bpl=JVCL Visual Controls
+C:\Program Files (x86)\Borland\Delphi7\Projects\Bpl\JvDlgsDesign70.bpl=JVCL Dialog Components
 [HistoryLists\hlConditionals]
 Count=1
 Item0=DEBUG
@@ -150,12 +151,15 @@ Item0=DEBUG
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=1
-Item0=Barcode
+Count=3
+Item0=$(DELPHI)\Lib\Debug;c:\PROGRA~2\Borland\Delphi7\Comp\jcl\lib\d7\debug;C:\PROGRA~2\Borland\Delphi7\Comp\jcl\lib\d7\debug
+Item1=$(DELPHI)\Lib\Debug;c:\PROGRA~2\Borland\Delphi7\Comp\jcl\lib\d7\debug;$(DELPHI)\Comp\jvcl\lib\D7\debug
+Item2=Barcode
 [HistoryLists\hlUnitOutputDirectory]
 Count=2
 Item0=DCU
 Item1=..\..\DCU
 [HistoryLists\hlOutputDirectorry]
-Count=1
-Item0=Bin
+Count=2
+Item0=..\Bin
+Item1=Bin

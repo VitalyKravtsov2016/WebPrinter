@@ -98,6 +98,8 @@ type
     property Logger: ILogFile read FLogger;
   public
     constructor Create(AStatus: Integer; AEventType: Integer; ALogger: ILogFile);
+    destructor Destroy; override;
+
     function GetID: Integer; override;
     procedure Execute(EventInterface: IOposEvents); override;
     property Status: Integer read FStatus;
@@ -116,6 +118,7 @@ type
     constructor Create(EventNumber: Integer;
       const pData: Integer;
       const pString: WideString; ALogger: ILogFile);
+    destructor Destroy; override;
 
     function GetID: Integer; override;
     procedure Execute(EventInterface: IOposEvents); override;
@@ -135,6 +138,7 @@ type
     constructor Create(ResultCode: Integer;
       ResultCodeExtended: Integer;
       ErrorLocus: Integer; ALogger: ILogFile);
+    destructor Destroy; override;
 
     function GetID: Integer; override;
     procedure Execute(EventInterface: IOposEvents); override;
@@ -149,6 +153,7 @@ type
     property Logger: ILogFile read FLogger;
   public
     constructor Create(OutputID: Integer; ALogger: ILogFile);
+    destructor Destroy; override;
 
     function GetID: Integer; override;
     procedure Execute(EventInterface: IOposEvents); override;
@@ -163,6 +168,8 @@ type
     property Logger: ILogFile read FLogger;
   public
     constructor Create(Data: Integer; ALogger: ILogFile);
+    destructor Destroy; override;
+
     function GetID: Integer; override;
     procedure Execute(EventInterface: IOposEvents); override;
     property Data: Integer read FData;
@@ -353,6 +360,12 @@ begin
   FLogger := ALogger;
 end;
 
+destructor TDataEvent.Destroy;
+begin
+  FLogger := nil;
+  inherited Destroy;
+end;
+
 procedure TDataEvent.Execute(EventInterface: IOposEvents);
 begin
   Logger.Debug('TDataEvent.Execute', [FStatus]);
@@ -384,6 +397,12 @@ begin
   FData := pData;
   FString := pString;
   FLogger := ALogger;
+end;
+
+destructor TDirectIOEvent.Destroy;
+begin
+  FLogger := nil;
+  inherited Destroy;
 end;
 
 procedure TDirectIOEvent.Execute(
@@ -420,6 +439,12 @@ begin
   FLogger := ALogger;
 end;
 
+destructor TErrorEvent.Destroy;
+begin
+  FLogger := nil;
+  inherited Destroy;
+end;
+
 procedure TErrorEvent.Execute(EventInterface: IOposEvents);
 begin
   Logger.Debug('TErrorEvent.Execute', [
@@ -452,6 +477,12 @@ begin
   FLogger := ALogger;
 end;
 
+destructor TOutputCompleteEvent.Destroy;
+begin
+  FLogger := nil;
+  inherited Destroy;
+end;
+
 procedure TOutputCompleteEvent.Execute(
   EventInterface: IOposEvents);
 begin
@@ -481,6 +512,12 @@ begin
   inherited Create;
   FData := Data;
   FLogger := ALogger;
+end;
+
+destructor TStatusUpdateEvent.Destroy;
+begin
+  FLogger := nil;
+  inherited Destroy;
 end;
 
 procedure TStatusUpdateEvent.Execute(

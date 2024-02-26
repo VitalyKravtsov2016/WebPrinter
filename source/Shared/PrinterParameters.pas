@@ -118,6 +118,7 @@ end;
 
 destructor TPrinterParameters.Destroy;
 begin
+  FLogger := nil;
   FItemUnits.Free;
   FVatRates.Free;
   inherited Destroy;

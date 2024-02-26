@@ -356,14 +356,14 @@ type
   private
     F_type: WideString;
     Fdata: WideString;
-    FCut: Boolean;
+    Fcut: Boolean;
   public
     procedure Assign(Source: TPersistent); override;
     function IsRequiredField(const Field: WideString): Boolean; override;
   published
     property _type: WideString read F_type write F_type;
     property data: WideString read Fdata write Fdata;
-    property Cut: Boolean read FCut write FCut default false;
+    property cut: Boolean read Fcut write Fcut default false;
   end;
 
   { TWPBanners }
@@ -765,7 +765,10 @@ type
   private
     FLogger: ILogFile;
     FTestMode: Boolean;
+    FDayOpened: Boolean;
+    FTimeDiff: TDateTime;
     FAddress: WideString;
+    FDayOpenTime: TDateTime;
     FConnectTimeout: Integer;
 
     FRaiseErrors: Boolean;
@@ -781,6 +784,7 @@ type
     FPaymentConfirmResponse: TWPPaymentConfirmResponse;
     FCreateOrderResponse: TWPCreateOrderResponse;
     FPrintLastReceipt: TWPResult;
+    FDeviceDescription: WideString;
 
     function GetTransport: TIdHTTP;
     function GetAddress: WideString;
@@ -793,7 +797,10 @@ type
     procedure Clear;
     procedure Connect;
     procedure Disconnect;
+    procedure OpenFiscalDay3;
     procedure CheckForError(const Error: TWPError);
+
+    function GetPrinterDate: TDateTime;
     function ReadInfo: WideString;
     function ReadInfo2: TWPInfoCommand;
     function OpenFiscalDay(Time: TDateTime): WideString;
@@ -809,7 +816,6 @@ type
     function ReturnOrder(Request: TWPOrder): TWPCreateOrderResponse;
     function PrintLastReceipt: TWPResult;
     function PrintText(const Text: TWPText): TWPResponse;
-
     function GetJson(const AURL: WideString): WideString;
     function PostJson(const AURL, Request: WideString): WideString;
 
@@ -817,6 +823,9 @@ type
     property Transport: TIdHTTP read GetTransport;
     property TestMode: Boolean read FTestMode write FTestMode;
     property Address: WideString read FAddress write FAddress;
+    property TimeDiff: TDateTime read FTimeDiff write FTimeDiff;
+    property DayOpened: Boolean read FDayOpened write FDayOpened;
+    property DeviceDescription: WideString read FDeviceDescription;
     property RaiseErrors: Boolean read FRaiseErrors write FRaiseErrors;
     property RequestJson: WideString read FRequestJson write FRequestJson;
     property ResponseJson: WideString read FResponseJson write FResponseJson;
@@ -1419,7 +1428,7 @@ begin
     src := Source as TWPBanner;
     _type := src._type;
     data := src.data;
-    Cut := src.Cut;
+    cut := src.cut;
   end;
 end;
 
@@ -1693,6 +1702,7 @@ end;
 
 destructor TWebPrinter.Destroy;
 begin
+  FLogger := nil;
   FInfo.Free;
   FResponse.Free;
   FTransport.Free;
@@ -1762,7 +1772,6 @@ var
   DstStream: TStream;
   Answer: AnsiString;
 begin
-  Clear;
   URL := AURL;
   FRequestJson := UTF8Decode(Request);
   if IsGetRequest then
@@ -1779,6 +1788,7 @@ begin
     Exit;
   end;
 
+  Clear;
   Stream := TMemoryStream.Create;
   DstStream := TMemoryStream.Create;
   try
@@ -1841,6 +1851,11 @@ end;
 
 procedure TWebPrinter.CheckForError(const Error: TWPError);
 begin
+  if Error.code <> 0 then
+  begin
+    FLogger.Error(WideFormat('%d, %s', [Error.Code, Error.message]));
+  end;
+
   if FRaiseErrors and (Error.code <> 0) then
   begin
     RaiseError(Error.code, Error.message);
@@ -1849,6 +1864,7 @@ end;
 
 procedure TWebPrinter.Connect;
 begin
+  ReadZReport;
   ReadInfo2;
 end;
 
@@ -1865,10 +1881,16 @@ end;
 function TWebPrinter.ReadInfo2: TWPInfoCommand;
 var
   JsonText: WideString;
+  PrinterTime: TDateTime;
 begin
   JsonText := ReadInfo;
   JsonToObject(JsonText, FInfo);
   CheckForError(FInfo.Error);
+  PrinterTime := WPStrToDateTime(Info.Data.current_time);
+  FTimeDiff := PrinterTime - Now;
+  FDeviceDescription := Format(' terminal_id: %s, applet_version: %s, version_code: %s',
+    [Info.Data.terminal_id, Info.Data.applet_version, Info.Data.version_code]);
+
   Result := FInfo;
 end;
 
@@ -1890,11 +1912,18 @@ end;
 
 function TWebPrinter.OpenFiscalDay2(Time: TDateTime): TWPOpenDayResponse;
 var
-  JsonText: WideString;
+  ResponseJson: WideString;
 begin
-  JsonText := OpenFiscalDay(Time);
-  JsonToObject(JsonText, FOpenDayResponse);
+  ResponseJson := OpenFiscalDay(Time);
+  JsonToObject(ResponseJson, FOpenDayResponse);
+  if FOpenDayResponse.error.code = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then
+  begin
+    FLogger.Error(WideFormat('%d, %s', [FOpenDayResponse.Error.Code, FOpenDayResponse.Error.message]));
+    FOpenDayResponse.Error.Clear;
+  end;
   CheckForError(FOpenDayResponse.Error);
+  FDayOpened := True;
+  FDayOpenTime := Time;
   Result := FOpenDayResponse;
 end;
 
@@ -1917,6 +1946,7 @@ function TWebPrinter.CloseFiscalDay2(Time: TDateTime): TWPCloseDayResponse;
 var
   JsonText: WideString;
 begin
+  OpenFiscalDay3;
   JsonText := CloseFiscalDay(Time);
   FCloseDayResponse.is_success := False;
   JsonToObject(JsonText, FCloseDayResponse);
@@ -1938,6 +1968,8 @@ var
   URL: WideString;
   JsonText: WideString;
 begin
+  OpenFiscalDay3;
+
   URL := GetAddress + '/zreport/close' + '?' +
     TIdURI.ParamsEncode(Format('time=%s', [WPDateTimeToStr(Request.time)]));
 
@@ -1965,6 +1997,10 @@ begin
     JsonToObject(JsonText, FCloseDayResponse2.result);
 
   CheckForError(FCloseDayResponse2.result.error);
+  if FCloseDayResponse2.result.error.code = 0 then
+  begin
+    FDayOpened := FCloseDayResponse2.result.data.open_time <> '';
+  end;
   Result := FCloseDayResponse2;
 end;
 
@@ -2080,13 +2116,29 @@ Operation for create order / Продажа, аванс, кредит
 
 function TWebPrinter.CreateOrder(Request: TWPOrder): TWPCreateOrderResponse;
 var
-  JsonText: WideString;
+  i: Integer;
+  RequestJson: WideString;
+  ResponseJson: WideString;
 begin
-  JsonText := ObjectToJson(Request);
-  FCreateOrderResponse.RequestJson := JsonText;
-  JsonText := PostJson(GetAddress + '/order/create/', JsonText);
-  FCreateOrderResponse.ResponseJson := JsonText;
-  JsonToObject(JsonText, FCreateOrderResponse);
+  OpenFiscalDay3;
+
+  for i := 1 to 2 do
+  begin
+    Request.Time := WPDateTimeToStr(GetPrinterDate);
+    RequestJson := ObjectToJson(Request);
+    FCreateOrderResponse.RequestJson := RequestJson;
+    ResponseJson := PostJson(GetAddress + '/order/create/', RequestJson);
+    FCreateOrderResponse.ResponseJson := ResponseJson;
+    JsonToObject(ResponseJson, FCreateOrderResponse);
+    if FCreateOrderResponse.error.code = WP_ERROR_ZREPORT_IS_NOT_OPEN then
+    begin
+      FDayOpened := False;
+      if OpenFiscalDay2(GetPrinterDate).error.code <> 0 then Break;
+    end else
+    begin
+      Break;
+    end;
+  end;
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;
 end;
@@ -2102,15 +2154,38 @@ Operations for refuse order / Возврат
 
 function TWebPrinter.ReturnOrder(Request: TWPOrder): TWPCreateOrderResponse;
 var
-  JsonText: WideString;
+  i: Integer;
+  RequestJson: WideString;
+  responseJson: WideString;
 begin
-  JsonText := ObjectToJson(Request);
-  FCreateOrderResponse.RequestJson := JsonText;
-  JsonText := PostJson(GetAddress + '/order/refuse/', JsonText);
-  FCreateOrderResponse.ResponseJson := JsonText;
-  JsonToObject(JsonText, FCreateOrderResponse);
+  OpenFiscalDay3;
+  for i := 1 to 2 do
+  begin
+    Request.Time := WPDateTimeToStr(GetPrinterDate);
+    RequestJson := ObjectToJson(Request);
+    FCreateOrderResponse.RequestJson := RequestJson;
+    ResponseJson := PostJson(GetAddress + '/order/refuse/', RequestJson);
+    FCreateOrderResponse.ResponseJson := ResponseJson;
+    JsonToObject(ResponseJson, FCreateOrderResponse);
+    if FCreateOrderResponse.error.code = WP_ERROR_ZREPORT_IS_NOT_OPEN then
+    begin
+      OpenFiscalDay2(GetPrinterDate);
+    end else
+    begin
+      Break;
+    end;
+  end;
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;
+end;
+
+procedure TWebPrinter.OpenFiscalDay3;
+begin
+  if not FDayOpened then
+  begin
+    if OpenFiscalDay2(GetPrinterDate).error.code <> 0 then Exit;
+    FDayOpened := True;
+  end;
 end;
 
 (*
@@ -2154,6 +2229,9 @@ begin
   Result := FResponse;
 end;
 
-
+function TWebPrinter.GetPrinterDate: TDateTime;
+begin
+  Result := Now + FTimeDiff;
+end;
 
 end.

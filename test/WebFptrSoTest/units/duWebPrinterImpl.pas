@@ -41,6 +41,8 @@ type
     procedure TestNonfiscalReceipt;
     procedure TestCashinReceipt;
     procedure TestCashoutReceipt;
+    procedure TestOpenFiscalDay;
+    procedure TestFiscalReceipt2;
   end;
 
 implementation
@@ -484,6 +486,78 @@ begin
   //WriteFileData('CashoutXReport2.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashoutXReport2.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutXReport2.json');
+end;
+
+procedure TWebPrinterImplTest.TestOpenFiscalDay;
+begin
+  // if DayOpened then nothing to do
+  Driver.Printer.DayOpened := True;
+  Driver.Printer.OpenDayResponse.error.code := 123;
+  Driver.Printer.OpenFiscalDay3;
+  CheckEquals(True, Driver.Printer.DayOpened, 'Driver.Printer.DayOpened');
+
+  // if error.code = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then DayOpened = true;
+  Driver.Printer.DayOpened := False;
+  Driver.Printer.OpenDayResponse.error.code := WP_ERROR_ZREPORT_IS_ALREADY_OPEN;
+  Driver.Printer.OpenDayResponse.error.message := 'ERROR_ZREPORT_IS_ALREADY_OPEN';
+  Driver.Printer.OpenFiscalDay3;
+  CheckEquals(True, Driver.Printer.DayOpened, 'Driver.Printer.DayOpened');
+
+  // if error.code = 0 then DayOpened = true;
+  Driver.Printer.DayOpened := False;
+  Driver.Printer.OpenDayResponse.error.code := 0;
+  Driver.Printer.OpenFiscalDay3;
+  CheckEquals(True, Driver.Printer.DayOpened, 'Driver.Printer.DayOpened');
+
+  // if error.code <> 0 then Exception must be raised
+  Driver.Printer.DayOpened := False;
+  Driver.Printer.OpenDayResponse.error.code := 123;
+  Driver.Printer.OpenDayResponse.error.message := 'Error123';
+  try
+    Driver.Printer.OpenFiscalDay3;
+    Fail('No exception');
+  except
+    on E: EDriverError do
+    begin
+      CheckEquals(123, E.ErrorCode, 'E.ErrorCode');
+      CheckEquals('Error123', E.Message, 'E.Message');
+    end;
+  end;
+end;
+
+
+procedure TWebPrinterImplTest.TestFiscalReceipt2;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  CheckEquals(FPTR_RT_SALES, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 10, 100, 'רע'));
+  FptrCheck(Driver.PrintRecTotal(100, 100, '0'));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  WriteFileData('OrderRequest3.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(1, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals(10000, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(0, Order.products[0].Discount, 'Order.products[0].Discount');
+    CheckEquals(0, Order.banners.Count, 'Order.banners.Count');
+  finally
+    Order.Free;
+  end;
 end;
 
 initialization

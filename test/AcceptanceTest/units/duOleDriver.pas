@@ -55,6 +55,8 @@ var
   Logger: ILogFile;
   Params: TPrinterParameters;
 begin
+  if FDriver <> nil then Exit;
+
   Logger := TLogFile.Create;
   Params := TPrinterParameters.Create(Logger);
   try
@@ -70,13 +72,13 @@ begin
   finally
     Params.Free;
   end;
-
   FDriver := TSMFiscalPrinter.Create(nil);
 end;
 
 procedure TOleDriverTest.TearDown;
 begin
   FDriver.Free;
+  FDriver := nil;
 end;
 
 procedure TOleDriverTest.FptrCheck(Code: Integer);
@@ -159,6 +161,7 @@ var
   CashierID: WideString;
   Strings: TTntStringList;
 begin
+  Sleep(3000);
   OpenClaimEnable;
   // Read cashier ID
   Strings := TTntStringList.Create;
