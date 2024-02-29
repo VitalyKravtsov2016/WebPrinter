@@ -54,16 +54,18 @@ uses
   WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
   fmuFptrUnit in 'Fmu\fmuFptrUnit.pas' {fmFptrUnit},
   fmuFptrCashDrawer in 'Fmu\fmuFptrCashDrawer.pas' {fmFptrCashDrawer},
-  fmuFptrCash in 'Fmu\fmuFptrCash.pas' {fmFptrCash},
+  fmuFptrTotalizers in 'Fmu\fmuFptrTotalizers.pas' {fmFptrTotalizers},
   VatRate in '..\Shared\VatRate.pas',
   fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate},
   fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType},
-  fmuFptrPrint in 'Fmu\fmuFptrPrint.pas' {fmFptrPrint};
+  fmuFptrPrint in 'Fmu\fmuFptrPrint.pas' {fmFptrPrint},
+  fmuFptrCash in 'Fmu\fmuFptrCash.pas' {fmFptrCash};
 
 {$R *.RES}
 {$R Windows.RES}
 
 begin
+  DecimalSeparator := '.';
   Application.Initialize;
   Application.CreateForm(TfmMain, fmMain);
   Application.Run;

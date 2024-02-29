@@ -80,17 +80,39 @@ begin
   CheckEquals(0, FParams.CashOutAmount, 'FParams.CashOutAmount');
   FParams.CashInAmount := 123.45;
   FParams.CashOutAmount := 234.56;
+  FParams.CashInECRAmount := 123.87;
+  FParams.SalesAmountCash := 12937.98;
+  FParams.SalesAmountCard := 263476.89;
+  FParams.RefundAmountCash := 365.78;
+  FParams.RefundAmountCard := 287346.78;
+
   FParams.SetDefaults;
   CheckEquals(0, FParams.CashInAmount, 'FParams.CashInAmount');
   CheckEquals(0, FParams.CashOutAmount, 'FParams.CashOutAmount');
+  CheckEquals(0, FParams.CashInECRAmount, 'FParams.CashInECRAmount');
+  CheckEquals(0, FParams.SalesAmountCash, 'FParams.SalesAmountCash');
+  CheckEquals(0, FParams.SalesAmountCard, 'FParams.SalesAmountCard');
+  CheckEquals(0, FParams.RefundAmountCash, 'FParams.RefundAmountCash');
+  CheckEquals(0, FParams.RefundAmountCard, 'FParams.RefundAmountCard');
 
   FParams.CashInAmount := 123.45;
   FParams.CashOutAmount := 234.56;
+  FParams.CashInECRAmount := 123.87;
+  FParams.SalesAmountCash := 12937.98;
+  FParams.SalesAmountCard := 263476.89;
+  FParams.RefundAmountCash := 365.78;
+  FParams.RefundAmountCard := 287346.78;
+
   SaveUsrParameters(FParams, 'Device1', FLogger);
   FParams.SetDefaults;
   LoadParameters(FParams, 'Device1', FLogger);
   CheckEquals(123.45, FParams.CashInAmount, 'FParams.CashInAmount');
   CheckEquals(234.56, FParams.CashOutAmount, 'FParams.CashOutAmount');
+  CheckEquals(123.87, FParams.CashInECRAmount, 'FParams.CashInECRAmount');
+  CheckEquals(12937.98, FParams.SalesAmountCash, 'FParams.SalesAmountCash');
+  CheckEquals(263476.89, FParams.SalesAmountCard, 'FParams.SalesAmountCard');
+  CheckEquals(365.78, FParams.RefundAmountCash, 'FParams.RefundAmountCash');
+  CheckEquals(287346.78, FParams.RefundAmountCard, 'FParams.RefundAmountCard');
 end;
 
 initialization

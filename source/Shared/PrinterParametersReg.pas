@@ -205,11 +205,15 @@ begin
 
       if Reg.ValueExists('CashoutLine') then
         Parameters.CashoutLine := Reg.ReadString('CashoutLine');
+
       if Reg.ValueExists('CashoutPreLine') then
         Parameters.CashoutPreLine := Reg.ReadString('CashoutPreLine');
+
       if Reg.ValueExists('CashoutPostLine') then
         Parameters.CashoutPostLine := Reg.ReadString('CashoutPostLine');
 
+      if Reg.ValueExists('CashInECRLine') then
+        Parameters.CashInECRLine := Reg.ReadString('CashInECRLine');
 
       Reg.CloseKey;
     end;
@@ -332,6 +336,7 @@ begin
     Reg.WriteString('CashoutLine', FParameters.CashoutLine);
     Reg.WriteString('CashoutPreLine', FParameters.CashoutPreLine);
     Reg.WriteString('CashoutPostLine', FParameters.CashoutPostLine);
+    Reg.WriteString('CashInECRLine', FParameters.CashInECRLine);
 
     Reg.CloseKey;
     // VatRates
@@ -391,6 +396,11 @@ begin
     begin
       Parameters.CashInAmount := Reg.ReadCurrency('CashInAmount');
       Parameters.CashOutAmount := Reg.ReadCurrency('CashOutAmount');
+      Parameters.CashInECRAmount := Reg.ReadCurrency('CashInECRAmount');
+      Parameters.SalesAmountCash := Reg.ReadCurrency('SalesAmountCash');
+      Parameters.SalesAmountCard := Reg.ReadCurrency('SalesAmountCard');
+      Parameters.RefundAmountCash := Reg.ReadCurrency('RefundAmountCash');
+      Parameters.RefundAmountCard := Reg.ReadCurrency('RefundAmountCard');
     end;
   finally
     Reg.Free;
@@ -412,6 +422,11 @@ begin
 
     Reg.WriteCurrency('CashInAmount', Parameters.CashInAmount);
     Reg.WriteCurrency('CashOutAmount', Parameters.CashOutAmount);
+    Reg.WriteCurrency('CashInECRAmount', Parameters.CashInECRAmount);
+    Reg.WriteCurrency('SalesAmountCash', Parameters.SalesAmountCash);
+    Reg.WriteCurrency('SalesAmountCard', Parameters.SalesAmountCard);
+    Reg.WriteCurrency('RefundAmountCash', Parameters.RefundAmountCash);
+    Reg.WriteCurrency('RefundAmountCard', Parameters.RefundAmountCard);
   finally
     Reg.Free;
   end;

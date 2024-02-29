@@ -50,6 +50,8 @@ type
     procedure UpdateReceiptFields(Order: TWPOrder);
     procedure UpdateZReport;
     procedure WriteOperationTag(pData: Integer; const pString: string);
+    procedure AddReportLines(Request: TWPCloseDayRequest);
+    function ReadCashRegister(RegID: Integer): Currency;
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -191,6 +193,7 @@ type
     function ClearOutput: Integer; safecall;
     function DirectIO(Command: Integer; var pData: Integer; var pString: WideString): Integer; safecall;
     function DirectIO2(Command: Integer; const pData: Integer; const pString: WideString): Integer;
+    function DirectIO3(Command: Integer; const pData: Integer; var pString: WideString): Integer;
     function ReleaseDevice: Integer; safecall;
     function BeginFiscalDocument(DocumentAmount: Integer): Integer; safecall;
     function BeginFiscalReceipt(PrintHeader: WordBool): Integer; safecall;
@@ -828,12 +831,98 @@ begin
       begin
         pString := GetJsonField2(FPrinter.ResponseJson, pString);
       end;
+
+      DIO_READ_CASH_REG:
+      begin
+        pString := AmountToOutStr(ReadCashRegister(pData));
+      end;
     end;
 
     Result := ClearResult;
   except
     on E: Exception do
       Result := HandleException(E);
+  end;
+end;
+
+function TWebPrinterImpl.ReadCashRegister(RegID: Integer): Currency;
+var
+  DayResult: TWPDayResult;
+begin
+  Result := 0;
+  DayResult := FPrinter.CloseDayResponse2.result.data;
+
+  case RegID of
+    // 241 – накопление наличности в кассе;
+    241: Result := Params.CashInECRAmount;
+
+    // 242 – накопление внесений за смену;
+    242: Result := Params.CashInAmount;
+
+    // 243 – накопление выплат за смену;
+    243: Result := Params.CashOutAmount;
+
+    SMFPTR_CASHREG_DAY_TOTAL_SALE_CASH:
+    begin
+      Result := DayResult.total_sale_cash/100;
+    end;
+
+    SMFPTR_CASHREG_DAY_TOTAL_SALE_CARD:
+    begin
+      Result := DayResult.total_sale_card/100;
+    end;
+
+    SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CASH:
+    begin
+      Result := DayResult.total_refund_cash/100;
+    end;
+
+    SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CARD:
+    begin
+      Result := DayResult.total_refund_card/100;
+    end;
+
+    SMFPTR_CASHREG_GRAND_TOTAL_SALE_CASH:
+    begin
+      Result := DayResult.total_sale_cash/100 + Params.SalesAmountCash;
+    end;
+
+    SMFPTR_CASHREG_GRAND_TOTAL_SALE_CARD:
+    begin
+      Result := DayResult.total_sale_card/100 + Params.SalesAmountCard;
+    end;
+
+    SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CASH:
+    begin
+      Result := DayResult.total_refund_cash/100 + Params.RefundAmountCash;
+    end;
+
+    SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CARD:
+    begin
+      Result := DayResult.total_refund_card/100 + Params.RefundAmountCard;
+    end;
+
+    SMFPTR_CASHREG_DAY_TOTAL_SALE:
+    begin
+      Result := DayResult.total_sale_cash/100 + DayResult.total_sale_card/100;
+    end;
+
+    SMFPTR_CASHREG_DAY_TOTAL_RETSALE:
+    begin
+      Result := DayResult.total_refund_cash/100 + DayResult.total_refund_card/100;
+    end;
+
+    SMFPTR_CASHREG_GRAND_TOTAL_SALE:
+    begin
+      Result := DayResult.total_sale_cash/100 + DayResult.total_sale_card/100;
+      Result := Result + Params.SalesAmountCash + Params.SalesAmountCard;
+    end;
+
+    SMFPTR_CASHREG_GRAND_TOTAL_RETSALE:
+    begin
+      Result := DayResult.total_refund_cash/100 + DayResult.total_refund_card/100;
+      Result := Result + Params.RefundAmountCash + Params.RefundAmountCard;
+    end;
   end;
 end;
 
@@ -864,6 +953,15 @@ begin
   pData2 := pData;
   pString2 := pString;
   Result := DirectIO(Command, pData2, pString2);
+end;
+
+function TWebPrinterImpl.DirectIO3(Command: Integer; const pData: Integer;
+  var pString: WideString): Integer;
+var
+  pData2: Integer;
+begin
+  pData2 := pData;
+  Result := DirectIO(Command, pData2, pString);
 end;
 
 function TWebPrinterImpl.EndFiscalDocument: Integer;
@@ -1198,6 +1296,15 @@ function TWebPrinterImpl.GetTotalizer(VatID, OptArgs: Integer;
   end;
 
 
+  function ReadGrandTotalOnDayStart: Currency;
+  begin
+    Result :=
+      Params.SalesAmountCash +
+      Params.SalesAmountCard -
+      Params.RefundAmountCash -
+      Params.RefundAmountCard;
+  end;
+
   function ReadGrossTotalizer(OptArgs: Integer): Currency;
   begin
     Result := 0;
@@ -1205,7 +1312,7 @@ function TWebPrinterImpl.GetTotalizer(VatID, OptArgs: Integer;
       FPTR_TT_DOCUMENT: Result := 0;
       FPTR_TT_DAY: Result := ReadDailyTotal;
       FPTR_TT_RECEIPT: Result := Receipt.GetTotal;
-      //FPTR_TT_GRAND: Result := ReadGrandTotal;
+      FPTR_TT_GRAND: Result := ReadGrandTotalOnDayStart + ReadDailyTotal;
     else
       RaiseIllegalError;
     end;
@@ -1664,7 +1771,6 @@ end;
 
 function TWebPrinterImpl.PrintXReport: Integer;
 var
-  Item: TWPCurrency;
   Request: TWPCloseDayRequest;
 begin
   Request := TWPCloseDayRequest.Create;
@@ -1674,14 +1780,7 @@ begin
     Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := False;
     Request.name := 'X ОТЧЁТ' + CRLF + FPrinter.Info.Data.terminal_id + CRLF + FPosID;
-    // Cashin
-    Item := Request.prices.Add as TWPCurrency;
-    Item.name := Params.CashInLine;
-    Item.price := Round2(Params.CashInAmount * 100);
-    // Cashout
-    Item := Request.prices.Add as TWPCurrency;
-    Item.name := Params.CashOutLine;
-    Item.price := Round2(Params.CashOutAmount * 100);
+    AddReportLines(Request);
 
     FPrinter.PrintZReport(Request);
     Result := ClearResult;
@@ -1694,7 +1793,6 @@ end;
 
 function TWebPrinterImpl.PrintZReport: Integer;
 var
-  Item: TWPCurrency;
   Request: TWPCloseDayRequest;
 begin
   Request := TWPCloseDayRequest.Create;
@@ -1704,20 +1802,16 @@ begin
     Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := True;
     Request.name := 'Z ОТЧЁТ' + CRLF + FPrinter.Info.Data.terminal_id + CRLF + FPosID;
-    // Cashin
-    Item := Request.prices.Add as TWPCurrency;
-    Item.name := Params.CashInLine;
-    Item.price := Round2(Params.CashInAmount * 100);
-    // Cashout
-    Item := Request.prices.Add as TWPCurrency;
-    Item.name := Params.CashOutLine;
-    Item.price := Round2(Params.CashOutAmount * 100);
-
+    AddReportLines(Request);
     FPrinter.PrintZReport(Request);
 
     // Clear Cash in and out
     Params.CashInAmount := 0;
     Params.CashOutAmount := 0;
+    Params.SalesAmountCash := Params.SalesAmountCash + FPrinter.CloseDayResponse2.result.data.total_sale_cash/100;
+    Params.SalesAmountCard := Params.SalesAmountCard + FPrinter.CloseDayResponse2.result.data.total_sale_card/100;
+    Params.RefundAmountCash := Params.RefundAmountCash + FPrinter.CloseDayResponse2.result.data.total_refund_cash/100;
+    Params.RefundAmountCard := Params.RefundAmountCard + FPrinter.CloseDayResponse2.result.data.total_refund_card/100;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
 
     UpdateZReport;
@@ -1727,6 +1821,24 @@ begin
       Result := HandleException(E);
   end;
   Request.Free;
+end;
+
+procedure TWebPrinterImpl.AddReportLines(Request: TWPCloseDayRequest);
+var
+  Item: TWPCurrency;
+begin
+  // Cashin
+  Item := Request.prices.Add as TWPCurrency;
+  Item.name := Params.CashInLine;
+  Item.price := Round2(Params.CashInAmount * 100);
+  // Cashout
+  Item := Request.prices.Add as TWPCurrency;
+  Item.name := Params.CashOutLine;
+  Item.price := Round2(Params.CashOutAmount * 100);
+  // Cash in ECR
+  Item := Request.prices.Add as TWPCurrency;
+  Item.name := Params.CashInECRLine;
+  Item.price := Round2(Params.CashInECRAmount * 100);
 end;
 
 procedure TWebPrinterImpl.UpdateZReport;
@@ -2169,6 +2281,7 @@ begin
     FPrinter.PrintText(Text);
     // Save cashin
     Params.CashInAmount := Params.CashInAmount + Receipt.GetTotal;
+    Params.CashInECRAmount := Params.CashInECRAmount + Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
   finally
     Text.Free;
@@ -2201,6 +2314,7 @@ begin
     FPrinter.PrintText(Text);
     // Save cashout
     Params.CashOutAmount := Params.CashOutAmount + Receipt.GetTotal;
+    Params.CashInECRAmount := Params.CashInECRAmount - Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
   finally
     Text.Free;

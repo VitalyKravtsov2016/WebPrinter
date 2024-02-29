@@ -43,6 +43,7 @@ type
     procedure TestCashoutReceipt;
     procedure TestOpenFiscalDay;
     procedure TestFiscalReceipt2;
+    procedure TestTotalizers;
   end;
 
 implementation
@@ -389,6 +390,7 @@ begin
   Driver.Params.CashoutLine := 'CashoutLine';
   Driver.Params.CashoutPreLine := 'CashoutPreLine';
   Driver.Params.CashoutPostLine := 'CashoutPostLine';
+  Driver.Params.CashInECRLine := 'CashInECRLine';
 
   OpenClaimEnable;
 
@@ -539,7 +541,7 @@ var
   Order: TWPOrder;
 begin
   OpenClaimEnable;
-  
+
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
   CheckEquals(FPTR_RT_SALES, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
@@ -566,6 +568,73 @@ begin
   finally
     Order.Free;
   end;
+end;
+
+procedure TWebPrinterImplTest.TestTotalizers;
+var
+  pString: WideString;
+  DayResult: TWPDayResult;
+begin
+  FDriver.Params.CashInECRAmount := 123.45;
+  FDriver.Params.CashInAmount := 3454.78;
+  FDriver.Params.CashOutAmount := 234.32;
+
+  FDriver.Params.SalesAmountCash := 1278.54;
+  FDriver.Params.SalesAmountCard := 9123.45;
+  FDriver.Params.RefundAmountCash := 8213.34;
+  FDriver.Params.RefundAmountCard := 83.45;
+  DayResult := FDriver.Printer.CloseDayResponse2.result.data;
+  DayResult.total_sale_cash := 12345;
+  DayResult.total_sale_card := 23456;
+  DayResult.total_refund_cash := 34567;
+  DayResult.total_refund_card := 45678;
+
+
+  OpenClaimEnable;
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, 241, pString));
+  CheckEquals('12345', pString, 'DirectIO3(DIO_READ_CASH_REG, 241');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, 242, pString));
+  CheckEquals('345478', pString, 'DirectIO3(DIO_READ_CASH_REG, 242');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, 243, pString));
+  CheckEquals('23432', pString, 'DirectIO3(DIO_READ_CASH_REG, 242');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_DAY_TOTAL_SALE_CASH, pString));
+  CheckEquals('12345', pString, 'SMFPTR_CASHREG_DAY_TOTAL_SALE_CASH');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_DAY_TOTAL_SALE_CARD, pString));
+  CheckEquals('23456', pString, 'SMFPTR_CASHREG_DAY_TOTAL_SALE_CARD');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CASH, pString));
+  CheckEquals('34567', pString, 'SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CASH');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CARD, pString));
+  CheckEquals('45678', pString, 'SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CARD');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_GRAND_TOTAL_SALE_CASH, pString));
+  CheckEquals(IntToStr(127854 + 12345), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_SALE_CASH');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_GRAND_TOTAL_SALE_CARD, pString));
+  CheckEquals(IntToStr(912345 + 23456), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_SALE_CARD');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CASH, pString));
+  CheckEquals(IntToStr(821334 + 34567), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CASH');
+
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CARD, pString));
+  CheckEquals(IntToStr(8345 + 45678), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CARD');
+  
 end;
 
 initialization

@@ -52,7 +52,8 @@ implementation
 
 uses
   fmuFptrConnection, fmuFptrLog, fmuFptrVatRate, fmuFptrPayType,
-  fmuFptrCashDrawer, fmuFptrUnit, fmuFptrPrint, fmuFptrCash;
+  fmuFptrCashDrawer, fmuFptrUnit, fmuFptrPrint, fmuFptrCash,
+  fmuFptrTotalizers;
 
 { TFiscalPrinterDevice }
 
@@ -105,6 +106,7 @@ begin
     AddPage(fm, TfmFptrCashDrawer);
     AddPage(fm, TfmFptrUnit);
     AddPage(fm, TfmFptrCash);
+    AddPage(fm, TfmFptrTotalizers);
 
     fm.Init;
     fm.UpdatePage;
