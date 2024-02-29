@@ -1886,8 +1886,11 @@ begin
   JsonText := ReadInfo;
   JsonToObject(JsonText, FInfo);
   CheckForError(FInfo.Error);
-  PrinterTime := WPStrToDateTime(Info.Data.current_time);
-  FTimeDiff := PrinterTime - Now;
+  if Info.Data.current_time <> '' then
+  begin
+    PrinterTime := WPStrToDateTime(Info.Data.current_time);
+    FTimeDiff := PrinterTime - Now;
+  end;
   FDeviceDescription := Format(' terminal_id: %s, applet_version: %s, version_code: %s',
     [Info.Data.terminal_id, Info.Data.applet_version, Info.Data.version_code]);
 

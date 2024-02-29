@@ -30,6 +30,10 @@ type
     procedure OpenService;
     procedure FptrCheck(Code: Integer); overload;
     procedure FptrCheck(Code: Integer; const AText: WideString); overload;
+    procedure PrintCashInReceipt(Amount: Currency);
+    procedure PrintCashOutReceipt(Amount: Currency);
+    procedure PrintSalesReceipt(Amount: Currency);
+    procedure PrintRefundReceipt(Amount: Currency);
   protected
     procedure Setup; override;
     procedure TearDown; override;
@@ -44,6 +48,7 @@ type
     procedure TestOpenFiscalDay;
     procedure TestFiscalReceipt2;
     procedure TestTotalizers;
+    procedure TestCashInECRTotalizer;
   end;
 
 implementation
@@ -58,7 +63,6 @@ begin
   FDriver.Params.WebprinterAddress := 'http://fbox.ngrok.io'; // 8080 èëè 80
   FDriver.Params.LogFileEnabled := True;
   FDriver.Params.LogMaxCount := 10;
-  FDriver.LoadParamsEnabled := False;
   FDriver.Params.VatRates.Clear;
   FDriver.Params.VatRates.Add(1, 10,  'ÍÄÑ 10%');
   FDriver.Params.VatRates.Add(2, 12,  'ÍÄÑ 12%');
@@ -634,7 +638,66 @@ begin
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CARD, pString));
   CheckEquals(IntToStr(8345 + 45678), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CARD');
-  
+
+end;
+
+procedure TWebPrinterImplTest.PrintCashInReceipt(Amount: Currency);
+begin
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_IN);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecCash(Amount));
+  FptrCheck(Driver.PrintRecTotal(Amount, Amount, ''));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
+procedure TWebPrinterImplTest.PrintCashOutReceipt(Amount: Currency);
+begin
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_OUT);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecCash(Amount));
+  FptrCheck(Driver.PrintRecTotal(Amount, Amount, ''));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
+procedure TWebPrinterImplTest.PrintSalesReceipt(Amount: Currency);
+begin
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecItem('', Amount, 1000, 0, Amount, ''));
+  FptrCheck(Driver.PrintRecTotal(Amount, Amount, ''));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
+procedure TWebPrinterImplTest.PrintRefundReceipt(Amount: Currency);
+begin
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_REFUND);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecItem('', Amount, 1000, 0, Amount, ''));
+  FptrCheck(Driver.PrintRecTotal(Amount, Amount, ''));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
+procedure TWebPrinterImplTest.TestCashInECRTotalizer;
+begin
+  FDriver.TestMode := False;
+  FDriver.Printer.TestMode := True;
+
+  OpenClaimEnable;
+  FDriver.Params.CashInECRAmount := 0;
+  PrintCashInReceipt(2123.45);
+  CheckEquals(2123.45, Driver.Params.CashInECRAmount);
+  PrintCashOutReceipt(123.45);
+  CheckEquals(2123.45-123.45, Driver.Params.CashInECRAmount);
+  PrintSalesReceipt(7623.45);
+  CheckEquals(2123.45-123.45 + 7623.45, Driver.Params.CashInECRAmount);
+  PrintRefundReceipt(93.56);
+  CheckEquals(2123.45-123.45 + 7623.45-93.56, Driver.Params.CashInECRAmount);
+  Driver.Close;
+  FDriver.Params.CashInECRAmount := 0;
+
+  OpenClaimEnable;
+  PrintCashInReceipt(2123.45);
+  CheckEquals(2123.45-123.45 + 7623.45-93.56+2123.45, Driver.Params.CashInECRAmount);
 end;
 
 initialization

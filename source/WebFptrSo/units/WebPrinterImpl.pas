@@ -42,7 +42,6 @@ type
     FTestMode: Boolean;
     FPOSID: WideString;
     FCashierID: WideString;
-    FLoadParamsEnabled: Boolean;
     FReceiptFields: TTntStrings;
     FRecItemFields: TTntStrings;
 
@@ -293,7 +292,6 @@ type
     property Params: TPrinterParameters read FParams;
     property TestMode: Boolean read FTestMode write FTestMode;
     property OposDevice: TOposServiceDevice19 read FOposDevice;
-    property LoadParamsEnabled: Boolean read FLoadParamsEnabled write FLoadParamsEnabled;
   end;
 
 implementation
@@ -357,7 +355,6 @@ begin
   FReceiptFields := TTntStringList.Create;
   FRecItemFields := TTntStringList.Create;
   FTLVItems := TTLVItems.Create;
-  FLoadParamsEnabled := True;
 end;
 
 destructor TWebPrinterImpl.Destroy;
@@ -2116,7 +2113,7 @@ begin
   try
     Initialize;
     FOposDevice.Open(DeviceClass, DeviceName, GetEventInterface(pDispatch));
-    if FLoadParamsEnabled then
+    if not TestMode then
     begin
       LoadParameters(FParams, DeviceName, FLogger);
     end;
@@ -2468,6 +2465,7 @@ var
   ReceiptItem: TReceiptItem;
   ItemDiscount: Currency;
   ReceiptDiscount: Currency;
+  ReceiptTotal: Currency;
 begin
   ReceiptDiscount := Receipt.Discount;
   Order := TWPOrder.Create;
@@ -2535,11 +2533,16 @@ begin
 
     if receipt.RecType in [rtSell, rtRetBuy] then
     begin
+      ReceiptTotal := Abs(Receipt.GetTotal);
       FPrinter.CreateOrder(Order);
     end else
     begin
+      ReceiptTotal := -Abs(Receipt.GetTotal);
       FPrinter.ReturnOrder(Order);
     end;
+    Params.CashInECRAmount := Params.CashInECRAmount + ReceiptTotal;
+    SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+
     UpdateZReport;
   finally
     Order.Free;
