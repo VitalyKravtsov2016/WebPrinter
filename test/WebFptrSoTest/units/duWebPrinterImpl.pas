@@ -488,17 +488,17 @@ begin
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashOut.json');
 
   FptrCheck(Driver.PrintXReport);
-  //WriteFileData('CashoutXReport.json', Driver.Printer.RequestJson);
+  WriteFileData('CashoutXReport.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashoutXReport.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutXReport.json');
 
   FptrCheck(Driver.PrintZReport);
-  //WriteFileData('CashoutZReport.json', Driver.Printer.RequestJson);
+  WriteFileData('CashoutZReport.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashoutZReport.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutZReport.json');
 
   FptrCheck(Driver.PrintXReport);
-  //WriteFileData('CashoutXReport2.json', Driver.Printer.RequestJson);
+  WriteFileData('CashoutXReport2.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashoutXReport2.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutXReport2.json');
 end;

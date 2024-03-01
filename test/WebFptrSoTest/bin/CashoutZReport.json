@@ -1,1 +1,1 @@
-{"name":"Z ÎÒ×¨Ò\r\nterminal_id\r\nPosID: 2","prices":[{"name":"CashInLine","price":0},{"name":"CashoutLine","price":1234500},{"name":"ÍÀËÈ×ÍÛÕ Â ÊÀÑÑÅ","price":-1234500}],"close_zreport":true}
+{"name":"Z ÎÒ×¨Ò\r\nFM: terminal_id\r\nPOS: PosID: 2","prices":[{"name":"CashInLine","price":0},{"name":"CashoutLine","price":1234500},{"name":"ÍÀËÈ×ÍÛÕ Â ÊÀÑÑÅ","price":-1234500}],"close_zreport":true}

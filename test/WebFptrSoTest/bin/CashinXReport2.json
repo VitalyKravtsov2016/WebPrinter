@@ -1,1 +1,1 @@
-{"name":"X 我专襖r\nterminal_id\r\nPosID: 2","prices":[{"name":"CashInLine","price":0},{"name":"CashoutLine","price":0},{"name":"CashInECRLine","price":12345}],"close_zreport":false}
+{"name":"X 我专襖r\nFM: terminal_id\r\nPOS: PosID: 2","prices":[{"name":"CashInLine","price":0},{"name":"CashoutLine","price":0},{"name":"CashInECRLine","price":12345}],"close_zreport":false}

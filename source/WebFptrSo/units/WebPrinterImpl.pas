@@ -51,6 +51,7 @@ type
     procedure WriteOperationTag(pData: Integer; const pString: string);
     procedure AddReportLines(Request: TWPCloseDayRequest);
     function ReadCashRegister(RegID: Integer): Currency;
+    function GetReportName(const ReportName: WideString): WideString;
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -1776,7 +1777,7 @@ begin
 
     Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := False;
-    Request.name := 'X ÎÒ×¨Ò' + CRLF + FPrinter.Info.Data.terminal_id + CRLF + FPosID;
+    Request.name := GetReportName('X ÎÒ×¨Ò');
     AddReportLines(Request);
 
     FPrinter.PrintZReport(Request);
@@ -1798,7 +1799,7 @@ begin
 
     Request.Time := FPrinter.GetPrinterDate;
     Request.close_zreport := True;
-    Request.name := 'Z ÎÒ×¨Ò' + CRLF + FPrinter.Info.Data.terminal_id + CRLF + FPosID;
+    Request.name := GetReportName('Z ÎÒ×¨Ò');
     AddReportLines(Request);
     FPrinter.PrintZReport(Request);
 
@@ -1820,6 +1821,13 @@ begin
       Result := HandleException(E);
   end;
   Request.Free;
+end;
+
+function TWebPrinterImpl.GetReportName(const ReportName: WideString): WideString;
+begin
+  Result := ReportName + CRLF +
+    'FM: ' + FPrinter.Info.Data.terminal_id + CRLF +
+    'POS: ' + FPosID;
 end;
 
 procedure TWebPrinterImpl.AddReportLines(Request: TWPCloseDayRequest);
