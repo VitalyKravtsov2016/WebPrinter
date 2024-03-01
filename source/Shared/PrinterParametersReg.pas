@@ -394,13 +394,37 @@ begin
     KeyName := GetUsrKeyName(DeviceName);
     if Reg.OpenKey(KeyName, False) then
     begin
-      Parameters.CashInAmount := Reg.ReadCurrency('CashInAmount');
-      Parameters.CashOutAmount := Reg.ReadCurrency('CashOutAmount');
-      Parameters.CashInECRAmount := Reg.ReadCurrency('CashInECRAmount');
-      Parameters.SalesAmountCash := Reg.ReadCurrency('SalesAmountCash');
-      Parameters.SalesAmountCard := Reg.ReadCurrency('SalesAmountCard');
-      Parameters.RefundAmountCash := Reg.ReadCurrency('RefundAmountCash');
-      Parameters.RefundAmountCard := Reg.ReadCurrency('RefundAmountCard');
+      Parameters.CashInAmount := 0;
+      if Reg.ValueExists('CashInAmount') then
+        Parameters.CashInAmount := Reg.ReadCurrency('CashInAmount');
+
+      Parameters.CashOutAmount := 0;
+      if Reg.ValueExists('CashOutAmount') then
+        Parameters.CashOutAmount := Reg.ReadCurrency('CashOutAmount');
+
+      Parameters.CashInECRAmount := 0;
+      if Reg.ValueExists('CashInECRAmount') then
+        Parameters.CashInECRAmount := Reg.ReadCurrency('CashInECRAmount');
+
+      Parameters.SalesAmountCash := 0;
+      if Reg.ValueExists('SalesAmountCash') then
+        Parameters.SalesAmountCash := Reg.ReadCurrency('SalesAmountCash');
+
+      Parameters.SalesAmountCard := 0;
+      if Reg.ValueExists('SalesAmountCard') then
+        Parameters.SalesAmountCard := Reg.ReadCurrency('SalesAmountCard');
+
+      Parameters.RefundAmountCash := 0;
+      if Reg.ValueExists('RefundAmountCash') then
+        Parameters.RefundAmountCash := Reg.ReadCurrency('RefundAmountCash');
+
+      Parameters.RefundAmountCard := 0;
+      if Reg.ValueExists('RefundAmountCard') then
+        Parameters.RefundAmountCard := Reg.ReadCurrency('RefundAmountCard');
+
+      Parameters.CashInECRAutoZero := DefCashInECRAutoZero;
+      if Reg.ValueExists('CashInECRAutoZero') then
+        Parameters.CashInECRAutoZero := Reg.ReadBool('CashInECRAutoZero');
     end;
   finally
     Reg.Free;
@@ -427,6 +451,8 @@ begin
     Reg.WriteCurrency('SalesAmountCard', Parameters.SalesAmountCard);
     Reg.WriteCurrency('RefundAmountCash', Parameters.RefundAmountCash);
     Reg.WriteCurrency('RefundAmountCard', Parameters.RefundAmountCard);
+    Reg.WriteCurrency('RefundAmountCard', Parameters.RefundAmountCard);
+    Reg.WriteBool('CashInECRAutoZero', Parameters.CashInECRAutoZero);
   finally
     Reg.Free;
   end;

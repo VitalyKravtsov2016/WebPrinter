@@ -35,7 +35,7 @@ object fmFptrTotalizers: TfmFptrTotalizers
   end
   object Bevel1: TBevel
     Left = 8
-    Top = 72
+    Top = 104
     Width = 369
     Height = 9
     Anchors = [akLeft, akTop, akRight]
@@ -43,28 +43,28 @@ object fmFptrTotalizers: TfmFptrTotalizers
   end
   object lblSalesAmountCash: TLabel
     Left = 8
-    Top = 88
+    Top = 120
     Width = 133
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1087#1088#1086#1076#1072#1078', '#1085#1072#1083#1080#1095#1085#1099#1077':'
   end
   object lblSalesAmountCard: TLabel
     Left = 8
-    Top = 120
+    Top = 152
     Width = 113
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1087#1088#1086#1076#1072#1078', '#1082#1072#1088#1090#1072':'
   end
   object lblRefundAmountCash: TLabel
     Left = 8
-    Top = 152
+    Top = 184
     Width = 142
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1074#1086#1079#1088#1072#1090#1086#1074', '#1085#1072#1083#1080#1095#1085#1099#1077':'
   end
   object lblRefundAmountCard: TLabel
     Left = 8
-    Top = 184
+    Top = 216
     Width = 142
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1074#1086#1079#1088#1072#1090#1086#1074', '#1085#1072#1083#1080#1095#1085#1099#1077':'
@@ -91,42 +91,51 @@ object fmFptrTotalizers: TfmFptrTotalizers
   end
   object edtSalesAmountCash: TEdit
     Left = 160
-    Top = 88
-    Width = 216
-    Height = 21
-    Anchors = [akLeft, akTop, akRight]
-    TabOrder = 2
-    Text = 'edtSalesAmountCash'
-    OnChange = ModifiedClick
-  end
-  object edtSalesAmountCard: TEdit
-    Left = 160
     Top = 120
     Width = 216
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 3
-    Text = 'edtSalesAmountCard'
+    Text = 'edtSalesAmountCash'
     OnChange = ModifiedClick
   end
-  object edtRefundAmountCash: TEdit
+  object edtSalesAmountCard: TEdit
     Left = 160
     Top = 152
     Width = 216
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 4
-    Text = 'edtRefundAmountCash'
+    Text = 'edtSalesAmountCard'
     OnChange = ModifiedClick
   end
-  object edtRefundAmountCard: TEdit
+  object edtRefundAmountCash: TEdit
     Left = 160
     Top = 184
     Width = 216
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 5
+    Text = 'edtRefundAmountCash'
+    OnChange = ModifiedClick
+  end
+  object edtRefundAmountCard: TEdit
+    Left = 160
+    Top = 216
+    Width = 216
+    Height = 21
+    Anchors = [akLeft, akTop, akRight]
+    TabOrder = 6
     Text = 'edtRefundAmountCard'
     OnChange = ModifiedClick
+  end
+  object chbCashInECRAutoZero: TCheckBox
+    Left = 8
+    Top = 72
+    Width = 369
+    Height = 17
+    Caption = #1040#1074#1090#1086#1084#1072#1090#1080#1095#1077#1089#1082#1086#1077' '#1086#1073#1085#1091#1083#1077#1085#1080#1077' '#1085#1072#1083#1080#1095#1085#1099#1093' '#1074' '#1050#1050#1052' '#1087#1086#1089#1083#1077' Z '#1086#1090#1095#1077#1090#1072
+    TabOrder = 2
+    OnClick = ModifiedClick
   end
 end

@@ -1805,6 +1805,8 @@ begin
     // Clear Cash in and out
     Params.CashInAmount := 0;
     Params.CashOutAmount := 0;
+    if Params.CashInECRAutoZero then
+      Params.CashInECRAmount := 0;
     Params.SalesAmountCash := Params.SalesAmountCash + FPrinter.CloseDayResponse2.result.data.total_sale_cash/100;
     Params.SalesAmountCard := Params.SalesAmountCard + FPrinter.CloseDayResponse2.result.data.total_sale_card/100;
     Params.RefundAmountCash := Params.RefundAmountCash + FPrinter.CloseDayResponse2.result.data.total_refund_cash/100;

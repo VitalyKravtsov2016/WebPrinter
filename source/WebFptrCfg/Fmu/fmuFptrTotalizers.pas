@@ -27,6 +27,7 @@ type
     lblRefundAmountCash: TLabel;
     edtRefundAmountCard: TEdit;
     lblRefundAmountCard: TLabel;
+    chbCashInECRAutoZero: TCheckBox;
     procedure ModifiedClick(Sender: TObject);
   public
     procedure UpdatePage; override;
@@ -43,6 +44,7 @@ procedure TfmFptrTotalizers.UpdatePage;
 begin
   edtCashInECRLine.Text := Parameters.CashInECRLine;
   edtCashInECRAmount.Text := CurrToStr(Parameters.CashInECRAmount);
+  chbCashInECRAutoZero.Checked := Parameters.CashInECRAutoZero;
   edtSalesAmountCash.Text := CurrToStr(Parameters.SalesAmountCash);
   edtSalesAmountCard.Text := CurrToStr(Parameters.SalesAmountCard);
   edtRefundAmountCash.Text := CurrToStr(Parameters.RefundAmountCash);
@@ -53,6 +55,7 @@ procedure TfmFptrTotalizers.UpdateObject;
 begin
   Parameters.CashInECRLine := edtCashInECRLine.Text;
   Parameters.CashInECRAmount := StrToCurr(edtCashInECRAmount.Text);
+  Parameters.CashInECRAutoZero := chbCashInECRAutoZero.Checked;
   Parameters.SalesAmountCash := StrToCurr(edtSalesAmountCash.Text);
   Parameters.SalesAmountCard := StrToCurr(edtSalesAmountCard.Text);
   Parameters.RefundAmountCash := StrToCurr(edtRefundAmountCash.Text);

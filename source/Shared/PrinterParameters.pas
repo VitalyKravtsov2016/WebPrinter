@@ -33,6 +33,7 @@ const
   DefConnectTimeout = 10;
   DefWebPrinterAddress = 'http://fbox.ngrok.io';
   DefVatRateEnabled = True;
+  DefCashInECRAutoZero = True;
 
 type
   { TCashParams }
@@ -74,6 +75,7 @@ type
 
     procedure SetMessageLength(const Value: Integer);
   public
+    CashInECRAutoZero: Boolean;
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
 
@@ -193,6 +195,7 @@ begin
 
   CashInECRLine := 'Õ¿À»◊Õ€’ ¬  ¿——≈';
   CashInECRAmount := 0;
+  CashInECRAutoZero := DefCashInECRAutoZero;
   SalesAmountCash := 0;
   SalesAmountCard := 0;
   RefundAmountCash := 0;
@@ -236,6 +239,7 @@ begin
   Logger.Debug('CashOutAmount: ' + AmountToStr(CashOutAmount));
   Logger.Debug('CashInECRLine: ' + CashInECRLine);
   Logger.Debug('CashInECRAmount: ' + AmountToStr(CashInECRAmount));
+  Logger.Debug('CashInECRAutoZero: ' + BoolToStr(CashInECRAutoZero));
   Logger.Debug('SalesAmountCash: ' + AmountToStr(SalesAmountCash));
   Logger.Debug('SalesAmountCard: ' + AmountToStr(SalesAmountCard));
   Logger.Debug('RefundAmountCash: ' + AmountToStr(RefundAmountCash));
@@ -281,6 +285,7 @@ begin
     SalesAmountCard := Src.SalesAmountCard;
     RefundAmountCash := Src.RefundAmountCash;
     RefundAmountCard := Src.RefundAmountCard;
+    CashInECRAutoZero := Src.CashInECRAutoZero;
   end else
     inherited Assign(Source);
 end;
