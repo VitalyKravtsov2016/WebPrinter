@@ -52,6 +52,8 @@ type
     procedure AddReportLines(Request: TWPCloseDayRequest);
     function ReadCashRegister(RegID: Integer): Currency;
     function GetReportName(const ReportName: WideString): WideString;
+    function GetPOSID: WideString;
+    function GetTerminalID: WideString;
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -1825,9 +1827,7 @@ end;
 
 function TWebPrinterImpl.GetReportName(const ReportName: WideString): WideString;
 begin
-  Result := ReportName + CRLF +
-    'FM: ' + FPrinter.Info.Data.terminal_id + CRLF +
-    'POS: ' + FPosID;
+  Result := ReportName + CRLF + GetTerminalID + CRLF +  GetPOSID;
 end;
 
 procedure TWebPrinterImpl.AddReportLines(Request: TWPCloseDayRequest);
@@ -2263,6 +2263,16 @@ begin
   Result.ResultCodeExtended := E.ErrorCode;
 end;
 
+function TWebPrinterImpl.GetTerminalID: WideString;
+begin
+  Result := 'FM: ' + FPrinter.Info.Data.terminal_id
+end;
+
+function TWebPrinterImpl.GetPOSID: WideString;
+begin
+  Result := 'POS: ' + FPosID;
+end;
+
 procedure TWebPrinterImpl.Print(Receipt: TCashInReceipt);
 var
   Text: TWPText;
@@ -2277,6 +2287,9 @@ begin
   try
     Lines.AddStrings(Receipt.Lines);
     Lines.Add(Params.CashInPreLine);
+    Lines.Add(GetTerminalID);
+    Lines.Add(GetPOSID);
+
     Line := AlignLines(Params.CashInLine, AmountToStrEq(Receipt.GetTotal), Params.MessageLength);
     Lines.Add(Line);
     Lines.Add(Params.CashInPostLine);
@@ -2310,6 +2323,8 @@ begin
   try
     Lines.AddStrings(Receipt.Lines);
     Lines.Add(Params.CashOutPreLine);
+    Lines.Add(GetTerminalID);
+    Lines.Add(GetPOSID);
     Line := AlignLines(Params.CashOutLine, AmountToStrEq(Receipt.GetTotal), Params.MessageLength);
     Lines.Add(Line);
     Lines.Add(Params.CashOutPostLine);

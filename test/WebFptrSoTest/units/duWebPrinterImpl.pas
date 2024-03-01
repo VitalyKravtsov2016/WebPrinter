@@ -424,7 +424,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  //WriteFileData('CashIn.json', Driver.Printer.RequestJson)
+  //WriteFileData('CashIn.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashIn.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashIn.json');
 
@@ -483,7 +483,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  //WriteFileData('CashOut.json', Driver.Printer.RequestJson)
+  //WriteFileData('CashOut.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashOut.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashOut.json');
 
