@@ -76,6 +76,11 @@ type
     procedure SetMessageLength(const Value: Integer);
   public
     CashInECRAutoZero: Boolean;
+    SalesAmountCashLine: WideString; // Всего продаж наличные
+    SalesAmountCardLine: WideString; // Всего продаж банковские карты
+    RefundAmountCashLine: WideString; // Всего возвратов наличные
+    RefundAmountCardLine: WideString; // Всего возвратов банковсие карты
+
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
 
@@ -200,6 +205,11 @@ begin
   SalesAmountCard := 0;
   RefundAmountCash := 0;
   RefundAmountCard := 0;
+
+  SalesAmountCashLine := 'ВСЕГО ПРОДАЖ НАЛИЧНЫЕ';
+  SalesAmountCardLine := 'ВСЕГО ПРОДАЖ БАНКОВСКИЕ КАРТЫ';
+  RefundAmountCashLine := 'ВСЕГО ВОЗВРАТОВ НАЛИЧНЫЕ';
+  RefundAmountCardLine := 'ВСЕГО ВОЗВРАТОВ БАНКОВСКИЕ КАРТЫ';
 end;
 
 procedure TPrinterParameters.WriteLogParameters;
@@ -244,6 +254,10 @@ begin
   Logger.Debug('SalesAmountCard: ' + AmountToStr(SalesAmountCard));
   Logger.Debug('RefundAmountCash: ' + AmountToStr(RefundAmountCash));
   Logger.Debug('RefundAmountCard: ' + AmountToStr(RefundAmountCard));
+  Logger.Debug('SalesAmountCashLine: ' + SalesAmountCashLine);
+  Logger.Debug('SalesAmountCardLine: ' + SalesAmountCardLine);
+  Logger.Debug('RefundAmountCashLine: ' + RefundAmountCashLine);
+  Logger.Debug('RefundAmountCardLine: ' + RefundAmountCardLine);
   Logger.Debug(Logger.Separator);
 end;
 

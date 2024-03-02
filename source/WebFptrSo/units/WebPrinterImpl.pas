@@ -1846,6 +1846,22 @@ begin
   Item := Request.prices.Add as TWPCurrency;
   Item.name := Params.CashInECRLine;
   Item.price := Round2(Params.CashInECRAmount * 100);
+  // Sales amount cash
+  Item := Request.prices.Add as TWPCurrency;
+  Item.name := Params.SalesAmountCashLine;
+  Item.price := Round2(Params.SalesAmountCash * 100);
+  // Sales amount card
+  Item := Request.prices.Add as TWPCurrency;
+  Item.name := Params.SalesAmountCardLine;
+  Item.price := Round2(Params.SalesAmountCard * 100);
+  // Refund amount cash
+  Item := Request.prices.Add as TWPCurrency;
+  Item.name := Params.RefundAmountCashLine;
+  Item.price := Round2(Params.RefundAmountCash * 100);
+  // Refund amount card
+  Item := Request.prices.Add as TWPCurrency;
+  Item.name := Params.RefundAmountCardLine;
+  Item.price := Round2(Params.RefundAmountCard * 100);
 end;
 
 procedure TWebPrinterImpl.UpdateZReport;

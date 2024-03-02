@@ -438,17 +438,17 @@ begin
   CheckEquals('12345', pString, 'pString <> 12345');
 
   FptrCheck(Driver.PrintXReport);
-  //WriteFileData('CashinXReport.json', Driver.Printer.RequestJson);
+  WriteFileData('CashinXReport.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashinXReport.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashinXReport.json');
 
   FptrCheck(Driver.PrintZReport);
-  //WriteFileData('CashinZReport.json', Driver.Printer.RequestJson);
+  WriteFileData('CashinZReport.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashinZReport.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashinZReport.json');
 
   FptrCheck(Driver.PrintXReport);
-  //WriteFileData('CashinXReport2.json', Driver.Printer.RequestJson);
+  WriteFileData('CashinXReport2.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashinXReport2.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashinXReport2.json');
 end;

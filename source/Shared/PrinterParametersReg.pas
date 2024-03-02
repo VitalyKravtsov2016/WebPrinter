@@ -215,6 +215,18 @@ begin
       if Reg.ValueExists('CashInECRLine') then
         Parameters.CashInECRLine := Reg.ReadString('CashInECRLine');
 
+      if Reg.ValueExists('SalesAmountCashLine') then
+        Parameters.SalesAmountCashLine := Reg.ReadString('SalesAmountCashLine');
+
+      if Reg.ValueExists('SalesAmountCardLine') then
+        Parameters.SalesAmountCardLine := Reg.ReadString('SalesAmountCardLine');
+
+      if Reg.ValueExists('RefundAmountCashLine') then
+        Parameters.RefundAmountCashLine := Reg.ReadString('RefundAmountCashLine');
+
+      if Reg.ValueExists('RefundAmountCardLine') then
+        Parameters.RefundAmountCardLine := Reg.ReadString('RefundAmountCardLine');
+
       Reg.CloseKey;
     end;
     ReadVatRates(Reg, KeyName + '\' + REG_KEY_VATRATES);
@@ -337,6 +349,10 @@ begin
     Reg.WriteString('CashoutPreLine', FParameters.CashoutPreLine);
     Reg.WriteString('CashoutPostLine', FParameters.CashoutPostLine);
     Reg.WriteString('CashInECRLine', FParameters.CashInECRLine);
+    Reg.WriteString('SalesAmountCashLine', FParameters.SalesAmountCashLine);
+    Reg.WriteString('SalesAmountCardLine', FParameters.SalesAmountCardLine);
+    Reg.WriteString('RefundAmountCashLine', FParameters.RefundAmountCashLine);
+    Reg.WriteString('RefundAmountCardLine', FParameters.RefundAmountCardLine);
 
     Reg.CloseKey;
     // VatRates
