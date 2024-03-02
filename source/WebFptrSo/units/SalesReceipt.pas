@@ -34,6 +34,7 @@ type
     FDiscounts: TAdjustments;
     FAmountDecimalPlaces: Integer;
     FMarkCodes: TStrings;
+    FCashPayment: Currency;
 
     function AddItem: TSalesReceiptItem;
     procedure SubtotalCharge(Amount: Currency;
@@ -146,6 +147,7 @@ type
     property Charges: TAdjustments read FCharges;
     property Discounts: TAdjustments read FDiscounts;
     property AmountDecimalPlaces: Integer read FAmountDecimalPlaces;
+    property CashPayment: Currency read FCashPayment;
   end;
 
 implementation
@@ -648,6 +650,7 @@ begin
   end;
   FPayments[Index] := FPayments[Index] + Payment;
   FChange := GetPayment - GetTotal;
+  FCashPayment := Payments[0] - FChange;
 end;
 
 procedure TSalesReceipt.PrintRecMessage(const Message: WideString);

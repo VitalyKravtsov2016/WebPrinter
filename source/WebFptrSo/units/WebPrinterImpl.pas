@@ -2490,7 +2490,7 @@ var
   ReceiptItem: TReceiptItem;
   ItemDiscount: Currency;
   ReceiptDiscount: Currency;
-  ReceiptTotal: Currency;
+  CashPayment: Currency;
 begin
   ReceiptDiscount := Receipt.Discount;
   Order := TWPOrder.Create;
@@ -2558,14 +2558,14 @@ begin
 
     if receipt.RecType in [rtSell, rtRetBuy] then
     begin
-      ReceiptTotal := Abs(Receipt.GetTotal);
+      CashPayment := Abs(Receipt.CashPayment);
       FPrinter.CreateOrder(Order);
     end else
     begin
-      ReceiptTotal := -Abs(Receipt.GetTotal);
+      CashPayment := -Abs(Receipt.CashPayment);
       FPrinter.ReturnOrder(Order);
     end;
-    Params.CashInECRAmount := Params.CashInECRAmount + ReceiptTotal;
+    Params.CashInECRAmount := Params.CashInECRAmount + CashPayment;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
 
     UpdateZReport;

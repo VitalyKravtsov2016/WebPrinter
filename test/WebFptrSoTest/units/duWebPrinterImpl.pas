@@ -32,8 +32,8 @@ type
     procedure FptrCheck(Code: Integer; const AText: WideString); overload;
     procedure PrintCashInReceipt(Amount: Currency);
     procedure PrintCashOutReceipt(Amount: Currency);
-    procedure PrintSalesReceipt(Amount: Currency);
-    procedure PrintRefundReceipt(Amount: Currency);
+    procedure PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
+    procedure PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
   protected
     procedure Setup; override;
     procedure TearDown; override;
@@ -44,10 +44,13 @@ type
     procedure TestRefundReceipt2;
     procedure TestNonfiscalReceipt;
     procedure TestCashinReceipt;
+    procedure TestCashinReceipt2;
     procedure TestCashoutReceipt;
+    procedure TestCashoutReceipt2;
     procedure TestOpenFiscalDay;
     procedure TestFiscalReceipt2;
     procedure TestTotalizers;
+    procedure TestTotalizers2;
     procedure TestCashInECRTotalizer;
   end;
 
@@ -450,6 +453,26 @@ begin
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashinXReport2.json');
 end;
 
+procedure TWebPrinterImplTest.TestCashinReceipt2;
+var
+  pData: Integer;
+  Text: WideString;
+  pString: WideString;
+begin
+  OpenClaimEnable;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_IN);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecCash(1.01));
+  FptrCheck(Driver.PrintRecCash(2.02));
+  CheckEquals(OPOS_E_ILLEGAL, Driver.PrintRecTotal(3.03, 3.03, '1'));
+  CheckEquals('Invalid payment type', Driver.GetPropertyString(PIDXFptr_ErrorString), 'ErrorString');
+  CheckEquals(OPOS_E_ILLEGAL, Driver.PrintRecTotal(3.03, 5, ''));
+  CheckEquals('Invalid payment amount', Driver.GetPropertyString(PIDXFptr_ErrorString), 'ErrorString');
+  FptrCheck(Driver.PrintRecTotal(3.03, 1.01, ''));
+  FptrCheck(Driver.PrintRecTotal(3.03, 2.02, ''));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
 procedure TWebPrinterImplTest.TestCashoutReceipt;
 var
   Text: WideString;
@@ -501,6 +524,26 @@ begin
   WriteFileData('CashoutXReport2.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashoutXReport2.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutXReport2.json');
+end;
+
+procedure TWebPrinterImplTest.TestCashoutReceipt2;
+var
+  pData: Integer;
+  Text: WideString;
+  pString: WideString;
+begin
+  OpenClaimEnable;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_OUT);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecCash(1.01));
+  FptrCheck(Driver.PrintRecCash(2.02));
+  CheckEquals(OPOS_E_ILLEGAL, Driver.PrintRecTotal(3.03, 3.03, '1'));
+  CheckEquals('Invalid payment type', Driver.GetPropertyString(PIDXFptr_ErrorString), 'ErrorString');
+  CheckEquals(OPOS_E_ILLEGAL, Driver.PrintRecTotal(3.03, 5, ''));
+  CheckEquals('Invalid payment amount', Driver.GetPropertyString(PIDXFptr_ErrorString), 'ErrorString');
+  FptrCheck(Driver.PrintRecTotal(3.03, 1.01, ''));
+  FptrCheck(Driver.PrintRecTotal(3.03, 2.02, ''));
+  FptrCheck(Driver.EndFiscalReceipt(False));
 end;
 
 procedure TWebPrinterImplTest.TestOpenFiscalDay;
@@ -660,21 +703,23 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
 end;
 
-procedure TWebPrinterImplTest.PrintSalesReceipt(Amount: Currency);
+procedure TWebPrinterImplTest.PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
 begin
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
   FptrCheck(Driver.BeginFiscalReceipt(True));
   FptrCheck(Driver.PrintRecItem('', Amount, 1000, 0, Amount, ''));
-  FptrCheck(Driver.PrintRecTotal(Amount, Amount, ''));
+  FptrCheck(Driver.PrintRecTotal(Amount, CardAmount, '1'));
+  FptrCheck(Driver.PrintRecTotal(Amount, CashAmount, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 end;
 
-procedure TWebPrinterImplTest.PrintRefundReceipt(Amount: Currency);
+procedure TWebPrinterImplTest.PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
 begin
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_REFUND);
   FptrCheck(Driver.BeginFiscalReceipt(True));
   FptrCheck(Driver.PrintRecItem('', Amount, 1000, 0, Amount, ''));
-  FptrCheck(Driver.PrintRecTotal(Amount, Amount, ''));
+  FptrCheck(Driver.PrintRecTotal(Amount, CardAmount, '1'));
+  FptrCheck(Driver.PrintRecTotal(Amount, CashAmount, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 end;
 
@@ -686,19 +731,31 @@ begin
   OpenClaimEnable;
   FDriver.Params.CashInECRAmount := 0;
   PrintCashInReceipt(2123.45);
-  CheckEquals(2123.45, Driver.Params.CashInECRAmount);
+  CheckEquals(2123.45, Driver.Params.CashInECRAmount, 'CashInECRAmount');
+  CheckEquals(2123.45, Driver.Params.CashInAmount, 'CashInAmount');
+
   PrintCashOutReceipt(123.45);
   CheckEquals(2123.45-123.45, Driver.Params.CashInECRAmount);
-  PrintSalesReceipt(7623.45);
-  CheckEquals(2123.45-123.45 + 7623.45, Driver.Params.CashInECRAmount);
-  PrintRefundReceipt(93.56);
-  CheckEquals(2123.45-123.45 + 7623.45-93.56, Driver.Params.CashInECRAmount);
+  CheckEquals(123.45, Driver.Params.CashOutAmount, 'CashOutAmount');
+
+  PrintSalesReceipt(7623.45, 8000, 1000);
+  CheckEquals(2123.45-123.45 + 6623.45, Driver.Params.CashInECRAmount);
+
+  PrintRefundReceipt(93.56, 100, 50);
+  CheckEquals(2123.45-123.45 + 6623.45-43.56, Driver.Params.CashInECRAmount);
+
   Driver.Close;
   FDriver.Params.CashInECRAmount := 0;
 
   OpenClaimEnable;
-  PrintCashInReceipt(2123.45);
-  CheckEquals(2123.45-123.45 + 7623.45-93.56+2123.45, Driver.Params.CashInECRAmount);
+  PrintCashInReceipt(768.45);
+  CheckEquals(2123.45 + 768.45, Driver.Params.CashInAmount, 'CashInAmount');
+  CheckEquals(2123.45-123.45 + 6623.45-43.56 + 768.45, Driver.Params.CashInECRAmount);
+end;
+
+procedure TWebPrinterImplTest.TestTotalizers2;
+begin
+
 end;
 
 initialization

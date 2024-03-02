@@ -8,7 +8,7 @@ uses
   // Opos
   Opos, OposException, OposFptr,
   // This
-  CustomReceipt, gnugettext;
+  CustomReceipt, WebPrinter;
 
 type
   { TCashOutReceipt }
@@ -40,7 +40,7 @@ uses
 procedure TCashOutReceipt.CheckAmount(Amount: Currency);
 begin
   if Amount < 0 then
-    raiseExtendedError(OPOS_EFPTR_BAD_ITEM_AMOUNT, _('Negative amount'));
+    raiseExtendedError(OPOS_EFPTR_BAD_ITEM_AMOUNT, 'Negative amount');
 end;
 
 procedure TCashOutReceipt.PrintRecCash(Amount: Currency);
@@ -61,6 +61,13 @@ begin
   CheckNotVoided;
   CheckAmount(Total);
   CheckAmount(Payment);
+
+  if StrToInt(Description) <> PaymentTypeCash then
+    raiseIllegalError('Invalid payment type');
+
+  if (FPayment + Payment) > Total then
+    raiseIllegalError('Invalid payment amount');
+
   FPayment := FPayment + Payment;
 end;
 
