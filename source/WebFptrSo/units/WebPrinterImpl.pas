@@ -1794,6 +1794,7 @@ end;
 function TWebPrinterImpl.PrintZReport: Integer;
 var
   Request: TWPCloseDayRequest;
+  Response: TWPCloseDayResponse;
 begin
   Request := TWPCloseDayRequest.Create;
   try
@@ -1803,17 +1804,17 @@ begin
     Request.close_zreport := True;
     Request.name := GetReportName('Z ÎÒ×¨Ò');
     AddReportLines(Request);
-    FPrinter.PrintZReport(Request);
+    Response := FPrinter.PrintZReport(Request);
 
     // Clear Cash in and out
     Params.CashInAmount := 0;
     Params.CashOutAmount := 0;
     if Params.CashInECRAutoZero then
       Params.CashInECRAmount := 0;
-    Params.SalesAmountCash := Params.SalesAmountCash + FPrinter.CloseDayResponse2.result.data.total_sale_cash/100;
-    Params.SalesAmountCard := Params.SalesAmountCard + FPrinter.CloseDayResponse2.result.data.total_sale_card/100;
-    Params.RefundAmountCash := Params.RefundAmountCash + FPrinter.CloseDayResponse2.result.data.total_refund_cash/100;
-    Params.RefundAmountCard := Params.RefundAmountCard + FPrinter.CloseDayResponse2.result.data.total_refund_card/100;
+    Params.SalesAmountCash := Params.SalesAmountCash + Response.data.total_sale_cash/100;
+    Params.SalesAmountCard := Params.SalesAmountCard + Response.data.total_sale_card/100;
+    Params.RefundAmountCash := Params.RefundAmountCash + Response.data.total_refund_cash/100;
+    Params.RefundAmountCard := Params.RefundAmountCard + Response.data.total_refund_card/100;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
 
     UpdateZReport;

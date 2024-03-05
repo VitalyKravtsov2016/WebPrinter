@@ -30,6 +30,8 @@ type
     procedure OpenService;
     procedure FptrCheck(Code: Integer); overload;
     procedure FptrCheck(Code: Integer; const AText: WideString); overload;
+    procedure PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
+    procedure PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
   protected
     procedure Setup; override;
     procedure TearDown; override;
@@ -40,6 +42,7 @@ type
     procedure TestRefundReceipt2;
     procedure TestNonFiscalReceipt;
     procedure TestNonfiscalReceipt2;
+    procedure TestTotalizers;
   end;
 
 implementation
@@ -52,7 +55,6 @@ begin
   FDriver.Params.WebprinterAddress := 'http://fbox.ngrok.io'; // 8080 èëè 80
   FDriver.Params.LogFileEnabled := True;
   FDriver.Params.LogMaxCount := 10;
-  FDriver.LoadParamsEnabled := False;
   FDriver.Params.VatRates.Clear;
   FDriver.Params.VatRates.Add(1, 10,  'ÍÄÑ 10%');
   FDriver.Params.VatRates.Add(2, 12,  'ÍÄÑ 12%');
@@ -352,6 +354,60 @@ begin
   finally
     Strings.Free;
   end;
+end;
+
+procedure TWebPrinterImplTest.TestTotalizers;
+begin
+  OpenClaimEnable;
+  //FptrCheck(FDriver.PrintZReport, 'PrintZReport');
+
+  FDriver.Params.SalesAmountCash := 0;
+  FDriver.Params.SalesAmountCard := 0;
+  FDriver.Params.RefundAmountCash := 0;
+  FDriver.Params.RefundAmountCard := 0;
+
+  PrintSalesReceipt(7623.45, 8000, 1000);
+  CheckEquals(0, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
+  CheckEquals(0, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
+  CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
+  CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
+
+  PrintRefundReceipt(93.56, 100, 50);
+  CheckEquals(0, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
+  CheckEquals(0, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
+  CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
+  CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
+
+  FptrCheck(FDriver.PrintZReport, 'PrintZReport');
+  CheckEquals(6623.45, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
+  CheckEquals(1000, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
+  CheckEquals(43.56, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
+  CheckEquals(50, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
+end;
+
+procedure TWebPrinterImplTest.PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
+begin
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecItem('Item 1', Amount, 1000, 0, Amount, ''));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecTotal(Amount, CardAmount, '1'));
+  FptrCheck(Driver.PrintRecTotal(Amount, CashAmount, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
+procedure TWebPrinterImplTest.PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
+const
+  receipt_qr_code = 'https://ofd.soliq.uz/check?t=UZ191211501001&r=1447&c=20220309125810&s=461313663448';
+begin
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_REFUND);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.DirectIO2(DIO_SET_RECEIPT_JSON_FIELD, 0, 'qr_code;' + receipt_qr_code));
+  FptrCheck(Driver.PrintRecItem('Item 1', Amount, 1000, 0, Amount, ''));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecTotal(Amount, CardAmount, '1'));
+  FptrCheck(Driver.PrintRecTotal(Amount, CashAmount, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
 end;
 
 initialization

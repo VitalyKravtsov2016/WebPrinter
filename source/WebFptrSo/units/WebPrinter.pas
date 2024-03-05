@@ -1917,6 +1917,7 @@ function TWebPrinter.OpenFiscalDay2(Time: TDateTime): TWPOpenDayResponse;
 var
   ResponseJson: WideString;
 begin
+  FLogger.Debug('TWebPrinter.OpenFiscalDay.0');
   ResponseJson := OpenFiscalDay(Time);
   JsonToObject(ResponseJson, FOpenDayResponse);
   if FOpenDayResponse.error.code = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then
@@ -1928,6 +1929,7 @@ begin
   FDayOpened := True;
   FDayOpenTime := Time;
   Result := FOpenDayResponse;
+  FLogger.Debug('TWebPrinter.OpenFiscalDay.1');
 end;
 
 (*
@@ -2161,6 +2163,8 @@ var
   RequestJson: WideString;
   responseJson: WideString;
 begin
+  FLogger.Debug('TWebPrinter.ReturnOrder.0');
+
   OpenFiscalDay3;
   for i := 1 to 2 do
   begin
@@ -2178,6 +2182,7 @@ begin
       Break;
     end;
   end;
+  FLogger.Debug('TWebPrinter.ReturnOrder.1');
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;
 end;

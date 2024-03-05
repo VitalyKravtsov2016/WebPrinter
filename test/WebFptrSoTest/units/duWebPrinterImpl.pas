@@ -64,7 +64,8 @@ begin
   FDriver.TestMode := True;
   FDriver.Printer.TestMode := True;
   FDriver.Params.WebprinterAddress := 'http://fbox.ngrok.io'; // 8080 èëè 80
-  FDriver.Params.LogFileEnabled := True;
+  //FDriver.Params.LogFileEnabled := True;
+  FDriver.Params.LogFileEnabled := False;
   FDriver.Params.LogMaxCount := 10;
   FDriver.Params.VatRates.Clear;
   FDriver.Params.VatRates.Add(1, 10,  'ÍÄÑ 10%');
@@ -454,10 +455,6 @@ begin
 end;
 
 procedure TWebPrinterImplTest.TestCashinReceipt2;
-var
-  pData: Integer;
-  Text: WideString;
-  pString: WideString;
 begin
   OpenClaimEnable;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_IN);
@@ -527,10 +524,6 @@ begin
 end;
 
 procedure TWebPrinterImplTest.TestCashoutReceipt2;
-var
-  pData: Integer;
-  Text: WideString;
-  pString: WideString;
 begin
   OpenClaimEnable;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_OUT);
@@ -755,7 +748,47 @@ end;
 
 procedure TWebPrinterImplTest.TestTotalizers2;
 begin
+  FDriver.TestMode := False;
+  FDriver.Printer.TestMode := True;
 
+  OpenClaimEnable;
+  FDriver.Params.SalesAmountCash := 0;
+  FDriver.Params.SalesAmountCard := 0;
+  FDriver.Params.RefundAmountCash := 0;
+  FDriver.Params.RefundAmountCard := 0;
+
+  PrintSalesReceipt(7623.45, 8000, 1000);
+  CheckEquals(0, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
+  CheckEquals(0, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
+  CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
+  CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
+
+  FDriver.Printer.CloseDayResponse.data.total_sale_cash := 662345;
+  FDriver.Printer.CloseDayResponse.data.total_sale_card := 100000;
+  FDriver.Printer.CloseDayResponse.data.total_refund_cash := 0;
+  FDriver.Printer.CloseDayResponse.data.total_refund_card := 0;
+  FptrCheck(FDriver.PrintZReport, 'PrintZReport');
+  CheckEquals(6623.45, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
+  CheckEquals(1000, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
+  CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
+  CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
+
+  PrintRefundReceipt(93.56, 100, 50);
+  CheckEquals(6623.45, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
+  CheckEquals(1000, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
+  CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
+  CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
+
+  FDriver.Printer.CloseDayResponse.data.total_sale_cash := 0;
+  FDriver.Printer.CloseDayResponse.data.total_sale_card := 0;
+  FDriver.Printer.CloseDayResponse.data.total_refund_cash := 4356;
+  FDriver.Printer.CloseDayResponse.data.total_refund_card := 5000;
+  FptrCheck(FDriver.PrintZReport, 'PrintZReport');
+
+  CheckEquals(6623.45, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
+  CheckEquals(1000, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
+  CheckEquals(43.56, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
+  CheckEquals(50, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
 end;
 
 initialization
