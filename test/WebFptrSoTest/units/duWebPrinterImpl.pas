@@ -52,6 +52,7 @@ type
     procedure TestTotalizers;
     procedure TestTotalizers2;
     procedure TestCashInECRTotalizer;
+    procedure TestDirectIO_106;
   end;
 
 implementation
@@ -789,6 +790,43 @@ begin
   CheckEquals(1000, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
   CheckEquals(43.56, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
   CheckEquals(50, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
+end;
+
+procedure TWebPrinterImplTest.TestDirectIO_106;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 10, 100, 'רע'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_RECITEM_JSON_FIELD, 0, 'package_code;0'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_RECITEM_JSON_FIELD, 0, 'package_code;1'));
+
+  FptrCheck(Driver.PrintRecItem('Item 2', 100, 1000, 1, 100, 'רע'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_RECITEM_JSON_FIELD, 0, 'package_code;1493082'));
+
+  FptrCheck(Driver.PrintRecTotal(200, 200, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  WriteFileData('OrderRequest4.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(0, Order.banners.Count, 'Order.banners.Count');
+    CheckEquals(2, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals('Item 2', Order.products[1].name, 'Order.products[1].name');
+    CheckEquals(10000, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(10000, Order.products[1].Price, 'Order.products[1].Price');
+    CheckEquals(1, Order.products[0].package_code, 'Order.products[0].package_code');
+    CheckEquals(1493082, Order.products[1].package_code, 'Order.products[1].package_code');
+  finally
+    Order.Free;
+  end;
 end;
 
 initialization

@@ -117,7 +117,7 @@ type
 
     procedure PrintNormal(const Text: WideString; Station: Integer); virtual;
 
-    procedure DirectIO(Command: Integer; var pData: Integer; var pString: WideString);
+    procedure DirectIO(Command: Integer; var pData: Integer; var pString: WideString); virtual;
 
     procedure Print(AVisitor: TObject); virtual;
     procedure AddMarkCode(const AMarkCode: string); virtual;

@@ -35,6 +35,7 @@ type
     FAmountDecimalPlaces: Integer;
     FMarkCodes: TStrings;
     FCashPayment: Currency;
+    FJsonFields: TTntStrings;
 
     function AddItem: TSalesReceiptItem;
     procedure SubtotalCharge(Amount: Currency;
@@ -45,7 +46,6 @@ type
     procedure CheckPercents(Value: Currency);
     procedure CheckQuantity(Quantity: Double);
     procedure CheckAmount(Amount: Currency);
-    function GetLastItem: TSalesReceiptItem;
     procedure RecSubtotalAdjustment(const Description: WideString;
       AdjustmentType: Integer; Amount: Currency);
     procedure SubtotalDiscount(Amount: Currency;
@@ -65,6 +65,7 @@ type
     function GetPayment: Currency; override;
     function RoundAmount(Amount: Currency): Currency;
     function GetTotalByVAT(VatInfo: Integer): Currency;
+    function GetLastItem: TSalesReceiptItem;
 
     procedure PrintRecVoid(const Description: WideString); override;
 
@@ -148,6 +149,7 @@ type
     property Discounts: TAdjustments read FDiscounts;
     property AmountDecimalPlaces: Integer read FAmountDecimalPlaces;
     property CashPayment: Currency read FCashPayment;
+    property JsonFields: TTntStrings read FJsonFields;
   end;
 
 implementation
@@ -193,6 +195,7 @@ begin
   FCharges := TAdjustments.Create;
   FDiscounts := TAdjustments.Create;
   FMarkCodes := TStringList.Create;
+  FJsonFields := TTntStringList.Create;
 end;
 
 destructor TSalesReceipt.Destroy;
@@ -202,6 +205,7 @@ begin
   FCharges.Free;
   FDiscounts.Free;
   FMarkCodes.Free;
+  FJsonFields.Free;
   inherited Destroy;
 end;
 

@@ -1,8 +1,7 @@
 program WebFptrSoTest;
 
-{%File '..\AcceptanceTest\WebFptrSoTest.dof'}
-
 uses
+  FastMM4,
   Forms,
   TestFramework,
   GUITestRunner,

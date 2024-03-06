@@ -1708,6 +1708,7 @@ begin
   FTransport.Free;
   FOpenDayResponse.Free;
   FCloseDayResponse.Free;
+  FCloseDayResponse2.Free;
   FPaymentResponse.Free;
   FPaymentConfirmResponse.Free;
   FCreateOrderResponse.Free;

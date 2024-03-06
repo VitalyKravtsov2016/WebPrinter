@@ -42,11 +42,9 @@ type
     FTestMode: Boolean;
     FPOSID: WideString;
     FCashierID: WideString;
-    FReceiptFields: TTntStrings;
-    FRecItemFields: TTntStrings;
 
-    procedure UpdateRecItemFields(Product: TWPProduct);
-    procedure UpdateReceiptFields(Order: TWPOrder);
+    procedure UpdateRecItemFields(Product: TWPProduct; Fields: TTntStrings);
+    procedure UpdateReceiptFields(Order: TWPOrder; Fields: TTntStrings);
     procedure UpdateZReport;
     procedure WriteOperationTag(pData: Integer; const pString: string);
     procedure AddReportLines(Request: TWPCloseDayRequest);
@@ -355,8 +353,6 @@ begin
   FOposDevice := TOposServiceDevice19.Create(FLogger);
   FOposDevice.ErrorEventEnabled := False;
   FPrinterState := TFiscalPrinterState.Create;
-  FReceiptFields := TTntStringList.Create;
-  FRecItemFields := TTntStringList.Create;
   FTLVItems := TTLVItems.Create;
 end;
 
@@ -372,8 +368,6 @@ begin
   FTLVItems.Free;
   FOposDevice.Free;
   FPrinterState.Free;
-  FReceiptFields.Free;
-  FRecItemFields.Free;
   FLogger := nil;
   inherited Destroy;
 end;
@@ -602,9 +596,6 @@ begin
     FReceipt.Free;
     FReceipt := CreateReceipt(FFiscalReceiptType);
     FReceipt.BeginFiscalReceipt(PrintHeader);
-    FReceiptFields.Clear;
-    FRecItemFields.Clear;
-
     Result := ClearResult;
   except
     on E: Exception do
@@ -746,6 +737,7 @@ var
   TLVItem: TTLVItem;
   FieldName: WideString;
   FieldValue: WideString;
+  SalesReceipt: TSalesReceipt;
 begin
   try
     FOposDevice.CheckOpened;
@@ -799,21 +791,29 @@ begin
 
       DIO_SET_RECITEM_JSON_FIELD:
       begin
-        FieldName := GetString(pString, 1, [';']);
-        FieldValue := GetString(pString, 2, [';']);
-        if FieldName <> '' then
+        if Receipt is TSalesReceipt then
         begin
-          FRecItemFields.Values[FieldName] := FieldValue;
+          SalesReceipt := Receipt as TSalesReceipt;
+          FieldName := GetString(pString, 1, [';']);
+          FieldValue := GetString(pString, 2, [';']);
+          if FieldName <> '' then
+          begin
+            SalesReceipt.GetLastItem.JsonFields.Values[FieldName] := FieldValue;
+          end;
         end;
       end;
 
       DIO_SET_RECEIPT_JSON_FIELD:
       begin
-        FieldName := GetString(pString, 1, [';']);
-        FieldValue := GetString(pString, 2, [';']);
-        if FieldName <> '' then
+        if Receipt is TSalesReceipt then
         begin
-          FReceiptFields.Values[FieldName] := FieldValue;
+          SalesReceipt := Receipt as TSalesReceipt;
+          FieldName := GetString(pString, 1, [';']);
+          FieldValue := GetString(pString, 2, [';']);
+          if FieldName <> '' then
+          begin
+            SalesReceipt.JsonFields.Values[FieldName] := FieldValue;
+          end;
         end;
       end;
 
@@ -2361,16 +2361,16 @@ begin
   end;
 end;
 
-procedure TWebPrinterImpl.UpdateRecItemFields(Product: TWPProduct);
+procedure TWebPrinterImpl.UpdateRecItemFields(Product: TWPProduct; Fields: TTntStrings);
 var
   i: Integer;
   FieldName: WideString;
   FieldValue: WideString;
 begin
-  for i := 0 to FRecItemFields.Count-1 do
+  for i := 0 to Fields.Count-1 do
   begin
-    FieldName := FRecItemFields.Names[i];
-    FieldValue := FRecItemFields.ValueFromIndex[i];
+    FieldName := Fields.Names[i];
+    FieldValue := Fields.ValueFromIndex[i];
 
     if WideCompareText('name', FieldName) = 0 then
       Product.name := FieldValue;
@@ -2420,18 +2420,19 @@ begin
     if WideCompareText('comission_info.pinfl', FieldName) = 0 then
       Product.comission_info.pinfl := FieldValue;
   end;
+  Fields.Clear;
 end;
 
-procedure TWebPrinterImpl.UpdateReceiptFields(Order: TWPOrder);
+procedure TWebPrinterImpl.UpdateReceiptFields(Order: TWPOrder; Fields: TTntStrings);
 var
   i: Integer;
   FieldName: WideString;
   FieldValue: WideString;
 begin
-  for i := 0 to FReceiptFields.Count-1 do
+  for i := 0 to Fields.Count-1 do
   begin
-    FieldName := FReceiptFields.Names[i];
-    FieldValue := FReceiptFields.ValueFromIndex[i];
+    FieldName := Fields.Names[i];
+    FieldValue := Fields.ValueFromIndex[i];
 
     if WideCompareText('qr_code', FieldName) = 0 then
       Order.qr_code := FieldValue;
@@ -2469,6 +2470,7 @@ begin
     if WideCompareText('sms_phone_number', FieldName) = 0 then
       Order.sms_phone_number := FieldValue;
   end;
+  Fields.Clear;
 end;
 
 procedure TWebPrinterImpl.Print(Receipt: TSalesReceipt);
@@ -2559,7 +2561,7 @@ begin
         Product.Owner_type := 0;
         Product.Comission_info.inn := Item.ProviderINN;
         Product.Comission_info.pinfl := '';
-        UpdateRecItemFields(Product);
+        UpdateRecItemFields(Product, Item.JsonFields);
       end;
       // Banners
       if ReceiptItem is TRecTextItem then
@@ -2571,7 +2573,7 @@ begin
       end;
     end;
     // Apply receipt fields
-    UpdateReceiptFields(Order);
+    UpdateReceiptFields(Order, Receipt.JsonFields);
 
     if receipt.RecType in [rtSell, rtRetBuy] then
     begin

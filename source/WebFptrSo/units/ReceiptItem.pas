@@ -5,6 +5,8 @@ interface
 Uses
   // VCL
   Classes, SysUtils, Math,
+  // Tnt
+  TntClasses,
   // This
   MathUtils, PrinterTypes, OposFptr;
 
@@ -81,6 +83,7 @@ type
     FMarkCodes: TStrings;
     FPackageCode: Integer;
     FProviderINN: WideString;
+    FJsonFields: TTntStrings;
   public
     constructor Create(AOwner: TReceiptItems); override;
     destructor Destroy; override;
@@ -111,6 +114,7 @@ type
     property PackageCode: Integer read FPackageCode write FPackageCode;
     property MarkCodes: TStrings read FMarkCodes;
     property ProviderINN: WideString read FProviderINN write FProviderINN;
+    property JsonFields: TTntStrings read FJsonFields;
   end;
 
   { TAdjustments }
@@ -289,6 +293,7 @@ begin
   FCharges := TAdjustments.Create;
   FDiscounts := TAdjustments.Create;
   FMarkCodes := TStringList.Create;
+  FJsonFields := TTntStringList.Create;
 end;
 
 destructor TSalesReceiptItem.Destroy;
@@ -296,6 +301,7 @@ begin
   FCharges.Free;
   FDiscounts.Free;
   FMarkCodes.Free;
+  FJsonFields.Free;
   inherited Destroy;
 end;
 
