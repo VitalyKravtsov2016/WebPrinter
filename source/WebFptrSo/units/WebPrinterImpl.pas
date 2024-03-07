@@ -2547,10 +2547,14 @@ begin
         Product.vat_percent := Round(VatRate);
 
         ItemDiscount := Abs(Item.Discounts.GetTotal);
-        if (ReceiptDiscount <> 0) and (Item.Price >= (ItemDiscount + ReceiptDiscount)) then
+
+        if (not Params.RecDiscountOnClassCode) or Params.ClassCodeDiscountEnabled(Item.GetClassCode) then
         begin
-          ItemDiscount := ItemDiscount + ReceiptDiscount;
-          ReceiptDiscount := 0;
+          if (ReceiptDiscount <> 0) and (Item.Price >= (ItemDiscount + ReceiptDiscount)) then
+          begin
+            ItemDiscount := ItemDiscount + ReceiptDiscount;
+            ReceiptDiscount := 0;
+          end;
         end;
         Product.discount := Abs(Round2(ItemDiscount * 100));
         Product.Discount_percent := Round(Item.GetDiscountPercent);

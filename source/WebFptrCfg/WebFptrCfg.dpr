@@ -58,8 +58,9 @@ uses
   VatRate in '..\Shared\VatRate.pas',
   fmuFptrVatRate in 'Fmu\fmuFptrVatRate.pas' {fmFptrVatRate},
   fmuFptrPayType in 'Fmu\fmuFptrPayType.pas' {fmFptrPayType},
-  fmuFptrPrint in 'Fmu\fmuFptrPrint.pas' {fmFptrPrint},
-  fmuFptrCash in 'Fmu\fmuFptrCash.pas' {fmFptrCash};
+  fmuFptrDiscount in 'Fmu\fmuFptrDiscount.pas' {fmFptrDiscount},
+  fmuFptrCash in 'Fmu\fmuFptrCash.pas' {fmFptrCash},
+  fmuFptrPrint in 'Fmu\fmuFptrPrint.pas' {fmFptrPrint};
 
 {$R *.RES}
 {$R Windows.RES}

@@ -98,6 +98,7 @@ type
     function GetTotalAmount(RoundType: Integer): Currency;
     function GetTotalByVAT(AVatInfo: Integer): Currency; override;
     function GetDiscountPercent: Double;
+    function GetClassCode: string;
 
     property Total: Currency read GetTotal;
     property Charges: TAdjustments read FCharges;
@@ -389,6 +390,16 @@ begin
       Result := Discount.Amount/100;
     end;
   end;
+end;
+
+function TSalesReceiptItem.GetClassCode: string;
+var
+  Text: string;
+begin
+  Result := ClassCode;
+  Text := JsonFields.Values['class_code'];
+  if Text <> '' then
+    Result := Text;
 end;
 
 { TAdjustment }

@@ -53,6 +53,7 @@ type
     procedure TestTotalizers2;
     procedure TestCashInECRTotalizer;
     procedure TestDirectIO_106;
+    procedure TestClassCodes;
   end;
 
 implementation
@@ -171,6 +172,13 @@ var
   Order: TWPOrder;
 begin
   OpenClaimEnable;
+(*
+  //Driver.Params.RecDiscountOnClassCode := False;
+  Driver.Params.RecDiscountOnClassCode := True;
+  Driver.Params.ClassCodes.Clear;
+  Driver.Params.ClassCodes.Add('04811001001000000');
+*)
+
   Driver.SetPOSID('POS1', 'Cahier 1');
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
@@ -824,6 +832,58 @@ begin
     CheckEquals(10000, Order.products[1].Price, 'Order.products[1].Price');
     CheckEquals(1, Order.products[0].package_code, 'Order.products[0].package_code');
     CheckEquals(1493082, Order.products[1].package_code, 'Order.products[1].package_code');
+  finally
+    Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImplTest.TestClassCodes;
+var
+  Order: TWPOrder;
+begin
+  Driver.Params.RecDiscountOnClassCode := True;
+  Driver.Params.ClassCodes.Add('04811001001000000');
+
+  OpenClaimEnable;
+  Driver.SetPOSID('POS1', 'Cahier 1');
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 10, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000001'));
+  FptrCheck(Driver.PrintRecItem('Item 2', 100, 1000, 10, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000002'));
+  FptrCheck(Driver.PrintRecItem('Item 3', 100, 1000, 10, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+
+  // —кидка на чек
+  FptrCheck(Driver.PrintRecSubtotalAdjustment(FPTR_AT_AMOUNT_DISCOUNT, '—кидка на чек', 10));
+  FptrCheck(Driver.PrintRecTotal(290, 290, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  WriteFileData('OrderRequest5.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+
+    CheckEquals(3, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals('Item 2', Order.products[1].name, 'Order.products[1].name');
+    CheckEquals('Item 3', Order.products[2].name, 'Order.products[2].name');
+
+    CheckEquals(10000, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(10000, Order.products[1].Price, 'Order.products[1].Price');
+    CheckEquals(10000, Order.products[2].Price, 'Order.products[2].Price');
+
+    CheckEquals(0, Order.products[0].Discount, 'Order.products[0].Discount');
+    CheckEquals(0, Order.products[1].Discount, 'Order.products[1].Discount');
+    CheckEquals(1000, Order.products[2].Discount, 'Order.products[2].Discount');
+
+    CheckEquals('04811001001000001', Order.products[0].class_code, 'Order.products[0].class_code');
+    CheckEquals('04811001001000002', Order.products[1].class_code, 'Order.products[1].class_code');
+    CheckEquals('04811001001000000', Order.products[2].class_code, 'Order.products[2].class_code');
   finally
     Order.Free;
   end;

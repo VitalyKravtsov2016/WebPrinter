@@ -52,9 +52,10 @@ procedure SaveUsrParametersReg(Item: TPrinterParameters;
 implementation
 
 const
-  REG_KEY_UNITS  = 'Units';
-  REG_KEY_VATRATES  = 'VatRates';
-  REG_KEY_PAYTYPES  = 'PaymentTypes';
+  REG_KEY_UNITS = 'Units';
+  REG_KEY_VATRATES = 'VatRates';
+  REG_KEY_PAYTYPES = 'PaymentTypes';
+  REG_KEY_CLASSCODES = 'ClassCodes';
   REGSTR_KEY_IBT = 'SOFTWARE\POSITIVE\POSITIVE32\Terminal';
 
 procedure DeleteParametersReg(const DeviceName: WideString; Logger: ILogFile);
@@ -198,8 +199,10 @@ begin
 
       if Reg.ValueExists('CashinLine') then
         Parameters.CashinLine := Reg.ReadString('CashinLine');
+
       if Reg.ValueExists('CashinPreLine') then
         Parameters.CashinPreLine := Reg.ReadString('CashinPreLine');
+
       if Reg.ValueExists('CashinPostLine') then
         Parameters.CashinPostLine := Reg.ReadString('CashinPostLine');
 
@@ -226,6 +229,12 @@ begin
 
       if Reg.ValueExists('RefundAmountCardLine') then
         Parameters.RefundAmountCardLine := Reg.ReadString('RefundAmountCardLine');
+
+      if Reg.ValueExists('ClassCodes') then
+        Parameters.ClassCodes.Text := Reg.ReadString('ClassCodes');
+
+      if Reg.ValueExists('RecDiscountOnClassCode') then
+        Parameters.RecDiscountOnClassCode := Reg.ReadBool('RecDiscountOnClassCode');
 
       Reg.CloseKey;
     end;
@@ -353,7 +362,8 @@ begin
     Reg.WriteString('SalesAmountCardLine', FParameters.SalesAmountCardLine);
     Reg.WriteString('RefundAmountCashLine', FParameters.RefundAmountCashLine);
     Reg.WriteString('RefundAmountCardLine', FParameters.RefundAmountCardLine);
-
+    Reg.WriteBool('RecDiscountOnClassCode', FParameters.RecDiscountOnClassCode);
+    Reg.WriteString('ClassCodes', FParameters.ClassCodes.Text);
     Reg.CloseKey;
     // VatRates
     Reg.DeleteKey(KeyName + '\' + REG_KEY_VATRATES);
@@ -388,6 +398,7 @@ begin
         Reg.CloseKey;
       end;
     end;
+    // ClassCodes
   finally
     Reg.Free;
   end;

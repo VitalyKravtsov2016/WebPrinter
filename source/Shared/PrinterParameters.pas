@@ -72,14 +72,17 @@ type
     FSalesAmountCard: Currency; // Âñåãî ïğîäàæ áàíêîâñêèå êàğòû
     FRefundAmountCash: Currency; // Âñåãî âîçâğàòîâ íàëè÷íûå
     FRefundAmountCard: Currency; // Âñåãî âîçâğàòîâ áàíêîâñèå êàğòû
+    FClassCodes: TStrings;
 
     procedure SetMessageLength(const Value: Integer);
+    procedure SetClassCodes(const Value: TStrings);
   public
     CashInECRAutoZero: Boolean;
     SalesAmountCashLine: WideString; // Âñåãî ïğîäàæ íàëè÷íûå
     SalesAmountCardLine: WideString; // Âñåãî ïğîäàæ áàíêîâñêèå êàğòû
     RefundAmountCashLine: WideString; // Âñåãî âîçâğàòîâ íàëè÷íûå
     RefundAmountCardLine: WideString; // Âñåãî âîçâğàòîâ áàíêîâñèå êàğòû
+    RecDiscountOnClassCode: Boolean;
 
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
@@ -90,6 +93,7 @@ type
     procedure Load(const DeviceName: WideString);
     procedure Save(const DeviceName: WideString);
     procedure Assign(Source: TPersistent); override;
+    function ClassCodeDiscountEnabled(const ClassCode: string): Boolean;
 
     property ItemUnits: TItemUnits read FItemUnits;
     property Logger: ILogFile read FLogger;
@@ -119,6 +123,7 @@ type
     property SalesAmountCard: Currency read FSalesAmountCard write FSalesAmountCard;
     property RefundAmountCash: Currency read FRefundAmountCash write FRefundAmountCash;
     property RefundAmountCard: Currency read FRefundAmountCard write FRefundAmountCard;
+    property ClassCodes: TStrings read FClassCodes write SetClassCodes;
   end;
 
 implementation
@@ -131,6 +136,7 @@ begin
   FLogger := ALogger;
   FItemUnits := TItemUnits.Create;
   FVatRates := TVatRates.Create;
+  FClassCodes := TStringList.Create;
 
   SetDefaults;
 end;
@@ -140,6 +146,7 @@ begin
   FLogger := nil;
   FItemUnits.Free;
   FVatRates.Free;
+  FClassCodes.Free;
   inherited Destroy;
 end;
 
@@ -210,6 +217,9 @@ begin
   SalesAmountCardLine := 'ÂÑÅÃÎ ÏĞÎÄÀÆ ÁÀÍÊÎÂÑÊÈÅ ÊÀĞÒÛ';
   RefundAmountCashLine := 'ÂÑÅÃÎ ÂÎÇÂĞÀÒÎÂ ÍÀËÈ×ÍÛÅ';
   RefundAmountCardLine := 'ÂÑÅÃÎ ÂÎÇÂĞÀÒÎÂ ÁÀÍÊÎÂÑÊÈÅ ÊÀĞÒÛ';
+
+  RecDiscountOnClassCode := False;
+  ClassCodes.Clear;
 end;
 
 procedure TPrinterParameters.WriteLogParameters;
@@ -258,6 +268,11 @@ begin
   Logger.Debug('SalesAmountCardLine: ' + SalesAmountCardLine);
   Logger.Debug('RefundAmountCashLine: ' + RefundAmountCashLine);
   Logger.Debug('RefundAmountCardLine: ' + RefundAmountCardLine);
+  Logger.Debug('RecDiscountOnClassCode: ' + BoolToStr(RecDiscountOnClassCode));
+  for i := 0 to ClassCodes.Count-1 do
+  begin
+    Logger.Debug(Format('ClassCode%d: %s', [i, ClassCodes[i]]));
+  end;
   Logger.Debug(Logger.Separator);
 end;
 
@@ -318,6 +333,16 @@ procedure TPrinterParameters.SetMessageLength(const Value: Integer);
 begin
   if (Value >= 24)and(Value <= 120) then
     FMessageLength := Value;
+end;
+
+procedure TPrinterParameters.SetClassCodes(const Value: TStrings);
+begin
+  FClassCodes.Assign(Value);
+end;
+
+function TPrinterParameters.ClassCodeDiscountEnabled(const ClassCode: string): Boolean;
+begin
+  Result := RecDiscountOnClassCode and (ClassCodes.IndexOf(ClassCode) >= 0);
 end;
 
 end.
