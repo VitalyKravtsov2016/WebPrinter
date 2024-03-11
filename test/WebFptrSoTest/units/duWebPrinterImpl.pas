@@ -54,6 +54,7 @@ type
     procedure TestCashInECRTotalizer;
     procedure TestDirectIO_106;
     procedure TestClassCodes;
+    procedure TestZeroFiscalReceipt;
   end;
 
 implementation
@@ -884,6 +885,40 @@ begin
     CheckEquals('04811001001000001', Order.products[0].class_code, 'Order.products[0].class_code');
     CheckEquals('04811001001000002', Order.products[1].class_code, 'Order.products[1].class_code');
     CheckEquals('04811001001000000', Order.products[2].class_code, 'Order.products[2].class_code');
+  finally
+    Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImplTest.TestZeroFiscalReceipt;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  CheckEquals(FPTR_RT_SALES, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  FptrCheck(Driver.PrintRecItem('Item 1', 0, 1000, 10, 0, 'רע'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecTotal(0, 0, '0'));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  WriteFileData('ZeroReceiptOrderRequest.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(1, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals(0, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(0, Order.products[0].Discount, 'Order.products[0].Discount');
   finally
     Order.Free;
   end;
