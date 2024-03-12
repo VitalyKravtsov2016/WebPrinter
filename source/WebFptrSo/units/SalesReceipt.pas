@@ -288,6 +288,7 @@ begin
   FRecItems.Add(Result);
   Result.Number := FRecItems.Count;
   Result.Barcode := FBarcode;
+  Result.PackageCode := PackageCode;
   Result.MarkCodes.AddStrings(MarkCodes);
   FMarkCodes.Clear;
   FBarcode := '';

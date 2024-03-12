@@ -52,6 +52,7 @@ type
     function GetReportName(const ReportName: WideString): WideString;
     function GetPOSID: WideString;
     function GetTerminalID: WideString;
+    procedure RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -745,7 +746,8 @@ begin
       DIO_ADD_ITEM_CODE: Receipt.AddMarkCode(pString);
       DIO_SET_ITEM_BARCODE: Receipt.Barcode := pString;
       DIO_SET_ITEM_CLASS_CODE: Receipt.SetClassCode(pString);
-      DIO_SET_ITEM_PACKAGE_CODE: Receipt.PackageCode := pData;
+      DIO_SET_ITEM_PACKAGE_CODE:
+        Receipt.PackageCode := pData;
 
       DIO_SET_DRIVER_PARAMETER:
       begin
@@ -2507,11 +2509,10 @@ var
   TextItem: TRecTextItem;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
-  ItemDiscount: Currency;
-  ReceiptDiscount: Currency;
   CashPayment: Currency;
 begin
-  ReceiptDiscount := Receipt.Discount;
+  RecDiscountsToItemDiscounts(Receipt);
+
   Order := TWPOrder.Create;
   try
 	  Order.Number := 1;
@@ -2533,6 +2534,8 @@ begin
       if ReceiptItem is TSalesReceiptItem then
       begin
         Item := ReceiptItem as TSalesReceiptItem;
+        VatRate := GetVatRate(Item.VatInfo);
+
         Product := Order.products.Add as TWPProduct;
         Product.Name := Item.Description;
         Product.Amount := Round2(Item.Quantity * 1000);
@@ -2541,24 +2544,12 @@ begin
         Product.unit_name := Item.UnitName;
         Product.Price := Round2(Item.Price * 100);
         Product.Product_price := Round2(Item.UnitPrice * 100);
-
-        VatRate := GetVatRate(Item.VatInfo);
-        Product.VAT := Round2(Item.GetVatAmount(VatRate) * 100);
         Product.vat_percent := Round(VatRate);
+        Product.discount := Abs(Round2(Item.Discounts.GetTotal * 100));
+        Product.vat := Round2(Item.GetVatAmount(VatRate) * 100);
 
-        ItemDiscount := Abs(Item.Discounts.GetTotal);
-
-        if (not Params.RecDiscountOnClassCode) or Params.ClassCodeDiscountEnabled(Item.GetClassCode) then
-        begin
-          if (ReceiptDiscount <> 0) and (Item.Price >= (ItemDiscount + ReceiptDiscount)) then
-          begin
-            ItemDiscount := ItemDiscount + ReceiptDiscount;
-            ReceiptDiscount := 0;
-          end;
-        end;
-        Product.discount := Abs(Round2(ItemDiscount * 100));
-        Product.Discount_percent := Round(Item.GetDiscountPercent);
-        Product.Other := 0;
+        Product.discount_percent := Round(Item.GetDiscountPercent);
+        Product.other := 0;
         Product.Labels.Assign(Item.MarkCodes);
         Product.Class_code := Item.ClassCode;
         Product.Package_code := Item.PackageCode;
@@ -2594,6 +2585,40 @@ begin
     UpdateZReport;
   finally
     Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImpl.RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
+var
+  i: Integer;
+  Item: TSalesReceiptItem;
+  ItemDiscount: Currency;
+  ReceiptDiscount: Currency;
+  Adjustment: TAdjustment;
+begin
+  ReceiptDiscount := Receipt.Discount;
+  if ReceiptDiscount = 0 then Exit;
+
+  for i := 0 to Receipt.Items.Count-1 do
+  begin
+    if Receipt.Items[i] is TSalesReceiptItem then
+    begin
+      Item := Receipt.Items[i] as TSalesReceiptItem;
+      ItemDiscount := Abs(Item.Discounts.GetTotal);
+      if (not Params.RecDiscountOnClassCode) or Params.ClassCodeDiscountEnabled(Item.GetClassCode) then
+      begin
+        if (ReceiptDiscount <> 0) and (Item.Price >= (ItemDiscount + ReceiptDiscount)) then
+        begin
+          Adjustment := Item.AddDiscount;
+          Adjustment.Amount := RoundAmount(ReceiptDiscount);
+          Adjustment.Total := -RoundAmount(ReceiptDiscount);
+          Adjustment.VatInfo := Item.VatInfo;
+          Adjustment.Description := '';
+          Adjustment.AdjustmentType := FPTR_AT_AMOUNT_DISCOUNT;
+          Break;
+        end;
+      end;
+    end;
   end;
 end;
 

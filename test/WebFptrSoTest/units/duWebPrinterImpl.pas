@@ -903,8 +903,11 @@ begin
   FptrCheck(Driver.BeginFiscalReceipt(True));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_PACKAGE_CODE, 92, ''));
   FptrCheck(Driver.PrintRecItem('Item 1', 0, 1000, 10, 0, 'רע'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+
+
   FptrCheck(Driver.PrintRecTotal(0, 0, '0'));
   CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
   FptrCheck(Driver.EndFiscalReceipt(False));
@@ -918,8 +921,24 @@ begin
     JsonToObject(Driver.Printer.RequestJson, Order);
     CheckEquals(1, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
-    CheckEquals(0, Order.products[0].Price, 'Order.products[0].Price');
-    CheckEquals(0, Order.products[0].Discount, 'Order.products[0].Discount');
+    CheckEquals(0, Order.products[0].price, 'Order.products[0].price');
+    CheckEquals(0, Order.products[0].discount, 'Order.products[0].discount');
+
+    CheckEquals('', Order.products[0].barcode, 'Order.products[0].barcode');
+    CheckEquals(1000, Order.products[0].amount, 'Order.products[0].amount');
+    CheckEquals(1, Order.products[0].units, 'Order.products[0].units'); // WP_UNIT_PEACE
+    CheckEquals('', Order.products[0].unit_name, 'Order.products[0].unit_name');
+    CheckEquals(0, Order.products[0].product_price, 'Order.products[0].product_price');
+    CheckEquals(0, Order.products[0].vat, 'Order.products[0].vat');
+    CheckEquals(15, Order.products[0].vat_percent, 'Order.products[0].vat_percent');
+    CheckEquals(0, Order.products[0].discount_percent, 'Order.products[0].discount_percent');
+    CheckEquals(0, Order.products[0].other, 'Order.products[0].other');
+    CheckEquals(0, Order.products[0].labels.Count, 'Order.products[0].labels.Count');
+    CheckEquals('04811001001000000', Order.products[0].class_code, 'Order.products[0].class_code');
+    CheckEquals(92, Order.products[0].package_code, 'Order.products[0].package_code');
+    CheckEquals(0, Order.products[0].owner_type, 'Order.products[0].owner_type');
+    CheckEquals('', Order.products[0].comission_info.inn, 'Order.products[0].comission_info.inn');
+    CheckEquals('', Order.products[0].comission_info.pinfl, 'Order.products[0].comission_info.pinfl');
   finally
     Order.Free;
   end;
@@ -960,6 +979,8 @@ begin
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
     CheckEquals(1000, Order.products[0].Price, 'Order.products[0].Price');
     CheckEquals(1000, Order.products[0].Discount, 'Order.products[0].Discount');
+    CheckEquals(0, Order.products[0].vat, 'Order.products[0].vat');
+    CheckEquals(15, Order.products[0].vat_percent, 'Order.products[0].vat_percent');
   finally
     Order.Free;
   end;
