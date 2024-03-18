@@ -23,7 +23,6 @@ Operation for create order / Продажа, аванс, кредит
    "barcode":[product barcode], 
    "amount":[product amount multiplied by 1000],
    "unit_name":[unit name],
-   "units":[unit],
    "price":[product_price * amount multiplied by 100],
    "product_price":[product_price multiplied by 100], 
    "vat":[nds_price multiplied by 100], 
@@ -46,6 +45,8 @@ Operation for create order / Продажа, аванс, кредит
 "received_cash":[received_cash_price multiplied by 100], 
 "change":[change_price multiplied by 100], 
 "received_card":[received card price  multiplied by 100],
+"card_type":[card type personal (0) or corporate (1)],
+"ppt_id":[ RRN number (ppt_id) in the slip response from the bank pinpad (Humo, Uzcard)],
 *"extra_info":{
     "phone_number":[Phone_number from response Payme,Click,Uzum],
     "qr_payment_id":[Payment_ID from response Payme,Click,Uzum],
@@ -59,7 +60,11 @@ Operation for create order / Продажа, аванс, кредит
   {
     "type":[Banner type - {text, barcode}]
     "data":[Banner text]
-  }
+    "style:{[Style text,barcode]
+            "font_width":[font_width],
+            "font_height":[font_height],
+            "is_bold":[true or false] 
+  },
  ],
 *"prices":
 [
@@ -81,8 +86,8 @@ Operation for create order / Продажа, аванс, кредит
 | name               | String | Product name/Наименование товара или услуги                                    | Хлеб                                        |
 | barcode            | Long   | Product barcode/Штрих-код (GTIN) товара                                        | EAN-8 47800007, EAN-13 4780000000007        |
 | amount             | Long   | Product amount/Количество                                                      | 1 шт. = 1000; 0,25 кг = 250                 |
-| unit_name          | String | Unit name/Едииница измереня для отображаения на чеке на лат. UZ                | dona                                        |
-| units              | Integr | Unit/Единица измерения                                                         | "1" - это шт. Подробности см ниже           |
+| unit_name          | String | Unit name/Едииница измерения для отображения на чеке на лат. UZ                | dona                                        |
+|                    |        | Название единиц измерения взять с сайта tasnif.soliq.uz                        |                                             |
 | price              | Long   | Price/Сумма                                                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | product_price      | Long   | Product price/Цена за единицу товара/услуги                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | vat                | Long   | Nds price/Сумма НДС                                                            | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
@@ -93,7 +98,7 @@ Operation for create order / Продажа, аванс, кредит
 | labels             | String | Marking codes list/Код маркировки (значеник кода DataMatrix). К примеру если   | 05367567230048c?eN1(o0029                   |
 |                    |        | кол-во товаров с маркир. будет 5 шт, то в amount указываем 1 шт                |                                             |
 | class_code         | Long   | Product class code/Код ИКПУ (МХИК) (tasnif.soliq.uz)                           | 10999001001000000                           |
-| package_code       | Long   | Package_code/ Код упаковки (tasnif.soliq.uz)                                   | 1520627                                     |
+| package_code       | Long   | Package_code/ Код ед.измерений / упаковки (tasnif.soliq.uz)                    | 1520627                                     |
 | owner_type         | Integer| Owner_type/ Код происхождения товара (одно значение либо 0, либо 1, либо 2     | 0,1,2                                       |
 |                    |        | (0-"Куплено и продано" / 1-"Собственное производство" / 2-"Поставщик услуг")   |                                             |
 | comission_info     | Long   | Sign commission check TIN, PINFL/Признак комиссионный чек ИНН, ПИНФЛ           | 123456789, 12345678912345                   |
@@ -102,6 +107,9 @@ Operation for create order / Продажа, аванс, кредит
 | received_cash      | Long   | Received cash price/Оплата наличными                                           | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | change             | Long   | Change price/Сдача                                                             | 100                                         |
 | received_card      | Long   | Received cash price/Оплата банковской картой,Payme,Click,UZUM                  | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| card_type          | Integer| Card type(personal or corporate) / Тип карты (личная или корпоративная)        | 0,1                                         |
+|                    |        | 0 - личная карта , 1 - корпоративная карта                                     |                                             |
+| ppt_id             | Long   | Номер RRN (ppt_id) в слипе ответе от банквоского пинпада (Humo, Uzcard)        | 123456789012                                |
 | open_cashbox       | String | Open cashbox device/Открытие денежнего ящика                                   | true = open, falce = not open               |
 | type               | String | Banner type - {text, barcode, qr_code}/Штрих-код, QR-код                       | barcode                                     |
 | data               | String | Banner text/Рекламный текст                                                    | Скидка на следующую покупку 5%              |
@@ -109,33 +117,6 @@ Operation for create order / Продажа, аванс, кредит
 | prices / price     | Long   | Price/Сумма                                                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | prices / vat_type  | Long   | Vat type/Название налога и ставка                                              | НДС 15%                                     |
 | prices / vat_price | Long   | Vat price/Сумма налога                                                         | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-# Units
-|ID|Description RU/UZB       |
-|--| ------------            |
-|1 | штук/dona               |
-|2 | пачка/pachka            |
-|3 | миллиграмм/milligramm   |
-|4 | грамм/gramm             |
-|5 | килограмм/kilogramm     |
-|6 | центнер/tsentner        |
-|7 | тонна/tonna             |
-|8 | миллиметр/millimetr     |
-|9 | сантиметр/santimetr     |
-|11| метр/metr               |
-|12| километр/kilometr       |
-|22| миллилитр/millilitr     |
-|23| литр/litr               |
-|26| комплект/set            |
-|27| сутки/tunu-kun          |
-|28| час/soat                |
-|33| коробка/quti            |
-|38| упаковка/qadoq          |
-|39| минут/daqiqa            |
-|41| баллон/ballon           |
-|42| день/kun                |
-|43| месяц/oy                |
-|49| рулон/rulon             |
-
 
 
 
@@ -151,7 +132,7 @@ Operation for create order / Продажа, аванс, кредит
      "name":"наименование товара или услуги",
      "barcode":"4780000000007", 
      "amount":1000,
-     "units": 1,
+     "unit_name":"litr",
      "price":50000,
      "product_price":50000, 
      "vat":6000, 
@@ -160,8 +141,8 @@ Operation for create order / Продажа, аванс, кредит
      "discount_percent":0,
      "other":0,
      "labels":["05367567230048c?eN1(o0029"],
-     "class_code":"04811001001000000",
-     "package_code":1431970,
+     "class_code":"02710001005000000",
+     "package_code":1282556,
      "owner_type":1,  
      "comission_info":{
               "inn":"123456789",
@@ -174,19 +155,31 @@ Operation for create order / Продажа, аванс, кредит
 "received_cash":50000, 
 "change":0, 
 "received_card":0,
+"card_type":0,
+"ppt_id":"123456789012",
 *"open_cashbox":true,
 *"send_email":true,
-*"email":"ullo21113@gmail.com",
+*"email":"abdullo21113@gmail.com",
 *"sms_phone_number" :"+998909999999",
 *"banners":
 [ 
   {
   "type":"text",
-  "data": "Код скидки для следующий покупки "
+  "data": "Код скидки для следующий покупки"
+  "style":{
+                 "font_width":2,
+                "font_height":100,
+                "is_bold":true
+            }
   },
   {
   "type":"barcode",
   "data":"23423423"
+  "style":{
+                 "font_width":2,
+                "font_height":100,
+                "is_bold":true
+            },
   }
 ],
 *"prices":
@@ -311,6 +304,8 @@ Operations for refuse order / Возврат
 "received_cash":[received cash price  multiplied to 100], 
 "change":[change price multiplied to 100], 
 "received_card":[received card price  multiplied to 100],
+"card_type":[card type personal (0) or corporate (1)],
+"ppt_id":[ RRN number (ppt_id) in the slip response from the bank pinpad (Humo, Uzcard)],
 *"send_email":[Send order data to special email],
 *"email":[Email for sending order data],
 *"sms_phone_number" : [Phone number for sending order data],
@@ -358,11 +353,14 @@ Operations for refuse order / Возврат
 "time":"2021-04-15 14:35:02",
 "cashier":"Admin", 
 "received_cash":100000, 
-"change":0, 
+"change":0,
+"received_card":15000,
+"card_type":0,
+"ppt_id":"123456789012",
 *"send_email":true,
 *"email":"abdullo21113@gmail.com",
 *"sms_phone_number" :"+998909999999",
-*"received_card":15000,
+
 *"prices":
   [
     {
