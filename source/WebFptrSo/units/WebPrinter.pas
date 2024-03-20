@@ -350,6 +350,21 @@ type
     property Items[Index: Integer]: TWPProduct read GetItem; default;
   end;
 
+  { TWPBannerStyle }
+
+  TWPBannerStyle = class(TJsonPersistent)
+  private
+    Fis_bold: Boolean;
+    Ffont_height: Integer;
+    Ffont_width: Integer;
+  public
+    procedure Assign(Source: TPersistent); override;
+  published
+    property font_width: Integer read Ffont_width write Ffont_width;
+    property font_height: Integer read Ffont_height write Ffont_height;
+    property is_bold: Boolean read Fis_bold write Fis_bold;
+  end;
+
   { TWPBanner }
 
   TWPBanner = class(TJsonCollectionItem)
@@ -357,13 +372,19 @@ type
     F_type: WideString;
     Fdata: WideString;
     Fcut: Boolean;
+    Fstyle: TWPBannerStyle;
+    procedure Setstyle(const Value: TWPBannerStyle);
   public
+    constructor Create(Collection: TJsonCollection); override;
+    destructor Destroy; override;
+
     procedure Assign(Source: TPersistent); override;
     function IsRequiredField(const Field: WideString): Boolean; override;
   published
     property _type: WideString read F_type write F_type;
     property data: WideString read Fdata write Fdata;
     property cut: Boolean read Fcut write Fcut default false;
+    property style: TWPBannerStyle read Fstyle write Setstyle;
   end;
 
   { TWPBanners }
@@ -413,6 +434,8 @@ type
 	  Freceived_cash: Int64;
 	  Fchange: Int64;
 	  Freceived_card: Integer;
+    Fcard_type: Integer; // card type personal (0) or corporate (1)
+    Fppt_id: Int64; // RRN number (ppt_id) in the slip response from the bank pinpad (Humo, Uzcard)
 	  Fopen_cashbox: Boolean;
 	  Fsend_email: Boolean;
 	  Femail: WideString;
@@ -440,6 +463,8 @@ type
 	  property received_cash: Int64 read Freceived_cash write Freceived_cash;
 	  property change: Int64 read Fchange write Fchange;
 	  property received_card: Integer read Freceived_card write Freceived_card;
+    property card_type: Integer read Fcard_type write Fcard_type;
+    property ppt_id: Int64 read Fppt_id write Fppt_id;
 	  property open_cashbox: Boolean read Fopen_cashbox write Fopen_cashbox;
 	  property send_email: Boolean read Fsend_email write Fsend_email;
 	  property email: WideString read Femail write Femail;
@@ -1419,6 +1444,18 @@ end;
 
 { TWPBanner }
 
+constructor TWPBanner.Create(Collection: TJsonCollection);
+begin
+  inherited Create(Collection);
+  //Fstyle := TWPBannerStyle.Create;
+end;
+
+destructor TWPBanner.Destroy;
+begin
+  Fstyle.Free;
+  inherited Destroy;
+end;
+
 procedure TWPBanner.Assign(Source: TPersistent);
 var
   src: TWPBanner;
@@ -1429,6 +1466,7 @@ begin
     _type := src._type;
     data := src.data;
     cut := src.cut;
+    style := src.style;
   end;
 end;
 
@@ -1444,6 +1482,12 @@ begin
     Result := AnsiCompareText(Field, OptionalFields[i]) = 0;
     if Result then Break;
   end;
+end;
+
+procedure TWPBanner.Setstyle(const Value: TWPBannerStyle);
+begin
+  if Fstyle <> nil then
+    Fstyle.Assign(Value);
 end;
 
 { TWPPrice }
@@ -2241,6 +2285,21 @@ end;
 function TWebPrinter.GetPrinterDate: TDateTime;
 begin
   Result := Now + FTimeDiff;
+end;
+
+{ TWPBannerStyle }
+
+procedure TWPBannerStyle.Assign(Source: TPersistent);
+var
+  src: TWPBannerStyle;
+begin
+  if source is TWPBannerStyle then
+  begin
+    src := source as TWPBannerStyle;
+    Fis_bold := src.is_bold;
+    Ffont_height := src.font_height;
+    Ffont_width := src.font_width;
+  end;
 end;
 
 end.

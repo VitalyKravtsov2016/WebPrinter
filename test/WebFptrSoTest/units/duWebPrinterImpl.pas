@@ -15,7 +15,7 @@ uses
   TestFramework,
   // This
   LogFile, FileUtils, WebPrinter, WebPrinterImpl, DriverError, JsonUtils,
-  DirectIOAPI, uLkJSON;
+  DirectIOAPI, uLkJSON, PrinterParametersX;
 
 type
   { TWebPrinterTest }
@@ -68,7 +68,6 @@ begin
   FDriver.TestMode := True;
   FDriver.Printer.TestMode := True;
   FDriver.Params.WebprinterAddress := 'http://fbox.ngrok.io'; // 8080 или 80
-  //FDriver.Params.LogFileEnabled := True;
   FDriver.Params.LogFileEnabled := False;
   FDriver.Params.LogMaxCount := 10;
   FDriver.Params.VatRates.Clear;
@@ -352,7 +351,7 @@ begin
   Json := TlkJSON.ParseText(Driver.Printer.CreateOrderResponse.RequestJson);
   try
     Check(Json <> nil, 'Json = nil');
-    CheckEquals(11, Json.Count, 'Json.Count');
+    CheckEquals(13, Json.Count, 'Json.Count');
     CheckEquals('1', Json.Field['number'].Value, 'number');
     CheckEquals('order', Json.Field['receipt_type'].Value, 'receipt_type');
     CheckEquals('Cahier 1', Json.Field['cashier'].Value, 'cashier');
@@ -730,10 +729,12 @@ end;
 procedure TWebPrinterImplTest.TestCashInECRTotalizer;
 begin
   FDriver.TestMode := False;
-  FDriver.Printer.TestMode := True;
+  FDriver.Params.CashInECRAmount := 0;
+  FDriver.Params.CashInAmount := 0;
+  FDriver.Params.CashOutAmount := 0;
+  SaveParameters(FDriver.Params, 'DeviceName', FDriver.Logger);
 
   OpenClaimEnable;
-  FDriver.Params.CashInECRAmount := 0;
   PrintCashInReceipt(2123.45);
   CheckEquals(2123.45, Driver.Params.CashInECRAmount, 'CashInECRAmount');
   CheckEquals(2123.45, Driver.Params.CashInAmount, 'CashInAmount');

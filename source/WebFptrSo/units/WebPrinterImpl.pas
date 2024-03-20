@@ -2460,6 +2460,12 @@ begin
     if WideCompareText('received_card', FieldName) = 0 then
       Order.received_card := StrToInt(FieldValue);
 
+    if WideCompareText('card_type', FieldName) = 0 then
+      Order.card_type := StrToInt(FieldValue);
+
+    if WideCompareText('ppt_id', FieldName) = 0 then
+      Order.ppt_id := StrToInt(FieldValue);
+
     if WideCompareText('open_cashbox', FieldName) = 0 then
       Order.open_cashbox := StrToBool(FieldValue);
 
@@ -2521,6 +2527,8 @@ begin
 	  Order.Cashier := FCashierID;
 	  Order.Received_cash := Round2(Receipt.GetCashPayment * 100);
 	  Order.Received_card := Round2(Receipt.GetCashlessPayment * 100);
+    Order.card_type := 0;
+    Order.ppt_id := 0;
 	  Order.change := Round2(Receipt.Change * 100);
 	  Order.Open_cashbox := Params.OpenCashbox;
 	  Order.Send_email := Receipt.CustomerEmail <> '';
