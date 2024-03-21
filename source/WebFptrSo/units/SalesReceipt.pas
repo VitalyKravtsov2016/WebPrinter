@@ -603,9 +603,7 @@ end;
 
 function TSalesReceipt.GetCashPayment: Currency;
 begin
-  Result := FPayments[0];
-  if (Result + GetCashlessPayment) > GetTotal then
-    Result := GetTotal - GetCashlessPayment;
+  Result := FPayments[0] - FChange;
 end;
 
 function TSalesReceipt.GetCashlessPayment: Currency;

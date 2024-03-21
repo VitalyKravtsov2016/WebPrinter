@@ -15,7 +15,7 @@ uses
   TestFramework,
   // This
   LogFile, FileUtils, WebPrinter, WebPrinterImpl, DriverError, JsonUtils,
-  DirectIOAPI;
+  DirectIOAPI, PrinterParametersX;
 
 type
   { TWebPrinterTest }
@@ -45,9 +45,13 @@ type
     procedure TestTotalizers;
     procedure TestZeroFiscalReceipt;
     procedure TestZeroFiscalReceipt2;
+    procedure TestFiscalReceipt2;
   end;
 
 implementation
+
+const
+  TestDeviceName = 'DeviceName';
 
 { TWebPrinterImplTest }
 
@@ -61,6 +65,7 @@ begin
   FDriver.Params.VatRates.Add(1, 10,  'ÍÄÑ 10%');
   FDriver.Params.VatRates.Add(2, 12,  'ÍÄÑ 12%');
   FDriver.Params.VatRates.Add(10, 15,  'ÍÄÑ 15%');
+  SaveParameters(FDriver.Params, TestDeviceName, FDriver.Logger);
 end;
 
 procedure TWebPrinterImplTest.TearDown;
@@ -102,7 +107,7 @@ procedure TWebPrinterImplTest.OpenService;
 begin
   if Driver.GetPropertyNumber(PIDX_State) = OPOS_S_CLOSED then
   begin
-    FptrCheck(Driver.OpenService(OPOS_CLASSKEY_FPTR, 'DeviceName', nil));
+    FptrCheck(Driver.OpenService(OPOS_CLASSKEY_FPTR, TestDeviceName, nil));
     if Driver.GetPropertyNumber(PIDX_CapPowerReporting) <> 0 then
     begin
       Driver.SetPropertyNumber(PIDX_PowerNotify, OPOS_PN_ENABLED);
@@ -484,6 +489,28 @@ begin
   finally
     Order.Free;
   end;
+end;
+
+procedure TWebPrinterImplTest.TestFiscalReceipt2;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.DirectIO2(30, 72, '4'));
+  FptrCheck(Driver.DirectIO2(30, 73, '1'));
+  FptrCheck(Driver.PrintRecItem('PUMP 3: ÀÈ92', 20160, 1120, 4, 18000, ''));
+  FptrCheck(Driver.DirectIO2(120, 0, '02710001005000000'));
+  FptrCheck(Driver.DirectIO2(106, 0, 'owner_type;0'));
+  FptrCheck(Driver.DirectIO2(106, 0, 'package_code;0'));
+  FptrCheck(Driver.PrintRecSubtotalAdjustment(1, 'Discount', 160));
+  FptrCheck(Driver.PrintRecTotal(20000, 20000, '0'));
+  FptrCheck(Driver.PrintRecMessage('Operator: ts'));
+  FptrCheck(Driver.PrintRecMessage('ID:       1991 '));
+  FptrCheck(Driver.DirectIO2(30, 302, '1'));
+  FptrCheck(Driver.DirectIO2(30, 300, '1991'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
 end;
 
 initialization
