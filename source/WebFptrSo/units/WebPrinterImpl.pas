@@ -2555,7 +2555,6 @@ begin
         Product.vat_percent := Round(VatRate);
         Product.discount := Abs(Round2(Item.Discounts.GetTotal * 100));
         Product.vat := Round2(Item.GetVatAmount(VatRate) * 100);
-
         Product.discount_percent := Round(Item.GetDiscountPercent);
         Product.other := 0;
         Product.Labels.Assign(Item.MarkCodes);

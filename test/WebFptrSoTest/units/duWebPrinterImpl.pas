@@ -56,6 +56,8 @@ type
     procedure TestClassCodes;
     procedure TestZeroFiscalReceipt;
     procedure TestZeroFiscalReceipt2;
+    procedure TestItemPercentDiscount;
+    procedure TestItemAmountDiscount;
   end;
 
 implementation
@@ -982,6 +984,64 @@ begin
     CheckEquals(1000, Order.products[0].Discount, 'Order.products[0].Discount');
     CheckEquals(0, Order.products[0].vat, 'Order.products[0].vat');
     CheckEquals(15, Order.products[0].vat_percent, 'Order.products[0].vat_percent');
+  finally
+    Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImplTest.TestItemPercentDiscount;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 10, 100, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_PERCENTAGE_DISCOUNT, 'Скидка бонусами', 1000, 4));
+  FptrCheck(Driver.PrintRecTotal(90, 90, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  //WriteFileData('TestPercentDiscount.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(1, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals(10000, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(1000, Order.products[0].discount, 'Order.products[0].discount');
+    CheckEquals(10, Order.products[0].discount_percent, 'Order.products[0].discount_percent');
+  finally
+    Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImplTest.TestItemAmountDiscount;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecItem('Item 1', 289.49, 2345, 10, 123.45, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 12.34, 4));
+  FptrCheck(Driver.PrintRecTotal(277.15, 300, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  //WriteFileData('TestPercentDiscount.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(1, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals(28949, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(1234, Order.products[0].discount, 'Order.products[0].discount');
+    CheckEquals(4, Order.products[0].discount_percent, 'Order.products[0].discount_percent');
   finally
     Order.Free;
   end;
