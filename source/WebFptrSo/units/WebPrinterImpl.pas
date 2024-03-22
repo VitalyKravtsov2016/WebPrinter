@@ -53,6 +53,7 @@ type
     function GetPOSID: WideString;
     function GetTerminalID: WideString;
     procedure RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
+    procedure OpenCashDrawer;
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -371,6 +372,22 @@ begin
   FPrinterState.Free;
   FLogger := nil;
   inherited Destroy;
+end;
+
+// Open cash drawer
+procedure TWebPrinterImpl.OpenCashDrawer;
+begin
+  if Params.OpenCashbox then
+  begin
+    try
+      FPrinter.OpenCashDrawer;
+    except
+      on E: Exception do
+      begin
+        Logger.Error('Failed open cash drawer, ' + e.Message);
+      end;
+    end;
+  end;
 end;
 
 function TWebPrinterImpl.AmountToOutStr(Value: Currency): AnsiString;
@@ -2322,6 +2339,8 @@ begin
     Params.CashInAmount := Params.CashInAmount + Receipt.GetTotal;
     Params.CashInECRAmount := Params.CashInECRAmount + Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+    // Open cash drawer
+    OpenCashDrawer;
   finally
     Text.Free;
     Lines.Free;
@@ -2357,6 +2376,8 @@ begin
     Params.CashOutAmount := Params.CashOutAmount + Receipt.GetTotal;
     Params.CashInECRAmount := Params.CashInECRAmount - Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+    // Open cash drawer
+    OpenCashDrawer;
   finally
     Text.Free;
     Lines.Free;
@@ -2588,6 +2609,11 @@ begin
     end;
     Params.CashInECRAmount := Params.CashInECRAmount + CashPayment;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+    // Open cash drawer is cash payment
+	  if Order.Received_cash <> 0 then
+    begin
+      OpenCashDrawer;
+    end;
 
     UpdateZReport;
   finally

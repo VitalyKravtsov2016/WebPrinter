@@ -1,12 +1,12 @@
 [Closed Files]
-File_0=SourceModule,'C:\projects\WebPrinter\test\WebFptrSoTest\units\duWebPrinterImpl.pas',0,1,1020,60,1038,0,0
-File_1=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\units\WebPrinterImpl.pas',0,1,2532,41,2553,0,0
-File_2=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\units\ReceiptItem.pas',0,1,370,67,392,0,0
-File_3=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\Units\WebPrinter.pas',0,1,300,52,314,0,0
-File_4=SourceModule,'C:\projects\WebPrinter\source\Opos\OposFptr.pas',0,1,321,27,338,0,0
-File_5=SourceModule,'C:\projects\WebPrinter\source\Shared\PrinterParametersX.pas',0,1,1,23,2,0,0
-File_6=SourceModule,'C:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas',0,1,1,1,1,0,0
-File_7=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\units\SalesReceipt.pas',0,1,638,1,658,0,0
+File_0=SourceModule,'C:\projects\WebPrinter\test\AcceptanceTest\units\duWebPrinterImpl.pas',0,1,497,131,514,0,0
+File_1=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\units\WebPrinterImpl.pas',0,1,1,1,1,0,0
+File_2=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\Units\WebPrinter.pas',0,1,782,38,794,0,0
+File_3=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\units\ReceiptItem.pas',0,1,343,25,330,0,0
+File_4=SourceModule,'C:\projects\WebPrinter\source\WebFptrSo\units\SalesReceipt.pas',0,1,636,14,658,0,0
+File_5=SourceModule,'C:\projects\WebPrinter\source\Shared\PrinterParametersX.pas',0,1,1,24,1,0,0
+File_6=SourceModule,'C:\projects\WebPrinter\test\WebFptrSoTest\units\duWebPrinterImpl.pas',0,1,1020,60,1038,0,0
+File_7=SourceModule,'C:\projects\WebPrinter\source\Opos\OposFptr.pas',0,1,321,27,338,0,0
 File_8=SourceModule,'C:\projects\WebPrinter\source\Shared\PrinterParameters.pas',0,1,1,29,26,0,0
 File_9=SourceModule,'C:\projects\WebPrinter\source\Shared\JsonUtils.pas',0,1,7,2,39,0,0
 
@@ -14,6 +14,10 @@ File_9=SourceModule,'C:\projects\WebPrinter\source\Shared\JsonUtils.pas',0,1,7,2
 Count=0
 EditWindowCount=0
 TypeLibWindowCount=1
+
+[C:\projects\WebPrinter\test\AcceptanceTest\AcceptanceTest.dpr]
+FormState=0
+FormOnTop=0
 
 [C:\projects\WebPrinter\source\WebFptr.bpg]
 FormState=0
@@ -40,10 +44,6 @@ FormState=0
 FormOnTop=0
 
 [C:\projects\WebPrinter\test\WebFptrSoTest\WebFptrSoTestLib.dpr]
-FormState=0
-FormOnTop=0
-
-[C:\projects\WebPrinter\test\AcceptanceTest\AcceptanceTest.dpr]
 FormState=0
 FormOnTop=0
 

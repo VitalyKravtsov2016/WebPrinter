@@ -34,6 +34,7 @@ type
     procedure PrintCashOutReceipt(Amount: Currency);
     procedure PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
     procedure PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
+    procedure CheckCashDrawerRequest(const Request: TWPRequest);
   protected
     procedure Setup; override;
     procedure TearDown; override;
@@ -77,11 +78,23 @@ begin
   FDriver.Params.VatRates.Add(2, 12,  'ÍÄÑ 12%');
   FDriver.Params.VatRates.Add(10, 15,  'ÍÄÑ 15%');
   FDriver.Params.CashInECRAutoZero := False;
+  FDriver.Params.OpenCashbox := True;
 end;
 
 procedure TWebPrinterImplTest.TearDown;
 begin
   FDriver.Free;
+end;
+
+procedure TWebPrinterImplTest.CheckCashDrawerRequest(const Request: TWPRequest);
+begin
+  // Open cash drawer
+  if Driver.Params.OpenCashbox then
+  begin
+    CheckEquals('', Request.Request, 'Request.Request');
+    CheckEquals(True, Request.IsGetRequest, 'Request.IsGetRequest');
+    CheckEquals('http://fbox.ngrok.io/print/open_cash_drawer/', Request.URL, 'Request.URL');
+  end;
 end;
 
 procedure TWebPrinterImplTest.FptrCheck(Code: Integer);
@@ -173,6 +186,7 @@ const
 procedure TWebPrinterImplTest.TestFiscalReceipt;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   OpenClaimEnable;
 (*
@@ -229,13 +243,12 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  WriteFileData('OrderRequest3.json', Driver.Printer.RequestJson);
-
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('OrderRequest3.json', RequestJson);
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
-
+    JsonToObject(RequestJson, Order);
 
     CheckEquals(4, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
@@ -271,6 +284,7 @@ begin
   finally
     Order.Free;
   end;
+  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 procedure TWebPrinterImplTest.TestRefundReceipt;
@@ -404,6 +418,7 @@ var
   pData: Integer;
   Text: WideString;
   pString: WideString;
+  RequestJson: WideString;
 begin
   Driver.Params.CashInLine := 'CashInLine';
   Driver.Params.CashInPreLine := 'CashInPreLine';
@@ -442,7 +457,8 @@ begin
 
   //WriteFileData('CashIn.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashIn.json');
-  CheckEquals(Text, Driver.Printer.RequestJson, 'CashIn.json');
+  RequestJson := Driver.Printer.Requests[0].Request;
+  CheckEquals(Text, RequestJson, 'CashIn.json');
 
   // Check grand total
   pData := 0;
@@ -464,6 +480,8 @@ begin
   WriteFileData('CashinXReport2.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashinXReport2.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashinXReport2.json');
+
+  CheckCashDrawerRequest(Driver.Printer.Requests[1]);
 end;
 
 procedure TWebPrinterImplTest.TestCashinReceipt2;
@@ -480,6 +498,7 @@ begin
   FptrCheck(Driver.PrintRecTotal(3.03, 1.01, ''));
   FptrCheck(Driver.PrintRecTotal(3.03, 2.02, ''));
   FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckCashDrawerRequest(Driver.Printer.Requests[1]);
 end;
 
 procedure TWebPrinterImplTest.TestCashoutReceipt;
@@ -517,7 +536,7 @@ begin
 
   //WriteFileData('CashOut.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashOut.json');
-  CheckEquals(Text, Driver.Printer.RequestJson, 'CashOut.json');
+  CheckEquals(Text, Driver.Printer.Requests[0].Request, 'CashOut.json');
 
   FptrCheck(Driver.PrintXReport);
   WriteFileData('CashoutXReport.json', Driver.Printer.RequestJson);
@@ -533,6 +552,7 @@ begin
   WriteFileData('CashoutXReport2.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashoutXReport2.json');
   CheckEquals(Text, Driver.Printer.RequestJson, 'CashoutXReport2.json');
+  CheckCashDrawerRequest(Driver.Printer.Requests[1]);
 end;
 
 procedure TWebPrinterImplTest.TestCashoutReceipt2;
@@ -549,6 +569,7 @@ begin
   FptrCheck(Driver.PrintRecTotal(3.03, 1.01, ''));
   FptrCheck(Driver.PrintRecTotal(3.03, 2.02, ''));
   FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckCashDrawerRequest(Driver.Printer.Requests[1]);
 end;
 
 procedure TWebPrinterImplTest.TestOpenFiscalDay;
@@ -592,6 +613,7 @@ end;
 procedure TWebPrinterImplTest.TestFiscalReceipt2;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   OpenClaimEnable;
 
@@ -607,12 +629,13 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  WriteFileData('OrderRequest3.json', Driver.Printer.RequestJson);
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('OrderRequest3.json', RequestJson);
 
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
+    JsonToObject(RequestJson, Order);
     CheckEquals(1, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
     CheckEquals(10000, Order.products[0].Price, 'Order.products[0].Price');
@@ -621,6 +644,7 @@ begin
   finally
     Order.Free;
   end;
+  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 procedure TWebPrinterImplTest.TestTotalizers;
@@ -808,6 +832,7 @@ end;
 procedure TWebPrinterImplTest.TestDirectIO_106;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   OpenClaimEnable;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
@@ -823,12 +848,14 @@ begin
   FptrCheck(Driver.PrintRecTotal(200, 200, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  WriteFileData('OrderRequest4.json', Driver.Printer.RequestJson);
+
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('OrderRequest4.json', RequestJson);
 
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
+    JsonToObject(RequestJson, Order);
     CheckEquals(0, Order.banners.Count, 'Order.banners.Count');
     CheckEquals(2, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
@@ -845,6 +872,7 @@ end;
 procedure TWebPrinterImplTest.TestClassCodes;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   Driver.Params.RecDiscountOnClassCode := True;
   Driver.Params.ClassCodes.Add('04811001001000000');
@@ -866,12 +894,14 @@ begin
   FptrCheck(Driver.PrintRecTotal(290, 290, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  WriteFileData('OrderRequest5.json', Driver.Printer.RequestJson);
+
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('OrderRequest5.json', RequestJson);
 
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
+    JsonToObject(RequestJson, Order);
 
     CheckEquals(3, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
@@ -897,6 +927,7 @@ end;
 procedure TWebPrinterImplTest.TestZeroFiscalReceipt;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   OpenClaimEnable;
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
@@ -916,12 +947,13 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  WriteFileData('ZeroReceiptOrderRequest.json', Driver.Printer.RequestJson);
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('ZeroReceiptOrderRequest.json', RequestJson);
 
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
+    JsonToObject(RequestJson, Order);
     CheckEquals(1, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
     CheckEquals(0, Order.products[0].price, 'Order.products[0].price');
@@ -930,7 +962,7 @@ begin
     CheckEquals('', Order.products[0].barcode, 'Order.products[0].barcode');
     CheckEquals(1000, Order.products[0].amount, 'Order.products[0].amount');
     CheckEquals(1, Order.products[0].units, 'Order.products[0].units'); // WP_UNIT_PEACE
-    CheckEquals('', Order.products[0].unit_name, 'Order.products[0].unit_name');
+    CheckEquals('øò', Order.products[0].unit_name, 'Order.products[0].unit_name');
     CheckEquals(0, Order.products[0].product_price, 'Order.products[0].product_price');
     CheckEquals(0, Order.products[0].vat, 'Order.products[0].vat');
     CheckEquals(15, Order.products[0].vat_percent, 'Order.products[0].vat_percent');
@@ -950,6 +982,7 @@ end;
 procedure TWebPrinterImplTest.TestZeroFiscalReceipt2;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   OpenClaimEnable;
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
@@ -972,12 +1005,13 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  WriteFileData('ZeroReceiptOrderRequest.json', Driver.Printer.RequestJson);
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('ZeroReceiptOrderRequest.json', RequestJson);
 
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
+    JsonToObject(RequestJson, Order);
     CheckEquals(1, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
     CheckEquals(1000, Order.products[0].Price, 'Order.products[0].Price');
@@ -992,6 +1026,7 @@ end;
 procedure TWebPrinterImplTest.TestItemPercentDiscount;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   OpenClaimEnable;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
@@ -1002,12 +1037,13 @@ begin
   FptrCheck(Driver.PrintRecTotal(90, 90, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  //WriteFileData('TestPercentDiscount.json', Driver.Printer.RequestJson);
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('TestPercentDiscount.json', RequestJson);
 
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
+    JsonToObject(RequestJson, Order);
     CheckEquals(1, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
     CheckEquals(10000, Order.products[0].Price, 'Order.products[0].Price');
@@ -1016,11 +1052,13 @@ begin
   finally
     Order.Free;
   end;
+  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 procedure TWebPrinterImplTest.TestItemAmountDiscount;
 var
   Order: TWPOrder;
+  RequestJson: WideString;
 begin
   OpenClaimEnable;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
@@ -1031,12 +1069,13 @@ begin
   FptrCheck(Driver.PrintRecTotal(277.15, 300, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 
-  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
-  //WriteFileData('TestPercentDiscount.json', Driver.Printer.RequestJson);
+  RequestJson := Driver.Printer.Requests[1].Request;
+  CheckNotEquals('', RequestJson, 'RequestJson');
+  //WriteFileData('TestPercentDiscount.json', RequestJson);
 
   Order := TWPOrder.Create;
   try
-    JsonToObject(Driver.Printer.RequestJson, Order);
+    JsonToObject(RequestJson, Order);
     CheckEquals(1, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
     CheckEquals(28949, Order.products[0].Price, 'Order.products[0].Price');
@@ -1045,6 +1084,7 @@ begin
   finally
     Order.Free;
   end;
+  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 initialization

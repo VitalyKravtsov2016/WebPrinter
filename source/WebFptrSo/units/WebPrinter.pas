@@ -507,6 +507,30 @@ type
     property ResponseJson: WideString read FResponseJson write FResponseJson;
   end;
 
+  { TWPRequest }
+
+  TWPRequest = class(TJsonCollectionItem)
+  private
+    FURL: WideString;
+    FRequest: WideString;
+    FResponse: WideString;
+    FIsGetRequest: Boolean;
+  public
+    property URL: WideString read FURL;
+    property Request: WideString read FRequest;
+    property Response: WideString read FResponse;
+    property IsGetRequest: Boolean read FIsGetRequest;
+  end;
+
+  { TWPRequests }
+
+  TWPRequests = class(TJsonCollection)
+  protected
+    function GetItem(Index: Integer): TWPRequest;
+  public
+    property Items[Index: Integer]: TWPRequest read GetItem; default;
+  end;
+
   { TWPCreateOrderResponse }
 
   TWPCreateOrderResponse = class(TWPCommand)
@@ -810,11 +834,14 @@ type
     FCreateOrderResponse: TWPCreateOrderResponse;
     FPrintLastReceipt: TWPResult;
     FDeviceDescription: WideString;
+    FRequests: TWPRequests;
 
     function GetTransport: TIdHTTP;
     function GetAddress: WideString;
     function SendJson(const AURL, Request: WideString;
       IsGetRequest: Boolean): WideString;
+    procedure AddRequest(URL, Request, Response: WideString;
+      IsGetRequest: Boolean);
   public
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
@@ -859,6 +886,7 @@ type
     property CloseDayResponse2: TWPCloseDayResponse2 read FCloseDayResponse2;
     property ConnectTimeout: Integer read FConnectTimeout write FConnectTimeout;
     property CreateOrderResponse: TWPCreateOrderResponse read FCreateOrderResponse;
+    property Requests: TWPRequests read FRequests;
   end;
 
 function WPDateTimeToStr(Time: TDateTime): string;
@@ -1096,6 +1124,13 @@ end;
 procedure TWPProduct.Setlabels(const Value: TStrings);
 begin
   Flabels.Assign(Value);
+end;
+
+{ TWPRequests }
+
+function TWPRequests.GetItem(Index: Integer): TWPRequest;
+begin
+  Result := inherited Items[Index] as TWPRequest;
 end;
 
 { TWPProducts }
@@ -1742,12 +1777,14 @@ begin
   FPaymentConfirmResponse := TWPPaymentConfirmResponse.Create;
   FCreateOrderResponse := TWPCreateOrderResponse.Create;
   FPrintLastReceipt := TWPResult.Create;
+  FRequests := TWPRequests.Create(TWPRequest);
 end;
 
 destructor TWebPrinter.Destroy;
 begin
   FLogger := nil;
   FInfo.Free;
+  FRequests.Free;
   FResponse.Free;
   FTransport.Free;
   FOpenDayResponse.Free;
@@ -1830,6 +1867,7 @@ begin
   begin
     Result := FResponseJson;
     FLogger.Debug('<= ' + UTF8Decode(FResponseJson));
+    AddRequest(AURL, Request, Result, IsGetRequest);
     Exit;
   end;
 
@@ -1859,6 +1897,7 @@ begin
       Result := Answer;
       FResponseJson := Result;
       FLogger.Debug('<= ' + UTF8Decode(Answer));
+      AddRequest(AURL, Request, Answer, IsGetRequest);
 
       if Answer = '' then
         raise Exception.Create('Empty response received');
@@ -1876,6 +1915,26 @@ begin
       raise;
     end;
   end;
+end;
+
+procedure TWebPrinter.AddRequest(URL, Request, Response: WideString;
+  IsGetRequest: Boolean);
+const
+  MaxRequestCount = 10;
+var
+  Item: TWPRequest;
+begin
+  if not TestMode then Exit;
+
+  while Requests.Count > MaxRequestCount do
+  begin
+    Requests.Items[0].Free;
+  end;
+  Item := TWPRequest.Create(Requests);
+  Item.FURL := URL;
+  Item.FRequest := Request;
+  Item.FResponse := Response;
+  Item.FIsGetRequest := IsGetRequest;
 end;
 
 function TWebPrinter.GetJson(const AURL: WideString): WideString;
