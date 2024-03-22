@@ -1823,7 +1823,15 @@ begin
     Request.close_zreport := True;
     Request.name := GetReportName('Z ÎÒ×¨Ò');
     AddReportLines(Request);
-    Response := FPrinter.PrintZReport(Request);
+
+    FPrinter.RaiseErrors := False;
+    try
+      Response := FPrinter.PrintZReport(Request);
+    finally
+      FPrinter.RaiseErrors := True;
+    end;
+    if Response.error.code <> WP_ERROR_CURRENT_ZREPORT_IS_EMPTY then
+      FPrinter.CheckForError(Response.error);
 
     // Clear Cash in and out
     Params.CashInAmount := 0;
@@ -2551,7 +2559,7 @@ begin
     Order.card_type := 0;
     Order.ppt_id := 0;
 	  Order.change := Round2(Receipt.Change * 100);
-	  Order.Open_cashbox := Params.OpenCashbox;
+	  Order.Open_cashbox := Params.OpenCashbox and (Order.Received_cash <> 0);
 	  Order.Send_email := Receipt.CustomerEmail <> '';
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;
