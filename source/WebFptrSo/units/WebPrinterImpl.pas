@@ -379,6 +379,7 @@ procedure TWebPrinterImpl.OpenCashDrawer;
 begin
   if Params.OpenCashbox then
   begin
+    FPrinter.SaveState;
     try
       FPrinter.OpenCashDrawer;
     except
@@ -387,6 +388,7 @@ begin
         Logger.Error('Failed open cash drawer, ' + e.Message);
       end;
     end;
+    FPrinter.LoadState;
   end;
 end;
 
@@ -1893,12 +1895,8 @@ begin
 end;
 
 procedure TWebPrinterImpl.UpdateZReport;
-var
-  RequestJson: WideString;
-  ResponseJson: WideString;
 begin
-  RequestJson := FPrinter.RequestJson;
-  ResponseJson := FPrinter.ResponseJson;
+  FPrinter.SaveState;
   try
     FPrinter.ReadZReport;
   except
@@ -1907,8 +1905,7 @@ begin
       Logger.Error(E.Message);
     end;
   end;
-  FPrinter.RequestJson := RequestJson;
-  FPrinter.ResponseJson := ResponseJson;
+  FPrinter.LoadState;
 end;
 
 function TWebPrinterImpl.Release1: Integer;
@@ -2622,7 +2619,6 @@ begin
     begin
       OpenCashDrawer;
     end;
-
     UpdateZReport;
   finally
     Order.Free;

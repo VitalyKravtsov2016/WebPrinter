@@ -835,6 +835,8 @@ type
     FPrintLastReceipt: TWPResult;
     FDeviceDescription: WideString;
     FRequests: TWPRequests;
+    FSaveRequestJson: WideString;
+    FSaveResponseJson: WideString;
 
     function GetTransport: TIdHTTP;
     function GetAddress: WideString;
@@ -851,6 +853,8 @@ type
     procedure Disconnect;
     procedure OpenFiscalDay3;
     procedure CheckForError(const Error: TWPError);
+    procedure SaveState;
+    procedure LoadState;
 
     function GetPrinterDate: TDateTime;
     function ReadInfo: WideString;
@@ -2343,6 +2347,18 @@ function TWebPrinter.GetPrinterDate: TDateTime;
 begin
   Result := Now + FTimeDiff;
   //FLogger.Debug('GetPrinterDate: ' + WPDateTimeToStr(Result));
+end;
+
+procedure TWebPrinter.LoadState;
+begin
+  RequestJson := FSaveRequestJson;
+  ResponseJson := FSaveResponseJson;
+end;
+
+procedure TWebPrinter.SaveState;
+begin
+  FSaveRequestJson := RequestJson;
+  FSaveResponseJson := ResponseJson;
 end;
 
 { TWPBannerStyle }

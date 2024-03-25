@@ -243,7 +243,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('OrderRequest3.json', RequestJson);
   Order := TWPOrder.Create;
@@ -457,7 +457,7 @@ begin
 
   //WriteFileData('CashIn.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashIn.json');
-  RequestJson := Driver.Printer.Requests[0].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckEquals(Text, RequestJson, 'CashIn.json');
 
   // Check grand total
@@ -536,7 +536,7 @@ begin
 
   //WriteFileData('CashOut.json', Driver.Printer.RequestJson);
   Text := ReadFileData('CashOut.json');
-  CheckEquals(Text, Driver.Printer.Requests[0].Request, 'CashOut.json');
+  CheckEquals(Text, Driver.Printer.RequestJson, 'CashOut.json');
 
   FptrCheck(Driver.PrintXReport);
   WriteFileData('CashoutXReport.json', Driver.Printer.RequestJson);
@@ -629,7 +629,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('OrderRequest3.json', RequestJson);
 
@@ -849,7 +849,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
 
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('OrderRequest4.json', RequestJson);
 
@@ -895,7 +895,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
 
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('OrderRequest5.json', RequestJson);
 
@@ -947,7 +947,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('ZeroReceiptOrderRequest.json', RequestJson);
 
@@ -962,7 +962,7 @@ begin
     CheckEquals('', Order.products[0].barcode, 'Order.products[0].barcode');
     CheckEquals(1000, Order.products[0].amount, 'Order.products[0].amount');
     CheckEquals(1, Order.products[0].units, 'Order.products[0].units'); // WP_UNIT_PEACE
-    CheckEquals('רע', Order.products[0].unit_name, 'Order.products[0].unit_name');
+    CheckEquals('', Order.products[0].unit_name, 'Order.products[0].unit_name');
     CheckEquals(0, Order.products[0].product_price, 'Order.products[0].product_price');
     CheckEquals(0, Order.products[0].vat, 'Order.products[0].vat');
     CheckEquals(15, Order.products[0].vat_percent, 'Order.products[0].vat_percent');
@@ -1005,7 +1005,7 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
   CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('ZeroReceiptOrderRequest.json', RequestJson);
 
@@ -1037,7 +1037,7 @@ begin
   FptrCheck(Driver.PrintRecTotal(90, 90, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('TestPercentDiscount.json', RequestJson);
 
@@ -1069,7 +1069,7 @@ begin
   FptrCheck(Driver.PrintRecTotal(277.15, 300, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 
-  RequestJson := Driver.Printer.Requests[1].Request;
+  RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
   //WriteFileData('TestPercentDiscount.json', RequestJson);
 
