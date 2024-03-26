@@ -52,6 +52,8 @@ type
     function GetReportName(const ReportName: WideString): WideString;
     function GetPOSID: WideString;
     function GetTerminalID: WideString;
+    procedure RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
+    procedure OpenCashDrawer;
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -370,6 +372,24 @@ begin
   FPrinterState.Free;
   FLogger := nil;
   inherited Destroy;
+end;
+
+// Open cash drawer
+procedure TWebPrinterImpl.OpenCashDrawer;
+begin
+  if Params.OpenCashbox then
+  begin
+    FPrinter.SaveState;
+    try
+      FPrinter.OpenCashDrawer;
+    except
+      on E: Exception do
+      begin
+        Logger.Error('Failed open cash drawer, ' + e.Message);
+      end;
+    end;
+    FPrinter.LoadState;
+  end;
 end;
 
 function TWebPrinterImpl.AmountToOutStr(Value: Currency): AnsiString;
@@ -745,7 +765,8 @@ begin
       DIO_ADD_ITEM_CODE: Receipt.AddMarkCode(pString);
       DIO_SET_ITEM_BARCODE: Receipt.Barcode := pString;
       DIO_SET_ITEM_CLASS_CODE: Receipt.SetClassCode(pString);
-      DIO_SET_ITEM_PACKAGE_CODE: Receipt.PackageCode := pData;
+      DIO_SET_ITEM_PACKAGE_CODE:
+        Receipt.PackageCode := pData;
 
       DIO_SET_DRIVER_PARAMETER:
       begin
@@ -1804,7 +1825,15 @@ begin
     Request.close_zreport := True;
     Request.name := GetReportName('Z ÎÒ×¨Ò');
     AddReportLines(Request);
-    Response := FPrinter.PrintZReport(Request);
+
+    FPrinter.RaiseErrors := False;
+    try
+      Response := FPrinter.PrintZReport(Request);
+    finally
+      FPrinter.RaiseErrors := True;
+    end;
+    if Response.error.code <> WP_ERROR_CURRENT_ZREPORT_IS_EMPTY then
+      FPrinter.CheckForError(Response.error);
 
     // Clear Cash in and out
     Params.CashInAmount := 0;
@@ -1866,12 +1895,8 @@ begin
 end;
 
 procedure TWebPrinterImpl.UpdateZReport;
-var
-  RequestJson: WideString;
-  ResponseJson: WideString;
 begin
-  RequestJson := FPrinter.RequestJson;
-  ResponseJson := FPrinter.ResponseJson;
+  FPrinter.SaveState;
   try
     FPrinter.ReadZReport;
   except
@@ -1880,8 +1905,7 @@ begin
       Logger.Error(E.Message);
     end;
   end;
-  FPrinter.RequestJson := RequestJson;
-  FPrinter.ResponseJson := ResponseJson;
+  FPrinter.LoadState;
 end;
 
 function TWebPrinterImpl.Release1: Integer;
@@ -2320,6 +2344,8 @@ begin
     Params.CashInAmount := Params.CashInAmount + Receipt.GetTotal;
     Params.CashInECRAmount := Params.CashInECRAmount + Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+    // Open cash drawer
+    OpenCashDrawer;
   finally
     Text.Free;
     Lines.Free;
@@ -2355,6 +2381,8 @@ begin
     Params.CashOutAmount := Params.CashOutAmount + Receipt.GetTotal;
     Params.CashInECRAmount := Params.CashInECRAmount - Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+    // Open cash drawer
+    OpenCashDrawer;
   finally
     Text.Free;
     Lines.Free;
@@ -2458,6 +2486,12 @@ begin
     if WideCompareText('received_card', FieldName) = 0 then
       Order.received_card := StrToInt(FieldValue);
 
+    if WideCompareText('card_type', FieldName) = 0 then
+      Order.card_type := StrToInt(FieldValue);
+
+    if WideCompareText('ppt_id', FieldName) = 0 then
+      Order.ppt_id := StrToInt(FieldValue);
+
     if WideCompareText('open_cashbox', FieldName) = 0 then
       Order.open_cashbox := StrToBool(FieldValue);
 
@@ -2507,11 +2541,10 @@ var
   TextItem: TRecTextItem;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
-  ItemDiscount: Currency;
-  ReceiptDiscount: Currency;
   CashPayment: Currency;
 begin
-  ReceiptDiscount := Receipt.Discount;
+  RecDiscountsToItemDiscounts(Receipt);
+
   Order := TWPOrder.Create;
   try
 	  Order.Number := 1;
@@ -2520,8 +2553,10 @@ begin
 	  Order.Cashier := FCashierID;
 	  Order.Received_cash := Round2(Receipt.GetCashPayment * 100);
 	  Order.Received_card := Round2(Receipt.GetCashlessPayment * 100);
+    Order.card_type := 0;
+    Order.ppt_id := 0;
 	  Order.change := Round2(Receipt.Change * 100);
-	  Order.Open_cashbox := Params.OpenCashbox;
+	  Order.Open_cashbox := Params.OpenCashbox and (Order.Received_cash <> 0);
 	  Order.Send_email := Receipt.CustomerEmail <> '';
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;
@@ -2533,6 +2568,8 @@ begin
       if ReceiptItem is TSalesReceiptItem then
       begin
         Item := ReceiptItem as TSalesReceiptItem;
+        VatRate := GetVatRate(Item.VatInfo);
+
         Product := Order.products.Add as TWPProduct;
         Product.Name := Item.Description;
         Product.Amount := Round2(Item.Quantity * 1000);
@@ -2541,24 +2578,11 @@ begin
         Product.unit_name := Item.UnitName;
         Product.Price := Round2(Item.Price * 100);
         Product.Product_price := Round2(Item.UnitPrice * 100);
-
-        VatRate := GetVatRate(Item.VatInfo);
-        Product.VAT := Round2(Item.GetVatAmount(VatRate) * 100);
         Product.vat_percent := Round(VatRate);
-
-        ItemDiscount := Abs(Item.Discounts.GetTotal);
-
-        if (not Params.RecDiscountOnClassCode) or Params.ClassCodeDiscountEnabled(Item.GetClassCode) then
-        begin
-          if (ReceiptDiscount <> 0) and (Item.Price >= (ItemDiscount + ReceiptDiscount)) then
-          begin
-            ItemDiscount := ItemDiscount + ReceiptDiscount;
-            ReceiptDiscount := 0;
-          end;
-        end;
-        Product.discount := Abs(Round2(ItemDiscount * 100));
-        Product.Discount_percent := Round(Item.GetDiscountPercent);
-        Product.Other := 0;
+        Product.discount := Abs(Round2(Item.Discounts.GetTotal * 100));
+        Product.vat := Round2(Item.GetVatAmount(VatRate) * 100);
+        Product.discount_percent := Round(Item.GetDiscountPercent);
+        Product.other := 0;
         Product.Labels.Assign(Item.MarkCodes);
         Product.Class_code := Item.ClassCode;
         Product.Package_code := Item.PackageCode;
@@ -2590,10 +2614,48 @@ begin
     end;
     Params.CashInECRAmount := Params.CashInECRAmount + CashPayment;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
-
+    // Open cash drawer is cash payment
+	  if Order.Received_cash <> 0 then
+    begin
+      OpenCashDrawer;
+    end;
     UpdateZReport;
   finally
     Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImpl.RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
+var
+  i: Integer;
+  Item: TSalesReceiptItem;
+  ItemDiscount: Currency;
+  ReceiptDiscount: Currency;
+  Adjustment: TAdjustment;
+begin
+  ReceiptDiscount := Receipt.Discount;
+  if ReceiptDiscount = 0 then Exit;
+
+  for i := 0 to Receipt.Items.Count-1 do
+  begin
+    if Receipt.Items[i] is TSalesReceiptItem then
+    begin
+      Item := Receipt.Items[i] as TSalesReceiptItem;
+      ItemDiscount := Abs(Item.Discounts.GetTotal);
+      if (not Params.RecDiscountOnClassCode) or Params.ClassCodeDiscountEnabled(Item.GetClassCode) then
+      begin
+        if (ReceiptDiscount <> 0) and (Item.Price >= (ItemDiscount + ReceiptDiscount)) then
+        begin
+          Adjustment := Item.AddDiscount;
+          Adjustment.Amount := RoundAmount(ReceiptDiscount);
+          Adjustment.Total := -RoundAmount(ReceiptDiscount);
+          Adjustment.VatInfo := Item.VatInfo;
+          Adjustment.Description := '';
+          Adjustment.AdjustmentType := FPTR_AT_AMOUNT_DISCOUNT;
+          Break;
+        end;
+      end;
+    end;
   end;
 end;
 

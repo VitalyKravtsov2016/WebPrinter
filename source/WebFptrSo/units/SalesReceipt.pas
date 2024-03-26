@@ -288,6 +288,7 @@ begin
   FRecItems.Add(Result);
   Result.Number := FRecItems.Count;
   Result.Barcode := FBarcode;
+  Result.PackageCode := PackageCode;
   Result.MarkCodes.AddStrings(MarkCodes);
   FMarkCodes.Clear;
   FBarcode := '';
@@ -602,9 +603,7 @@ end;
 
 function TSalesReceipt.GetCashPayment: Currency;
 begin
-  Result := FPayments[0];
-  if (Result + GetCashlessPayment) > GetTotal then
-    Result := GetTotal - GetCashlessPayment;
+  Result := FPayments[0] - FChange;
 end;
 
 function TSalesReceipt.GetCashlessPayment: Currency;

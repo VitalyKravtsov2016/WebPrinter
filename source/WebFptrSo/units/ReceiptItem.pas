@@ -322,7 +322,7 @@ function TSalesReceiptItem.GetVatAmount(VatRate: Double): Currency;
 begin
   Result := 0;
   if VatRate = 0 then Exit;
-  Result := GetTotal * (VatRate/100)/(1 + VatRate/100);
+  Result := (FPrice - Abs(Discounts.GetTotal)) * (VatRate/100)/(1 + VatRate/100);
 end;
 
 procedure TSalesReceiptItem.Assign(Item: TSalesReceiptItem);
@@ -378,18 +378,10 @@ begin
 end;
 
 function TSalesReceiptItem.GetDiscountPercent: Double;
-var
-  Discount: TAdjustment;
 begin
   Result := 0;
-  if (Charges.Count = 0)and(Discounts.Count = 1) then
-  begin
-    Discount := Discounts[0];
-    if Discount.AdjustmentType = FPTR_AT_PERCENTAGE_DISCOUNT then
-    begin
-      Result := Discount.Amount/100;
-    end;
-  end;
+  if Price <> 0 then
+    Result := Abs(Round(Discounts.GetTotal*100/Price));
 end;
 
 function TSalesReceiptItem.GetClassCode: string;

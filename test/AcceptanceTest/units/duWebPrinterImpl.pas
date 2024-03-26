@@ -15,7 +15,7 @@ uses
   TestFramework,
   // This
   LogFile, FileUtils, WebPrinter, WebPrinterImpl, DriverError, JsonUtils,
-  DirectIOAPI;
+  DirectIOAPI, PrinterParametersX;
 
 type
   { TWebPrinterTest }
@@ -43,9 +43,15 @@ type
     procedure TestNonFiscalReceipt;
     procedure TestNonfiscalReceipt2;
     procedure TestTotalizers;
+    procedure TestZeroFiscalReceipt;
+    procedure TestZeroFiscalReceipt2;
+    procedure TestFiscalReceipt2;
   end;
 
 implementation
+
+const
+  TestDeviceName = 'DeviceName';
 
 { TWebPrinterImplTest }
 
@@ -59,6 +65,8 @@ begin
   FDriver.Params.VatRates.Add(1, 10,  'НДС 10%');
   FDriver.Params.VatRates.Add(2, 12,  'НДС 12%');
   FDriver.Params.VatRates.Add(10, 15,  'НДС 15%');
+  FDriver.Params.OpenCashbox := True;
+  SaveParameters(FDriver.Params, TestDeviceName, FDriver.Logger);
 end;
 
 procedure TWebPrinterImplTest.TearDown;
@@ -100,7 +108,7 @@ procedure TWebPrinterImplTest.OpenService;
 begin
   if Driver.GetPropertyNumber(PIDX_State) = OPOS_S_CLOSED then
   begin
-    FptrCheck(Driver.OpenService(OPOS_CLASSKEY_FPTR, 'DeviceName', nil));
+    FptrCheck(Driver.OpenService(OPOS_CLASSKEY_FPTR, TestDeviceName, nil));
     if Driver.GetPropertyNumber(PIDX_CapPowerReporting) <> 0 then
     begin
       Driver.SetPropertyNumber(PIDX_PowerNotify, OPOS_PN_ENABLED);
@@ -407,6 +415,102 @@ begin
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
   FptrCheck(Driver.PrintRecTotal(Amount, CardAmount, '1'));
   FptrCheck(Driver.PrintRecTotal(Amount, CashAmount, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
+procedure TWebPrinterImplTest.TestZeroFiscalReceipt;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  CheckEquals(FPTR_RT_SALES, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  FptrCheck(Driver.PrintRecItem('Item 1', 0, 1000, 10, 0, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecTotal(0, 0, '0'));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  WriteFileData('ZeroReceiptOrderRequest.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(1, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals(0, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(0, Order.products[0].Discount, 'Order.products[0].Discount');
+  finally
+    Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImplTest.TestZeroFiscalReceipt2;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  CheckEquals(FPTR_RT_SALES, Driver.GetPropertyNumber(PIDXFptr_FiscalReceiptType));
+  Driver.SetPropertyNumber(PIDXFptr_CheckTotal, 1);
+  CheckEquals(1, Driver.GetPropertyNumber(PIDXFptr_CheckTotal));
+
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  FptrCheck(Driver.PrintRecItem('Item 1', 10, 1000, 10, 10, 'шт'));
+  FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка на позицию 1', 1, 4));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка на позицию 2', 4, 4));
+  FptrCheck(Driver.PrintRecSubtotalAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка на чек 1', 1));
+  FptrCheck(Driver.PrintRecSubtotalAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка на чек 2', 4));
+  FptrCheck(Driver.PrintRecTotal(0, 0, '0'));
+  CheckEquals(FPTR_PS_FISCAL_RECEIPT_ENDING, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(FPTR_PS_MONITOR, Driver.GetPropertyNumber(PIDXFptr_PrinterState));
+
+  CheckNotEquals('', Driver.Printer.RequestJson, 'Driver.Printer.RequestJson');
+  WriteFileData('ZeroReceiptOrderRequest.json', Driver.Printer.RequestJson);
+
+  Order := TWPOrder.Create;
+  try
+    JsonToObject(Driver.Printer.RequestJson, Order);
+    CheckEquals(1, Order.products.Count, 'Order.products.Count');
+    CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
+    CheckEquals(1000, Order.products[0].Price, 'Order.products[0].Price');
+    CheckEquals(1000, Order.products[0].Discount, 'Order.products[0].Discount');
+  finally
+    Order.Free;
+  end;
+end;
+
+procedure TWebPrinterImplTest.TestFiscalReceipt2;
+var
+  Order: TWPOrder;
+begin
+  OpenClaimEnable;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.DirectIO2(30, 72, '4'));
+  FptrCheck(Driver.DirectIO2(30, 73, '1'));
+  FptrCheck(Driver.PrintRecItem('PUMP 3: АИ92', 20160, 1120, 4, 18000, ''));
+  FptrCheck(Driver.DirectIO2(120, 0, '02710001005000000'));
+  FptrCheck(Driver.DirectIO2(106, 0, 'owner_type;0'));
+  FptrCheck(Driver.DirectIO2(106, 0, 'package_code;0'));
+  FptrCheck(Driver.PrintRecSubtotalAdjustment(1, 'Discount', 160));
+  FptrCheck(Driver.PrintRecTotal(20000, 20000, '0'));
+  FptrCheck(Driver.PrintRecMessage('Operator: ts'));
+  FptrCheck(Driver.PrintRecMessage('ID:       1991 '));
+  FptrCheck(Driver.DirectIO2(30, 302, '1'));
+  FptrCheck(Driver.DirectIO2(30, 300, '1991'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 end;
 

@@ -350,6 +350,21 @@ type
     property Items[Index: Integer]: TWPProduct read GetItem; default;
   end;
 
+  { TWPBannerStyle }
+
+  TWPBannerStyle = class(TJsonPersistent)
+  private
+    Fis_bold: Boolean;
+    Ffont_height: Integer;
+    Ffont_width: Integer;
+  public
+    procedure Assign(Source: TPersistent); override;
+  published
+    property font_width: Integer read Ffont_width write Ffont_width;
+    property font_height: Integer read Ffont_height write Ffont_height;
+    property is_bold: Boolean read Fis_bold write Fis_bold;
+  end;
+
   { TWPBanner }
 
   TWPBanner = class(TJsonCollectionItem)
@@ -357,13 +372,19 @@ type
     F_type: WideString;
     Fdata: WideString;
     Fcut: Boolean;
+    Fstyle: TWPBannerStyle;
+    procedure Setstyle(const Value: TWPBannerStyle);
   public
+    constructor Create(Collection: TJsonCollection); override;
+    destructor Destroy; override;
+
     procedure Assign(Source: TPersistent); override;
     function IsRequiredField(const Field: WideString): Boolean; override;
   published
     property _type: WideString read F_type write F_type;
     property data: WideString read Fdata write Fdata;
     property cut: Boolean read Fcut write Fcut default false;
+    property style: TWPBannerStyle read Fstyle write Setstyle;
   end;
 
   { TWPBanners }
@@ -413,6 +434,8 @@ type
 	  Freceived_cash: Int64;
 	  Fchange: Int64;
 	  Freceived_card: Integer;
+    Fcard_type: Integer; // card type personal (0) or corporate (1)
+    Fppt_id: Int64; // RRN number (ppt_id) in the slip response from the bank pinpad (Humo, Uzcard)
 	  Fopen_cashbox: Boolean;
 	  Fsend_email: Boolean;
 	  Femail: WideString;
@@ -440,6 +463,8 @@ type
 	  property received_cash: Int64 read Freceived_cash write Freceived_cash;
 	  property change: Int64 read Fchange write Fchange;
 	  property received_card: Integer read Freceived_card write Freceived_card;
+    property card_type: Integer read Fcard_type write Fcard_type;
+    property ppt_id: Int64 read Fppt_id write Fppt_id;
 	  property open_cashbox: Boolean read Fopen_cashbox write Fopen_cashbox;
 	  property send_email: Boolean read Fsend_email write Fsend_email;
 	  property email: WideString read Femail write Femail;
@@ -480,6 +505,30 @@ type
   public
     property RequestJson: WideString read FRequestJson write FRequestJson;
     property ResponseJson: WideString read FResponseJson write FResponseJson;
+  end;
+
+  { TWPRequest }
+
+  TWPRequest = class(TJsonCollectionItem)
+  private
+    FURL: WideString;
+    FRequest: WideString;
+    FResponse: WideString;
+    FIsGetRequest: Boolean;
+  public
+    property URL: WideString read FURL;
+    property Request: WideString read FRequest;
+    property Response: WideString read FResponse;
+    property IsGetRequest: Boolean read FIsGetRequest;
+  end;
+
+  { TWPRequests }
+
+  TWPRequests = class(TJsonCollection)
+  protected
+    function GetItem(Index: Integer): TWPRequest;
+  public
+    property Items[Index: Integer]: TWPRequest read GetItem; default;
   end;
 
   { TWPCreateOrderResponse }
@@ -785,11 +834,16 @@ type
     FCreateOrderResponse: TWPCreateOrderResponse;
     FPrintLastReceipt: TWPResult;
     FDeviceDescription: WideString;
+    FRequests: TWPRequests;
+    FSaveRequestJson: WideString;
+    FSaveResponseJson: WideString;
 
     function GetTransport: TIdHTTP;
     function GetAddress: WideString;
     function SendJson(const AURL, Request: WideString;
       IsGetRequest: Boolean): WideString;
+    procedure AddRequest(URL, Request, Response: WideString;
+      IsGetRequest: Boolean);
   public
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
@@ -799,6 +853,8 @@ type
     procedure Disconnect;
     procedure OpenFiscalDay3;
     procedure CheckForError(const Error: TWPError);
+    procedure SaveState;
+    procedure LoadState;
 
     function GetPrinterDate: TDateTime;
     function ReadInfo: WideString;
@@ -834,6 +890,7 @@ type
     property CloseDayResponse2: TWPCloseDayResponse2 read FCloseDayResponse2;
     property ConnectTimeout: Integer read FConnectTimeout write FConnectTimeout;
     property CreateOrderResponse: TWPCreateOrderResponse read FCreateOrderResponse;
+    property Requests: TWPRequests read FRequests;
   end;
 
 function WPDateTimeToStr(Time: TDateTime): string;
@@ -1071,6 +1128,13 @@ end;
 procedure TWPProduct.Setlabels(const Value: TStrings);
 begin
   Flabels.Assign(Value);
+end;
+
+{ TWPRequests }
+
+function TWPRequests.GetItem(Index: Integer): TWPRequest;
+begin
+  Result := inherited Items[Index] as TWPRequest;
 end;
 
 { TWPProducts }
@@ -1419,6 +1483,18 @@ end;
 
 { TWPBanner }
 
+constructor TWPBanner.Create(Collection: TJsonCollection);
+begin
+  inherited Create(Collection);
+  //Fstyle := TWPBannerStyle.Create;
+end;
+
+destructor TWPBanner.Destroy;
+begin
+  Fstyle.Free;
+  inherited Destroy;
+end;
+
 procedure TWPBanner.Assign(Source: TPersistent);
 var
   src: TWPBanner;
@@ -1429,6 +1505,7 @@ begin
     _type := src._type;
     data := src.data;
     cut := src.cut;
+    style := src.style;
   end;
 end;
 
@@ -1444,6 +1521,12 @@ begin
     Result := AnsiCompareText(Field, OptionalFields[i]) = 0;
     if Result then Break;
   end;
+end;
+
+procedure TWPBanner.Setstyle(const Value: TWPBannerStyle);
+begin
+  if Fstyle <> nil then
+    Fstyle.Assign(Value);
 end;
 
 { TWPPrice }
@@ -1698,12 +1781,14 @@ begin
   FPaymentConfirmResponse := TWPPaymentConfirmResponse.Create;
   FCreateOrderResponse := TWPCreateOrderResponse.Create;
   FPrintLastReceipt := TWPResult.Create;
+  FRequests := TWPRequests.Create(TWPRequest);
 end;
 
 destructor TWebPrinter.Destroy;
 begin
   FLogger := nil;
   FInfo.Free;
+  FRequests.Free;
   FResponse.Free;
   FTransport.Free;
   FOpenDayResponse.Free;
@@ -1786,6 +1871,7 @@ begin
   begin
     Result := FResponseJson;
     FLogger.Debug('<= ' + UTF8Decode(FResponseJson));
+    AddRequest(AURL, Request, Result, IsGetRequest);
     Exit;
   end;
 
@@ -1815,6 +1901,7 @@ begin
       Result := Answer;
       FResponseJson := Result;
       FLogger.Debug('<= ' + UTF8Decode(Answer));
+      AddRequest(AURL, Request, Answer, IsGetRequest);
 
       if Answer = '' then
         raise Exception.Create('Empty response received');
@@ -1832,6 +1919,26 @@ begin
       raise;
     end;
   end;
+end;
+
+procedure TWebPrinter.AddRequest(URL, Request, Response: WideString;
+  IsGetRequest: Boolean);
+const
+  MaxRequestCount = 10;
+var
+  Item: TWPRequest;
+begin
+  if not TestMode then Exit;
+
+  while Requests.Count > MaxRequestCount do
+  begin
+    Requests.Items[0].Free;
+  end;
+  Item := TWPRequest.Create(Requests);
+  Item.FURL := URL;
+  Item.FRequest := Request;
+  Item.FResponse := Response;
+  Item.FIsGetRequest := IsGetRequest;
 end;
 
 function TWebPrinter.GetJson(const AURL: WideString): WideString;
@@ -1918,7 +2025,6 @@ function TWebPrinter.OpenFiscalDay2(Time: TDateTime): TWPOpenDayResponse;
 var
   ResponseJson: WideString;
 begin
-  FLogger.Debug('TWebPrinter.OpenFiscalDay.0');
   ResponseJson := OpenFiscalDay(Time);
   JsonToObject(ResponseJson, FOpenDayResponse);
   if FOpenDayResponse.error.code = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then
@@ -1930,7 +2036,6 @@ begin
   FDayOpened := True;
   FDayOpenTime := Time;
   Result := FOpenDayResponse;
-  FLogger.Debug('TWebPrinter.OpenFiscalDay.1');
 end;
 
 (*
@@ -2241,6 +2346,34 @@ end;
 function TWebPrinter.GetPrinterDate: TDateTime;
 begin
   Result := Now + FTimeDiff;
+  //FLogger.Debug('GetPrinterDate: ' + WPDateTimeToStr(Result));
+end;
+
+procedure TWebPrinter.LoadState;
+begin
+  RequestJson := FSaveRequestJson;
+  ResponseJson := FSaveResponseJson;
+end;
+
+procedure TWebPrinter.SaveState;
+begin
+  FSaveRequestJson := RequestJson;
+  FSaveResponseJson := ResponseJson;
+end;
+
+{ TWPBannerStyle }
+
+procedure TWPBannerStyle.Assign(Source: TPersistent);
+var
+  src: TWPBannerStyle;
+begin
+  if source is TWPBannerStyle then
+  begin
+    src := source as TWPBannerStyle;
+    Fis_bold := src.is_bold;
+    Ffont_height := src.font_height;
+    Ffont_width := src.font_width;
+  end;
 end;
 
 end.
