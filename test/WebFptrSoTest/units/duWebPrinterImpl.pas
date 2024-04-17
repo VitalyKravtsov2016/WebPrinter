@@ -1062,7 +1062,7 @@ begin
   FptrCheck(Driver.BeginFiscalReceipt(True));
   FptrCheck(Driver.PrintRecItem('Item 1', 289.49, 2345, 10, 123.45, 'шт'));
   FptrCheck(Driver.DirectIO2(DIO_SET_ITEM_CLASS_CODE, 0, '04811001001000000'));
-  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 12.34, 4));
+  FptrCheck(Driver.PrintRecItemAdjustment(FPTR_AT_AMOUNT_DISCOUNT, 'Скидка бонусами', 0.34, 4));
   FptrCheck(Driver.PrintRecTotal(277.15, 300, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
 
@@ -1076,8 +1076,8 @@ begin
     CheckEquals(1, Order.products.Count, 'Order.products.Count');
     CheckEquals('Item 1', Order.products[0].name, 'Order.products[0].name');
     CheckEquals(28949, Order.products[0].Price, 'Order.products[0].Price');
-    CheckEquals(1234, Order.products[0].discount, 'Order.products[0].discount');
-    CheckEquals(4, Order.products[0].discount_percent, 'Order.products[0].discount_percent');
+    CheckEquals(34, Order.products[0].discount, 'Order.products[0].discount');
+    CheckEquals(1, Order.products[0].discount_percent, 'Order.products[0].discount_percent');
   finally
     Order.Free;
   end;

@@ -381,7 +381,11 @@ function TSalesReceiptItem.GetDiscountPercent: Double;
 begin
   Result := 0;
   if Price <> 0 then
+  begin
     Result := Abs(Round(Discounts.GetTotal*100/Price));
+    if (Result = 0)and(Discounts.GetTotal <> 0) then
+      Result := 1;
+  end;
 end;
 
 function TSalesReceiptItem.GetClassCode: string;
