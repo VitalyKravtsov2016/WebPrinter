@@ -284,7 +284,6 @@ begin
   finally
     Order.Free;
   end;
-  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 procedure TWebPrinterImplTest.TestRefundReceipt;
@@ -644,7 +643,6 @@ begin
   finally
     Order.Free;
   end;
-  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 procedure TWebPrinterImplTest.TestTotalizers;
@@ -1052,7 +1050,6 @@ begin
   finally
     Order.Free;
   end;
-  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 procedure TWebPrinterImplTest.TestItemAmountDiscount;
@@ -1084,7 +1081,6 @@ begin
   finally
     Order.Free;
   end;
-  CheckCashDrawerRequest(Driver.Printer.Requests[2]);
 end;
 
 initialization

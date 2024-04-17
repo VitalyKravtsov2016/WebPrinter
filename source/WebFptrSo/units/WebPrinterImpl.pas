@@ -2614,11 +2614,6 @@ begin
     end;
     Params.CashInECRAmount := Params.CashInECRAmount + CashPayment;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
-    // Open cash drawer is cash payment
-	  if Order.Received_cash <> 0 then
-    begin
-      OpenCashDrawer;
-    end;
     UpdateZReport;
   finally
     Order.Free;
