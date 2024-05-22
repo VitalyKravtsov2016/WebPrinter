@@ -607,15 +607,19 @@ begin
 end;
 
 function TWebPrinterImpl.BeginFiscalReceipt(PrintHeader: WordBool): Integer;
+var
+  AReceipt: TCustomReceipt;
 begin
   try
     CheckEnabled;
     CheckState(FPTR_PS_MONITOR);
-    SetPrinterState(FPTR_PS_FISCAL_RECEIPT);
 
+    AReceipt := CreateReceipt(FFiscalReceiptType);
     FReceipt.Free;
-    FReceipt := CreateReceipt(FFiscalReceiptType);
+    FReceipt := AReceipt;
     FReceipt.BeginFiscalReceipt(PrintHeader);
+
+    SetPrinterState(FPTR_PS_FISCAL_RECEIPT);
     Result := ClearResult;
   except
     on E: Exception do
