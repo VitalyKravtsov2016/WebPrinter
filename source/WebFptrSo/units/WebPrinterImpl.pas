@@ -2343,7 +2343,7 @@ begin
     Banner._type := 'text';
     Banner.data := Lines.Text;
     Banner.Cut := True;
-    FPrinter.PrintText(Text);
+    FPrinter.PrintText(Text);                                
     // Save cashin
     Params.CashInAmount := Params.CashInAmount + Receipt.GetTotal;
     Params.CashInECRAmount := Params.CashInECRAmount + Receipt.GetTotal;
@@ -2364,6 +2364,11 @@ var
   Lines: TTntStrings;
 begin
   if Receipt.IsVoided then Exit;
+
+  // Cash out amount must be less or equal to cash in ecr amount
+  if Receipt.GetTotal > Params.CashInECRAmount then
+    raiseIllegalError(Format('Cashout amount greater than cash in ECR, %.2f > %.2f', [
+      Receipt.GetTotal, Params.CashInECRAmount]));
 
   Text := TWPText.Create;
   Lines := TTntStringList.Create;

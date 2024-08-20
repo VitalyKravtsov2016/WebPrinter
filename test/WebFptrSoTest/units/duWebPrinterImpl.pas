@@ -510,6 +510,7 @@ begin
   Driver.Params.CashoutLine := 'CashoutLine';
   Driver.Params.CashoutPreLine := 'CashoutPreLine';
   Driver.Params.CashoutPostLine := 'CashoutPostLine';
+  Driver.Params.CashInECRAmount := 12345;
 
   OpenClaimEnable;
 
@@ -557,6 +558,7 @@ end;
 procedure TWebPrinterImplTest.TestCashoutReceipt2;
 begin
   OpenClaimEnable;
+  Driver.Params.CashInECRAmount := 3.03;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_OUT);
   FptrCheck(Driver.BeginFiscalReceipt(True));
   FptrCheck(Driver.PrintRecCash(1.01));
@@ -568,6 +570,7 @@ begin
   FptrCheck(Driver.PrintRecTotal(3.03, 1.01, ''));
   FptrCheck(Driver.PrintRecTotal(3.03, 2.02, ''));
   FptrCheck(Driver.EndFiscalReceipt(False));
+  CheckEquals(0, Driver.Params.CashInECRAmount, 0.001, 'CashInECRAmount <> 0');
   CheckCashDrawerRequest(Driver.Printer.Requests[1]);
 end;
 

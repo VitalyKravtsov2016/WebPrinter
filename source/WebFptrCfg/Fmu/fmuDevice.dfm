@@ -1,6 +1,6 @@
 object fmDevice: TfmDevice
-  Left = 592
-  Top = 466
+  Left = 552
+  Top = 174
   BorderStyle = bsDialog
   Caption = #1059#1089#1090#1088#1086#1081#1089#1090#1074#1086
   ClientHeight = 87
