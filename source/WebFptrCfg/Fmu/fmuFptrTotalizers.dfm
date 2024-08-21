@@ -19,23 +19,16 @@ object fmFptrTotalizers: TfmFptrTotalizers
     363)
   PixelsPerInch = 96
   TextHeight = 13
-  object lblCashInECR: TLabel
-    Left = 8
-    Top = 8
-    Width = 88
-    Height = 13
-    Caption = #1053#1072#1083#1080#1095#1085#1099#1093' '#1074' '#1050#1050#1052':'
-  end
   object lblCashinLine: TLabel
     Left = 8
-    Top = 40
-    Width = 110
+    Top = 16
+    Width = 125
     Height = 13
-    Caption = #1053#1072#1079#1074#1072#1085#1080#1077' '#1076#1083#1103' '#1086#1090#1095#1077#1090#1072':'
+    Caption = #1057#1090#1088#1086#1082#1072' '#1085#1072#1083#1080#1095#1085#1099#1093' '#1074' '#1050#1050#1052':'
   end
   object Bevel1: TBevel
     Left = 8
-    Top = 104
+    Top = 80
     Width = 369
     Height = 9
     Anchors = [akLeft, akTop, akRight]
@@ -43,99 +36,89 @@ object fmFptrTotalizers: TfmFptrTotalizers
   end
   object lblSalesAmountCash: TLabel
     Left = 8
-    Top = 120
+    Top = 96
     Width = 133
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1087#1088#1086#1076#1072#1078', '#1085#1072#1083#1080#1095#1085#1099#1077':'
   end
   object lblSalesAmountCard: TLabel
     Left = 8
-    Top = 152
+    Top = 128
     Width = 113
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1087#1088#1086#1076#1072#1078', '#1082#1072#1088#1090#1072':'
   end
   object lblRefundAmountCash: TLabel
     Left = 8
-    Top = 184
+    Top = 160
     Width = 142
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1074#1086#1079#1088#1072#1090#1086#1074', '#1085#1072#1083#1080#1095#1085#1099#1077':'
   end
   object lblRefundAmountCard: TLabel
     Left = 8
-    Top = 216
+    Top = 192
     Width = 142
     Height = 13
     Caption = #1057#1091#1084#1084#1072' '#1074#1086#1079#1088#1072#1090#1086#1074', '#1085#1072#1083#1080#1095#1085#1099#1077':'
   end
-  object edtCashinECRAmount: TEdit
+  object edtCashinECRLine: TEdit
     Left = 160
-    Top = 8
+    Top = 16
     Width = 217
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
-    Text = 'edtCashinECRAmount'
-    OnChange = ModifiedClick
-  end
-  object edtCashinECRLine: TEdit
-    Left = 160
-    Top = 40
-    Width = 217
-    Height = 21
-    Anchors = [akLeft, akTop, akRight]
-    TabOrder = 1
     Text = 'edtCashinECRLine'
     OnChange = ModifiedClick
   end
   object edtSalesAmountCash: TEdit
     Left = 160
-    Top = 120
+    Top = 96
     Width = 216
     Height = 21
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 3
+    TabOrder = 2
     Text = 'edtSalesAmountCash'
     OnChange = ModifiedClick
   end
   object edtSalesAmountCard: TEdit
     Left = 160
-    Top = 152
+    Top = 128
     Width = 216
     Height = 21
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 4
+    TabOrder = 3
     Text = 'edtSalesAmountCard'
     OnChange = ModifiedClick
   end
   object edtRefundAmountCash: TEdit
     Left = 160
-    Top = 184
+    Top = 160
     Width = 216
     Height = 21
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 5
+    TabOrder = 4
     Text = 'edtRefundAmountCash'
     OnChange = ModifiedClick
   end
   object edtRefundAmountCard: TEdit
     Left = 160
-    Top = 216
+    Top = 192
     Width = 216
     Height = 21
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 6
+    TabOrder = 5
     Text = 'edtRefundAmountCard'
     OnChange = ModifiedClick
   end
   object chbCashInECRAutoZero: TCheckBox
     Left = 8
-    Top = 72
+    Top = 48
     Width = 369
     Height = 17
     Caption = #1040#1074#1090#1086#1084#1072#1090#1080#1095#1077#1089#1082#1086#1077' '#1086#1073#1085#1091#1083#1077#1085#1080#1077' '#1085#1072#1083#1080#1095#1085#1099#1093' '#1074' '#1050#1050#1052' '#1087#1086#1089#1083#1077' Z '#1086#1090#1095#1077#1090#1072
-    TabOrder = 2
+    TabOrder = 1
     OnClick = ModifiedClick
   end
 end

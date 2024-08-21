@@ -11,7 +11,7 @@ uses
   JsonUtils in '..\..\source\Shared\JsonUtils.pas',
   DriverError in '..\..\source\Shared\DriverError.pas',
   FileUtils in '..\..\source\Shared\FileUtils.pas',
-  duWebPrinter in 'units\duWebPrinter.pas',
+  duLogParser in 'units\duLogParser.pas',
   WebPrinterImpl in '..\..\source\WebFptrSo\units\WebPrinterImpl.pas',
   Opos in '..\..\source\Opos\Opos.pas',
   Oposhi in '..\..\source\Opos\Oposhi.pas',

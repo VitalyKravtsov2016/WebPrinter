@@ -638,6 +638,12 @@ end;
 
 procedure TSalesReceipt.PrintRecTotal(Total: Currency; Payment: Currency;
   const Description: WideString);
+
+  function ValidPaymentIndex(Index: Integer): Boolean;
+  begin
+    Result := Index in [0..MaxPayments];
+  end;
+
 var
   Index: Integer;
 begin
@@ -646,6 +652,11 @@ begin
   CheckAmount(Payment);
 
   Index := StrToIntDef(Description, 0);
+  if not ValidPaymentIndex(Index) then
+  begin
+    Payment := 0;
+  end;
+
   if Index <> 0 then
   begin
     if (GetCashlessPayment + Payment) > GetTotal then

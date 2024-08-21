@@ -429,10 +429,6 @@ begin
       if Reg.ValueExists('CashOutAmount') then
         Parameters.CashOutAmount := Reg.ReadCurrency('CashOutAmount');
 
-      Parameters.CashInECRAmount := 0;
-      if Reg.ValueExists('CashInECRAmount') then
-        Parameters.CashInECRAmount := Reg.ReadCurrency('CashInECRAmount');
-
       Parameters.SalesAmountCash := 0;
       if Reg.ValueExists('SalesAmountCash') then
         Parameters.SalesAmountCash := Reg.ReadCurrency('SalesAmountCash');
@@ -473,7 +469,6 @@ begin
 
     Reg.WriteCurrency('CashInAmount', Parameters.CashInAmount);
     Reg.WriteCurrency('CashOutAmount', Parameters.CashOutAmount);
-    Reg.WriteCurrency('CashInECRAmount', Parameters.CashInECRAmount);
     Reg.WriteCurrency('SalesAmountCash', Parameters.SalesAmountCash);
     Reg.WriteCurrency('SalesAmountCard', Parameters.SalesAmountCard);
     Reg.WriteCurrency('RefundAmountCash', Parameters.RefundAmountCash);

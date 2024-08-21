@@ -14,8 +14,6 @@ type
   { TfmFptrTotalizers }
 
   TfmFptrTotalizers = class(TFptrPage)
-    lblCashInECR: TLabel;
-    edtCashinECRAmount: TEdit;
     lblCashinLine: TLabel;
     edtCashinECRLine: TEdit;
     Bevel1: TBevel;
@@ -43,7 +41,6 @@ implementation
 procedure TfmFptrTotalizers.UpdatePage;
 begin
   edtCashInECRLine.Text := Parameters.CashInECRLine;
-  edtCashInECRAmount.Text := CurrToStr(Parameters.CashInECRAmount);
   chbCashInECRAutoZero.Checked := Parameters.CashInECRAutoZero;
   edtSalesAmountCash.Text := CurrToStr(Parameters.SalesAmountCash);
   edtSalesAmountCard.Text := CurrToStr(Parameters.SalesAmountCard);
@@ -54,7 +51,6 @@ end;
 procedure TfmFptrTotalizers.UpdateObject;
 begin
   Parameters.CashInECRLine := edtCashInECRLine.Text;
-  Parameters.CashInECRAmount := StrToCurr(edtCashInECRAmount.Text);
   Parameters.CashInECRAutoZero := chbCashInECRAutoZero.Checked;
   Parameters.SalesAmountCash := StrToCurr(edtSalesAmountCash.Text);
   Parameters.SalesAmountCard := StrToCurr(edtSalesAmountCard.Text);

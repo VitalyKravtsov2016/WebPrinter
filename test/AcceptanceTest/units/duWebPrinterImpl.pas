@@ -32,6 +32,7 @@ type
     procedure FptrCheck(Code: Integer; const AText: WideString); overload;
     procedure PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
     procedure PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
+    function ReadCashRegister(Number: Integer): Currency;
   protected
     procedure Setup; override;
     procedure TearDown; override;
@@ -364,10 +365,21 @@ begin
   end;
 end;
 
+function TWebPrinterImplTest.ReadCashRegister(Number: Integer): Currency;
+var
+  pString: WideString;
+begin
+  pString := '';
+  FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, Number, pString));
+  Result := StrToInt(pString)/100;
+end;
+
 procedure TWebPrinterImplTest.TestTotalizers;
 begin
   OpenClaimEnable;
-  //FptrCheck(FDriver.PrintZReport, 'PrintZReport');
+  FptrCheck(FDriver.PrintZReport, 'PrintZReport');
+
+  CheckEquals(0, ReadCashRegister(241), 'ReadCashRegister(241).0');
 
   FDriver.Params.SalesAmountCash := 0;
   FDriver.Params.SalesAmountCard := 0;
@@ -375,18 +387,24 @@ begin
   FDriver.Params.RefundAmountCard := 0;
 
   PrintSalesReceipt(7623.45, 8000, 1000);
+  CheckEquals(6623.45, ReadCashRegister(241), 'ReadCashRegister(241).1');
+
+  CheckEquals(0, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
   CheckEquals(0, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
   CheckEquals(0, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
   CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
   CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
 
   PrintRefundReceipt(93.56, 100, 50);
+  CheckEquals(6623.45-43.56, ReadCashRegister(241), 'ReadCashRegister(241).2');
+
   CheckEquals(0, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
   CheckEquals(0, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
   CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
   CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
 
   FptrCheck(FDriver.PrintZReport, 'PrintZReport');
+  CheckEquals(0, ReadCashRegister(241), 'ReadCashRegister(241).3');
   CheckEquals(6623.45, FDriver.Params.SalesAmountCash, 'SalesAmountCash');
   CheckEquals(1000, FDriver.Params.SalesAmountCard, 'SalesAmountCard');
   CheckEquals(43.56, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
@@ -493,8 +511,6 @@ begin
 end;
 
 procedure TWebPrinterImplTest.TestFiscalReceipt2;
-var
-  Order: TWPOrder;
 begin
   OpenClaimEnable;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);

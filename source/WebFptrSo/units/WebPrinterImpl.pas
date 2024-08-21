@@ -54,6 +54,7 @@ type
     function GetTerminalID: WideString;
     procedure RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
     procedure OpenCashDrawer;
+    function GetCashInECRAmount: Currency;
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -870,6 +871,17 @@ begin
   end;
 end;
 
+function TWebPrinterImpl.GetCashInECRAmount: Currency;
+var
+  DayResult: TWPDayResult;
+begin
+  DayResult := FPrinter.CloseDayResponse2.result.data;
+  Result :=
+    DayResult.total_sale_cash/100 -
+    DayResult.total_refund_cash/100 +
+    Params.CashInAmount - Params.CashOutAmount;
+end;
+
 function TWebPrinterImpl.ReadCashRegister(RegID: Integer): Currency;
 var
   DayResult: TWPDayResult;
@@ -879,7 +891,7 @@ begin
 
   case RegID of
     // 241 Ц накопление наличности в кассе;
-    241: Result := Params.CashInECRAmount;
+    241: Result := GetCashInECRAmount;
 
     // 242 Ц накопление внесений за смену;
     242: Result := Params.CashInAmount;
@@ -1842,8 +1854,6 @@ begin
     // Clear Cash in and out
     Params.CashInAmount := 0;
     Params.CashOutAmount := 0;
-    if Params.CashInECRAutoZero then
-      Params.CashInECRAmount := 0;
     Params.SalesAmountCash := Params.SalesAmountCash + Response.data.total_sale_cash/100;
     Params.SalesAmountCard := Params.SalesAmountCard + Response.data.total_sale_card/100;
     Params.RefundAmountCash := Params.RefundAmountCash + Response.data.total_refund_cash/100;
@@ -1879,7 +1889,7 @@ begin
   // Cash in ECR
   Item := Request.prices.Add as TWPCurrency;
   Item.name := Params.CashInECRLine;
-  Item.price := Round2(Params.CashInECRAmount * 100);
+  Item.price := Round2(GetCashInECRAmount * 100);
   // Sales amount cash
   Item := Request.prices.Add as TWPCurrency;
   Item.name := Params.SalesAmountCashLine;
@@ -2289,6 +2299,7 @@ begin
       if not TestMode then
       begin
         FPrinter.Connect;
+        UpdateZReport;
 
         FOposDevice.PhysicalDeviceDescription := FOposDevice.PhysicalDeviceName +
           ' ' + FPrinter.DeviceDescription;
@@ -2346,7 +2357,6 @@ begin
     FPrinter.PrintText(Text);                                
     // Save cashin
     Params.CashInAmount := Params.CashInAmount + Receipt.GetTotal;
-    Params.CashInECRAmount := Params.CashInECRAmount + Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
     // Open cash drawer
     OpenCashDrawer;
@@ -2366,9 +2376,9 @@ begin
   if Receipt.IsVoided then Exit;
 
   // Cash out amount must be less or equal to cash in ecr amount
-  if Receipt.GetTotal > Params.CashInECRAmount then
+  if Receipt.GetTotal > GetCashInECRAmount then
     raiseIllegalError(Format('Cashout amount greater than cash in ECR, %.2f > %.2f', [
-      Receipt.GetTotal, Params.CashInECRAmount]));
+      Receipt.GetTotal, GetCashInECRAmount]));
 
   Text := TWPText.Create;
   Lines := TTntStringList.Create;
@@ -2388,7 +2398,6 @@ begin
     FPrinter.PrintText(Text);
     // Save cashout
     Params.CashOutAmount := Params.CashOutAmount + Receipt.GetTotal;
-    Params.CashInECRAmount := Params.CashInECRAmount - Receipt.GetTotal;
     SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
     // Open cash drawer
     OpenCashDrawer;
@@ -2550,7 +2559,6 @@ var
   TextItem: TRecTextItem;
   Item: TSalesReceiptItem;
   ReceiptItem: TReceiptItem;
-  CashPayment: Currency;
 begin
   RecDiscountsToItemDiscounts(Receipt);
 
@@ -2614,15 +2622,11 @@ begin
 
     if receipt.RecType in [rtSell, rtRetBuy] then
     begin
-      CashPayment := Abs(Receipt.CashPayment);
       FPrinter.CreateOrder(Order);
     end else
     begin
-      CashPayment := -Abs(Receipt.CashPayment);
       FPrinter.ReturnOrder(Order);
     end;
-    Params.CashInECRAmount := Params.CashInECRAmount + CashPayment;
-    SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
     UpdateZReport;
   finally
     Order.Free;

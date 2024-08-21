@@ -510,7 +510,7 @@ begin
   Driver.Params.CashoutLine := 'CashoutLine';
   Driver.Params.CashoutPreLine := 'CashoutPreLine';
   Driver.Params.CashoutPostLine := 'CashoutPostLine';
-  Driver.Params.CashInECRAmount := 12345;
+  Driver.Params.CashInAmount := 12345;
 
   OpenClaimEnable;
 
@@ -558,7 +558,7 @@ end;
 procedure TWebPrinterImplTest.TestCashoutReceipt2;
 begin
   OpenClaimEnable;
-  Driver.Params.CashInECRAmount := 3.03;
+  Driver.Params.CashInAmount := 3.03;
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_CASH_OUT);
   FptrCheck(Driver.BeginFiscalReceipt(True));
   FptrCheck(Driver.PrintRecCash(1.01));
@@ -570,7 +570,6 @@ begin
   FptrCheck(Driver.PrintRecTotal(3.03, 1.01, ''));
   FptrCheck(Driver.PrintRecTotal(3.03, 2.02, ''));
   FptrCheck(Driver.EndFiscalReceipt(False));
-  CheckEquals(0, Driver.Params.CashInECRAmount, 0.001, 'CashInECRAmount <> 0');
   CheckCashDrawerRequest(Driver.Printer.Requests[1]);
 end;
 
@@ -653,7 +652,6 @@ var
   pString: WideString;
   DayResult: TWPDayResult;
 begin
-  FDriver.Params.CashInECRAmount := 123.45;
   FDriver.Params.CashInAmount := 3454.78;
   FDriver.Params.CashOutAmount := 234.32;
 
@@ -664,14 +662,16 @@ begin
   DayResult := FDriver.Printer.CloseDayResponse2.result.data;
   DayResult.total_sale_cash := 12345;
   DayResult.total_sale_card := 23456;
-  DayResult.total_refund_cash := 34567;
+  DayResult.total_refund_cash := 123;
   DayResult.total_refund_card := 45678;
+
+  //123.45-1.23+3454.78-234.32
 
 
   OpenClaimEnable;
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, 241, pString));
-  CheckEquals('12345', pString, 'DirectIO3(DIO_READ_CASH_REG, 241');
+  CheckEquals('334268', pString, 'DirectIO3(DIO_READ_CASH_REG, 241');
 
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, 242, pString));
@@ -679,7 +679,7 @@ begin
 
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, 243, pString));
-  CheckEquals('23432', pString, 'DirectIO3(DIO_READ_CASH_REG, 242');
+  CheckEquals('23432', pString, 'DirectIO3(DIO_READ_CASH_REG, 243');
 
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_DAY_TOTAL_SALE_CASH, pString));
@@ -691,7 +691,7 @@ begin
 
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CASH, pString));
-  CheckEquals('34567', pString, 'SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CASH');
+  CheckEquals('123', pString, 'SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CASH');
 
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_DAY_TOTAL_RETSALE_CARD, pString));
@@ -707,12 +707,11 @@ begin
 
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CASH, pString));
-  CheckEquals(IntToStr(821334 + 34567), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CASH');
+  CheckEquals(IntToStr(821334 + 123), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CASH');
 
   pString := '';
   FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CARD, pString));
   CheckEquals(IntToStr(8345 + 45678), pString, 'SMFPTR_CASHREG_GRAND_TOTAL_RETSALE_CARD');
-
 end;
 
 procedure TWebPrinterImplTest.PrintCashInReceipt(Amount: Currency);
@@ -734,6 +733,8 @@ begin
 end;
 
 procedure TWebPrinterImplTest.PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
+var
+  DayResult: TWPDayResult;
 begin
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
   FptrCheck(Driver.BeginFiscalReceipt(True));
@@ -741,9 +742,16 @@ begin
   FptrCheck(Driver.PrintRecTotal(Amount, CardAmount, '1'));
   FptrCheck(Driver.PrintRecTotal(Amount, CashAmount, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
+
+  CashAmount := Amount - CardAmount;
+  DayResult := FDriver.Printer.CloseDayResponse2.result.data;
+  DayResult.total_sale_cash := DayResult.total_sale_cash + Round(CashAmount * 100);
+  DayResult.total_sale_card := DayResult.total_sale_card + Round(CardAmount * 100);
 end;
 
 procedure TWebPrinterImplTest.PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
+var
+  DayResult: TWPDayResult;
 begin
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_REFUND);
   FptrCheck(Driver.BeginFiscalReceipt(True));
@@ -751,38 +759,51 @@ begin
   FptrCheck(Driver.PrintRecTotal(Amount, CardAmount, '1'));
   FptrCheck(Driver.PrintRecTotal(Amount, CashAmount, '0'));
   FptrCheck(Driver.EndFiscalReceipt(False));
+
+  CashAmount := Amount - CardAmount;
+  DayResult := FDriver.Printer.CloseDayResponse2.result.data;
+  DayResult.total_refund_cash := DayResult.total_refund_cash + Round(CashAmount * 100);
+  DayResult.total_refund_card := DayResult.total_refund_card + Round(CardAmount * 100);
 end;
 
 procedure TWebPrinterImplTest.TestCashInECRTotalizer;
+
+  function GetCashAmount: Currency;
+  var
+    pString: WideString;
+  begin
+    pString := '';
+    FptrCheck(FDriver.DirectIO3(DIO_READ_CASH_REG, 241, pString));
+    Result := StrToInt(pString)/100;
+  end;
+
 begin
   FDriver.TestMode := False;
-  FDriver.Params.CashInECRAmount := 0;
   FDriver.Params.CashInAmount := 0;
   FDriver.Params.CashOutAmount := 0;
   SaveParameters(FDriver.Params, 'DeviceName', FDriver.Logger);
 
   OpenClaimEnable;
   PrintCashInReceipt(2123.45);
-  CheckEquals(2123.45, Driver.Params.CashInECRAmount, 'CashInECRAmount');
+  CheckEquals(2123.45, GetCashAmount, 'CashInECRAmount');
   CheckEquals(2123.45, Driver.Params.CashInAmount, 'CashInAmount');
 
   PrintCashOutReceipt(123.45);
-  CheckEquals(2123.45-123.45, Driver.Params.CashInECRAmount);
+  CheckEquals(2123.45-123.45, GetCashAmount);
   CheckEquals(123.45, Driver.Params.CashOutAmount, 'CashOutAmount');
 
   PrintSalesReceipt(7623.45, 8000, 1000);
-  CheckEquals(2123.45-123.45 + 6623.45, Driver.Params.CashInECRAmount);
+  CheckEquals(2123.45-123.45 + 6623.45, GetCashAmount);
 
   PrintRefundReceipt(93.56, 100, 50);
-  CheckEquals(2123.45-123.45 + 6623.45-43.56, Driver.Params.CashInECRAmount);
+  CheckEquals(2123.45-123.45 + 6623.45-43.56, GetCashAmount);
 
   Driver.Close;
-  FDriver.Params.CashInECRAmount := 0;
 
   OpenClaimEnable;
   PrintCashInReceipt(768.45);
   CheckEquals(2123.45 + 768.45, Driver.Params.CashInAmount, 'CashInAmount');
-  CheckEquals(2123.45-123.45 + 6623.45-43.56 + 768.45, Driver.Params.CashInECRAmount);
+  CheckEquals(2123.45-123.45 + 6623.45-43.56 + 768.45, GetCashAmount);
 end;
 
 procedure TWebPrinterImplTest.TestTotalizers2;

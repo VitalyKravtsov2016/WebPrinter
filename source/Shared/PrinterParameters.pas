@@ -66,7 +66,6 @@ type
     FCashout: TCashParams;
     FCashInAmount: Currency;
     FCashOutAmount: Currency;
-    FCashInECRAmount: Currency;
     FCashInECRLine: WideString;
     FSalesAmountCash: Currency; // Всего продаж наличные
     FSalesAmountCard: Currency; // Всего продаж банковские карты
@@ -118,7 +117,6 @@ type
     property CashInAmount: Currency read FCashInAmount write FCashInAmount;
     property CashOutAmount: Currency read FCashOutAmount write FCashOutAmount;
     property CashInECRLine: WideString read FCashInECRLine write FCashInECRLine;
-    property CashInECRAmount: Currency read FCashInECRAmount write FCashInECRAmount;
     property SalesAmountCash: Currency read FSalesAmountCash write FSalesAmountCash;
     property SalesAmountCard: Currency read FSalesAmountCard write FSalesAmountCard;
     property RefundAmountCash: Currency read FRefundAmountCash write FRefundAmountCash;
@@ -206,7 +204,6 @@ begin
   CashOutAmount := 0;
 
   CashInECRLine := 'НАЛИЧНЫХ В КАССЕ';
-  CashInECRAmount := 0;
   CashInECRAutoZero := DefCashInECRAutoZero;
   SalesAmountCash := 0;
   SalesAmountCard := 0;
@@ -258,7 +255,6 @@ begin
   Logger.Debug('CashInAmount: ' + AmountToStr(CashInAmount));
   Logger.Debug('CashOutAmount: ' + AmountToStr(CashOutAmount));
   Logger.Debug('CashInECRLine: ' + CashInECRLine);
-  Logger.Debug('CashInECRAmount: ' + AmountToStr(CashInECRAmount));
   Logger.Debug('CashInECRAutoZero: ' + BoolToStr(CashInECRAutoZero));
   Logger.Debug('SalesAmountCash: ' + AmountToStr(SalesAmountCash));
   Logger.Debug('SalesAmountCard: ' + AmountToStr(SalesAmountCard));
@@ -309,7 +305,6 @@ begin
     CashoutPreLine := Src.CashoutPreLine;
     CashoutPostLine := Src.CashoutPostLine;
     CashInECRLine := Src.CashInECRLine;
-    CashInECRAmount := Src.CashInECRAmount;
     SalesAmountCash := Src.SalesAmountCash;
     SalesAmountCard := Src.SalesAmountCard;
     RefundAmountCash := Src.RefundAmountCash;
