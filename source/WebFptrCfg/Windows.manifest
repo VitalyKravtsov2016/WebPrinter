@@ -41,7 +41,7 @@
                   -->
                 <requestedExecutionLevel
                     level="asInvoker"
-                    uiAccess="true"
+                    uiAccess="false"
                 />   
             </requestedPrivileges>
         </security>

@@ -101,7 +101,7 @@ DebugSourceDirs=
 UsePackages=0
 [Parameters]
 RunParams=
-HostApplication=D:\projects\WebPrinter\source\Bin\WebFptrTst.exe
+HostApplication=C:\Program Files (x86)\OPOS\WebPrinter\Bin\WebFptrCfg.exe
 Launcher=
 UseLauncher=0
 DebugCWD=
@@ -122,7 +122,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=13
 Release=0
-Build=62
+Build=63
 Debug=0
 PreRelease=0
 Special=0
@@ -133,7 +133,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SHTRIH-M
 FileDescription=WebPrinter OPOS fiscal printer service
-FileVersion=1.13.0.62
+FileVersion=1.13.0.63
 InternalName=WebPrinter OPOS fiscal printer driver
 LegalCopyright=SHTRIH-M © 2024
 LegalTrademarks=

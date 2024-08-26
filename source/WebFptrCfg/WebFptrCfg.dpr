@@ -66,7 +66,7 @@ uses
 {$R Windows.RES}
 
 begin
-  DecimalSeparator := '.';
+  //DecimalSeparator := '.';
   Application.Initialize;
   Application.CreateForm(TfmMain, fmMain);
   Application.Run;
