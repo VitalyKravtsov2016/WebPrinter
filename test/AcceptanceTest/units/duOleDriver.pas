@@ -161,7 +161,6 @@ var
   CashierID: WideString;
   Strings: TTntStringList;
 begin
-  Sleep(3000);
   OpenClaimEnable;
   // Read cashier ID
   Strings := TTntStringList.Create;

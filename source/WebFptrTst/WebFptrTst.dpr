@@ -94,7 +94,7 @@ uses
   SMFiscalPrinter in '..\Opos\SMFiscalPrinter.pas',
   ItemUnit in '..\Shared\ItemUnit.pas',
   VatRate in '..\Shared\VatRate.pas',
-  duLogParser in '..\..\test\AcceptanceTest\units\duLogParser.pas',
+  duCalculator in '..\..\test\AcceptanceTest\units\duCalculator.pas',
   WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
   JsonUtils in '..\Shared\JsonUtils.pas',
   uLkJSON in '..\Shared\uLkJSON.pas';

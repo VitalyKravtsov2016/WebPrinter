@@ -47,6 +47,7 @@ type
     procedure TestZeroFiscalReceipt;
     procedure TestZeroFiscalReceipt2;
     procedure TestFiscalReceipt2;
+    procedure TestOpenFiscalDay;
   end;
 
 implementation
@@ -528,6 +529,15 @@ begin
   FptrCheck(Driver.DirectIO2(30, 302, '1'));
   FptrCheck(Driver.DirectIO2(30, 300, '1991'));
   FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
+procedure TWebPrinterImplTest.TestOpenFiscalDay;
+begin
+  OpenClaimEnable;
+  //Driver.TestPrinterDate := Driver.GetPrinterDate;
+
+  FptrCheck(Driver.PrintZReport);
+  TestFiscalReceipt;
 end;
 
 initialization

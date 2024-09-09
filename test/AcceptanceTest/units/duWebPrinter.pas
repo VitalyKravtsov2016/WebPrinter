@@ -37,6 +37,7 @@ type
     procedure CheckPrintLastReceipt;
     procedure CheckParamsEncode;
     procedure CheckPrintText;
+    procedure CheckTimePastError;
   end;
 
 implementation
@@ -133,7 +134,7 @@ var
 begin
   Request := TWPCloseDayRequest.Create;
   try
-    Request.Time := Now;
+    Request.Time := WPDateTimeToStr(Now);
     Request.close_zreport := False;
     Request.name := 'X מעקוע';
     Response := FPrinter.PrintZReport(Request);
@@ -151,7 +152,7 @@ begin
   FPrinter.ReadInfo2;
   Request := TWPCloseDayRequest.Create;
   try
-    Request.Time := WPStrToDateTime(FPrinter.Info.Data.current_time);
+    Request.Time := FPrinter.Info.Data.current_time;
     Request.close_zreport := True;
     Request.name := 'X מעקוע';
     Response := FPrinter.PrintZReport(Request);
@@ -369,6 +370,17 @@ begin
   finally
     Text.Free;
   end;
+end;
+
+procedure TWebPrinterTest2.CheckTimePastError;
+var
+  Data: WideString;
+begin
+(*
+  CheckPrintZReport;
+  if FPrinter.OpenFiscalDay2(GetPrinterDate).error.code <> 0 then Break;
+  Data := FPrinter.OpenFiscalDay(Now);
+*)
 end;
 
 initialization

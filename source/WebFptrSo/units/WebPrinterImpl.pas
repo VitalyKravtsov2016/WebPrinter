@@ -1814,7 +1814,7 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
-    Request.Time := FPrinter.GetPrinterDate;
+    Request.Time := WPDateTimeToStr(FPrinter.GetPrinterDate);
     Request.close_zreport := False;
     Request.name := GetReportName('X ÎÒ×¨Ò');
     AddReportLines(Request);
@@ -1837,7 +1837,7 @@ begin
   try
     CheckState(FPTR_PS_MONITOR);
 
-    Request.Time := FPrinter.GetPrinterDate;
+    Request.Time := WPDateTimeToStr(FPrinter.GetPrinterDate);
     Request.close_zreport := True;
     Request.name := GetReportName('Z ÎÒ×¨Ò');
     AddReportLines(Request);

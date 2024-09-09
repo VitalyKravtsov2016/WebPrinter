@@ -594,7 +594,7 @@ type
   TWPCloseDayRequest = class(TJsonPersistent)
   private
     FClose: Boolean;
-    FTime: TDateTime;
+    FTime: WideString;
     FName: WideString;
     FPrices: TWPCurrencies;
     procedure SetPrices(const Value: TWPCurrencies);
@@ -602,7 +602,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
-    property Time: TDateTime read FTime write FTime;
+    property Time: WideString read FTime write FTime;
   published
     property name: WideString read Fname write Fname;
     property prices: TWPCurrencies read Fprices write SetPrices;
@@ -845,6 +845,7 @@ type
     procedure AddRequest(URL, Request, Response: WideString;
       IsGetRequest: Boolean);
   public
+    TestPrinterDate: WideString;
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
 
@@ -2082,7 +2083,7 @@ begin
   OpenFiscalDay3;
 
   URL := GetAddress + '/zreport/close' + '?' +
-    TIdURI.ParamsEncode(Format('time=%s', [WPDateTimeToStr(Request.time)]));
+    TIdURI.ParamsEncode(Format('time=%s', [Request.time]));
 
   JsonText := PostJson(URL, ObjectToJson(Request));
   JsonToObject(JsonText, FCloseDayResponse);
@@ -2241,13 +2242,22 @@ begin
     ResponseJson := PostJson(GetAddress + '/order/create/', RequestJson);
     FCreateOrderResponse.ResponseJson := ResponseJson;
     JsonToObject(ResponseJson, FCreateOrderResponse);
+
+
     if FCreateOrderResponse.error.code = WP_ERROR_ZREPORT_IS_NOT_OPEN then
     begin
       FDayOpened := False;
       if OpenFiscalDay2(GetPrinterDate).error.code <> 0 then Break;
     end else
     begin
-      Break;
+      if FCreateOrderResponse.error.code = WP_ERROR_RECEIPT_TIME_PAST then
+      begin
+        // Задержка в 1 секунду - время запроссов должно оттличаться на 1 секунду
+        Sleep(1000);
+      end else
+      begin
+        Break;
+      end;
     end;
   end;
   CheckForError(FCreateOrderResponse.error);

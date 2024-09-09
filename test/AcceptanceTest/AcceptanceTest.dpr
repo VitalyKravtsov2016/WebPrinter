@@ -11,7 +11,7 @@ uses
   JsonUtils in '..\..\source\Shared\JsonUtils.pas',
   DriverError in '..\..\source\Shared\DriverError.pas',
   FileUtils in '..\..\source\Shared\FileUtils.pas',
-  duLogParser in 'units\duLogParser.pas',
+  duCalculator in 'units\duCalculator.pas',
   WebPrinterImpl in '..\..\source\WebFptrSo\units\WebPrinterImpl.pas',
   Opos in '..\..\source\Opos\Opos.pas',
   Oposhi in '..\..\source\Opos\Oposhi.pas',
@@ -52,7 +52,8 @@ uses
   duWebPrinterImpl in 'units\duWebPrinterImpl.pas',
   SMFiscalPrinter in '..\..\source\Opos\SMFiscalPrinter.pas',
   OposFiscalPrinter_1_13_Lib_TLB in '..\..\source\Opos\OposFiscalPrinter_1_13_Lib_TLB.pas',
-  TLVItem in '..\..\source\WebFptrSo\units\TLVItem.pas';
+  TLVItem in '..\..\source\WebFptrSo\units\TLVItem.pas',
+  duWebPrinter in 'units\duWebPrinter.pas';
 
 {$R *.RES}
 
