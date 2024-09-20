@@ -59,6 +59,7 @@ type
     procedure TestZeroFiscalReceipt2;
     procedure TestItemPercentDiscount;
     procedure TestItemAmountDiscount;
+    procedure TestMarkCode;
   end;
 
 implementation
@@ -1105,6 +1106,79 @@ begin
   finally
     Order.Free;
   end;
+end;
+
+procedure TWebPrinterImplTest.TestMarkCode;
+var
+  Code: AnsiString;
+const
+  GS = #$1D;
+begin
+  // Сигареты (пачка)
+  // 00000123456789aaaaaa!ABm8wAYa
+  // 00000123456789aaaaaa!
+  // если штрих-код меньше 14 знаков, то он всегда дополняется слева нулями до 14 знаков
+  Code := Driver.GetMarkCode('123456789');
+  CheckEquals('00000123456789', Code, 'Code.1');
+  // код товара и серийный номер (то есть первый 21 знак)
+  Code := Driver.GetMarkCode('00000123456789aaaaaa!ABm8wAYa');
+  CheckEquals('00000123456789aaaaaa!', Code, 'Code.2');
+
+  // Сигареты (блок)
+  // 010478006206026121Wia,=,93/SukmJI=24012345678
+  // 010478006206026121Wia,=,
+  Code := Driver.GetMarkCode('010478006206026121W-ia,=,93/SukmJI=24012345678');
+  CheckEquals('010478006206026121W-ia,=,', Code, 'Code.3');
+
+  // Алкоголь (бутылка)
+  // 010478006206026121123456793ABCD
+  // 0104780062060261211234567
+  Code := Driver.GetMarkCode('010478006206026121123456793ABCD');
+  CheckEquals('0104780062060261211234567', Code, 'Code.4');
+
+  // Алкоголь (упаковка)
+  // 010478006206026121123456789012393ABCD
+  // 0104780062060261211234567890123
+  Code := Driver.GetMarkCode('010478006206026121123456789012393ABCD');
+  CheckEquals('0104780062060261211234567890123', Code, 'Code.5');
+
+  // Пиво (бутылка)
+  // 010478006206026121123456793ABCD
+  // 0104780062060261211234567
+
+  // Лекарства (упаковка)
+  // 0105995327112039213GmniXS9lFo4X91EE0592nrV20ZwdydM+Atwcuuisf9Gnindaat3wF81ul7vBwCc=
+  // 0105995327112039213GmniXS9lFo4X
+  Code := Driver.GetMarkCode('0105995327112039213GmniXS9lFo4X91EE0592nrV20ZwdydM+Atwcuuisf9Gnindaat3wF81ul7vBwCc=');
+  CheckEquals('0105995327112039213GmniXS9lFo4X', Code, 'Code.6');
+
+  // средство цифровой идентификации
+  // 011478001424119621054969682170003324014787184
+  Code := Driver.GetMarkCode('011478001424119621054969682170003324014787184');
+  CheckEquals('011478001424119621054969682170003324014787184', Code, 'Code.7');
+
+  // средство цифровой идентификации
+  // 011478001424094620001121011210CV29115528
+  Code := Driver.GetMarkCode('011478001424094620001121011210CV29115528');
+  CheckEquals('011478001424094620001121011210CV29115528', Code, 'Code.8');
+
+  // Бытовая техника (потребительская упаковка)
+  // 0107623900780341215cpa-CeayEU>BYWdxwd_91UZF092TkllMKppAZkpmTEitV717ei4m2GQpeeAfB0EaMPT5V0=
+  // 0107623900780341215cpa-CeayEU>BYWdxwd_
+  Code := Driver.GetMarkCode('0107623900780341215cpa-CeayEU>BYWdxwd_'#$1D'91UZF0'#$1D'92TkllMKppAZkpmTEitV717ei4m2GQpeeAfB0EaMPT5V0=');
+  CheckEquals('0107623900780341215cpa-CeayEU>BYWdxwd_', Code, 'Code.9');
+
+  // Бытовая техника (потребительская упаковка)
+  // 010762390078034121NMroq+kni<L1nYlUa+jn'#$1D'91UZF0'#$1D'92LzZidsXkECfv+vdd6RaABCq/mM3+CrS3sCF1hWkCJJg=
+  // 010762390078034121NMroq+kni<L1nYlUa+jn
+  Code := Driver.GetMarkCode('010762390078034121NMroq+kni<L1nYlUa+jn'#$1D'91UZF0'#$1D'92LzZidsXkECfv+vdd6RaABCq/mM3+CrS3sCF1hWkCJJg=');
+  CheckEquals('010762390078034121NMroq+kni<L1nYlUa+jn', Code, 'Code.10');
+
+  // Вода и прохладительные напитки (потребительская упаковка)
+  // 010762390040598521E?Mfrf7Asahnh'#$1D'93d0Q1
+  // 010762390040598521E?Mfrf7Asahnh
+  Code := Driver.GetMarkCode('010762390040598521E?Mfrf7Asahnh'#$1D'93d0Q1');
+  CheckEquals('010762390040598521E?Mfrf7Asahnh', Code, 'Code.11');
 end;
 
 initialization
