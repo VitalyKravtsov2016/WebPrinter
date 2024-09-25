@@ -14,8 +14,10 @@ type
   { TLogParser }
 
   TLogParser = class(TTestCase)
-  published
+  private
     procedure ParseText;
+  published
+    procedure ParseText2;
   end;
 
 implementation
@@ -44,7 +46,7 @@ begin
   Lines := TTntStringList.Create;
   Report := TTntStringList.Create;
   try
-    Lines.LoadFromFile('SHTRIH-M-OPOS-1_2024.08.12.log');
+    Lines.LoadFromFile('SHTRIH-M-OPOS-1_2024.09.22.log');
 
     for i := 0 to Lines.Count-1 do
     begin
@@ -116,6 +118,61 @@ begin
       if Pos('CashInECRAmount', line) <> 0 then
       begin
         Report.add(line);
+      end;
+
+      if Pos('total_sale_count', line) <> 0 then
+      begin
+        Report.add(line);
+      end;
+
+
+    end;
+    Report.SaveToFile('Report.txt');
+  finally
+    Lines.Free;
+    Report.Free;
+  end;
+end;
+
+procedure TLogParser.ParseText2;
+var
+  i: Integer;
+  Line: WideString;
+  Index: Integer;
+  Lines: TTntStrings;
+  Report: TTntStrings;
+  Total: Int64;
+  CashReceipt: Int64;
+  CashReceipts: Int64;
+  IsRefund: Boolean;
+  RecTotal: Int64;
+  CashAmount: Int64;
+begin
+  DeleteFile('Report.txt');
+
+  IsRefund := False;
+  CashReceipt := 0;
+  CashReceipts := 0;
+  Lines := TTntStringList.Create;
+  Report := TTntStringList.Create;
+  try
+    Lines.LoadFromFile('SHTRIH-M-OPOS-1_2024.09.22.log');
+
+    for i := 0 to Lines.Count-1 do
+    begin
+      Line := Lines[i];
+
+      if Pos('PrintRecItemRefund', Line) <> 0 then
+      begin
+        IsRefund := True;
+      end;
+
+      if Pos('EndFiscalReceipt(False)=0', Line) <> 0 then
+      begin
+        CashReceipts := CashReceipts + CashReceipt;
+        Report.Add(Line);
+        CashReceipt := 0;
+        IsRefund := False;
       end;
 
       if Pos('total_sale_count', line) <> 0 then

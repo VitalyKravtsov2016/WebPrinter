@@ -23,8 +23,8 @@ type
   TWebPrinterImplTest = class(TTestCase)
   private
     FDriver: TWebPrinterImpl;
+
     procedure OpenClaimEnable;
-    property Driver: TWebPrinterImpl read FDriver;
     procedure ClaimDevice;
     procedure EnableDevice;
     procedure OpenService;
@@ -35,6 +35,8 @@ type
     procedure PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
     procedure PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
     procedure CheckCashDrawerRequest(const Request: TWPRequest);
+
+    property Driver: TWebPrinterImpl read FDriver;
   protected
     procedure Setup; override;
     procedure TearDown; override;
@@ -60,6 +62,7 @@ type
     procedure TestItemPercentDiscount;
     procedure TestItemAmountDiscount;
     procedure TestMarkCode;
+    procedure TestErrorOnCreateOrder;
   end;
 
 implementation
@@ -651,7 +654,6 @@ end;
 procedure TWebPrinterImplTest.TestTotalizers;
 var
   pString: WideString;
-  DayResult: TWPDayResult;
 begin
   FDriver.Params.CashInAmount := 3454.78;
   FDriver.Params.CashOutAmount := 234.32;
@@ -660,11 +662,10 @@ begin
   FDriver.Params.SalesAmountCard := 9123.45;
   FDriver.Params.RefundAmountCash := 8213.34;
   FDriver.Params.RefundAmountCard := 83.45;
-  DayResult := FDriver.Printer.CloseDayResponse2.result.data;
-  DayResult.total_sale_cash := 12345;
-  DayResult.total_sale_card := 23456;
-  DayResult.total_refund_cash := 123;
-  DayResult.total_refund_card := 45678;
+  FDriver.DayResult.total_sale_cash := 12345;
+  FDriver.DayResult.total_sale_card := 23456;
+  FDriver.DayResult.total_refund_cash := 123;
+  FDriver.DayResult.total_refund_card := 45678;
 
   //123.45-1.23+3454.78-234.32
 
@@ -734,8 +735,6 @@ begin
 end;
 
 procedure TWebPrinterImplTest.PrintSalesReceipt(Amount, CashAmount, CardAmount: Currency);
-var
-  DayResult: TWPDayResult;
 begin
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
   FptrCheck(Driver.BeginFiscalReceipt(True));
@@ -745,14 +744,11 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
 
   CashAmount := Amount - CardAmount;
-  DayResult := FDriver.Printer.CloseDayResponse2.result.data;
-  DayResult.total_sale_cash := DayResult.total_sale_cash + Round(CashAmount * 100);
-  DayResult.total_sale_card := DayResult.total_sale_card + Round(CardAmount * 100);
+  FDriver.DayResult.total_sale_cash := FDriver.DayResult.total_sale_cash + Round(CashAmount * 100);
+  FDriver.DayResult.total_sale_card := FDriver.DayResult.total_sale_card + Round(CardAmount * 100);
 end;
 
 procedure TWebPrinterImplTest.PrintRefundReceipt(Amount, CashAmount, CardAmount: Currency);
-var
-  DayResult: TWPDayResult;
 begin
   Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_REFUND);
   FptrCheck(Driver.BeginFiscalReceipt(True));
@@ -762,9 +758,8 @@ begin
   FptrCheck(Driver.EndFiscalReceipt(False));
 
   CashAmount := Amount - CardAmount;
-  DayResult := FDriver.Printer.CloseDayResponse2.result.data;
-  DayResult.total_refund_cash := DayResult.total_refund_cash + Round(CashAmount * 100);
-  DayResult.total_refund_card := DayResult.total_refund_card + Round(CardAmount * 100);
+  FDriver.DayResult.total_refund_cash := FDriver.DayResult.total_refund_cash + Round(CashAmount * 100);
+  FDriver.DayResult.total_refund_card := FDriver.DayResult.total_refund_card + Round(CardAmount * 100);
 end;
 
 procedure TWebPrinterImplTest.TestCashInECRTotalizer;
@@ -779,7 +774,6 @@ procedure TWebPrinterImplTest.TestCashInECRTotalizer;
   end;
 
 begin
-  FDriver.TestMode := False;
   FDriver.Params.CashInAmount := 0;
   FDriver.Params.CashOutAmount := 0;
   SaveParameters(FDriver.Params, 'DeviceName', FDriver.Logger);
@@ -809,9 +803,6 @@ end;
 
 procedure TWebPrinterImplTest.TestTotalizers2;
 begin
-  FDriver.TestMode := False;
-  FDriver.Printer.TestMode := True;
-
   OpenClaimEnable;
   FDriver.Params.SalesAmountCash := 0;
   FDriver.Params.SalesAmountCard := 0;
@@ -1179,7 +1170,50 @@ begin
   // 010762390040598521E?Mfrf7Asahnh
   Code := Driver.GetMarkCode('010762390040598521E?Mfrf7Asahnh'#$1D'93d0Q1');
   CheckEquals('010762390040598521E?Mfrf7Asahnh', Code, 'Code.11');
+
+  // 00000047801110tuO-i/5bzhYb2ti
+  // 00000047801110tuO-i/5
+  Code := Driver.GetMarkCode('00000047801110tuO-i/5bzhYb2ti');
+  CheckEquals('00000047801110tuO-i/5', Code, 'Code.12');
 end;
+
+procedure TWebPrinterImplTest.TestErrorOnCreateOrder;
+begin
+  OpenClaimEnable;
+  Driver.Printer.DayOpened := True;
+  // Sale count not changed
+  FptrCheck(Driver.ResetPrinter);
+  Driver.Printer.TestMode := True;
+  Driver.Printer.TestReadZReport := True;
+  Driver.Printer.ResponseJson := ReadFileData('infoError.json');
+  Driver.DayResult.total_refund_count := 0;
+  Driver.DayResult.total_sale_count := 0;
+  Driver.Printer.CloseDayResponse2.result.data.total_refund_count := 0;
+  Driver.Printer.CloseDayResponse2.result.data.total_sale_count := 0;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 10, 100, 'רע'));
+  FptrCheck(Driver.PrintRecTotal(100, 100, '0'));
+  CheckEquals(OPOS_E_EXTENDED, Driver.EndFiscalReceipt(False), 'EndFiscalReceipt');
+  CheckEquals(OPOS_E_EXTENDED, Driver.GetPropertyNumber(PIDX_ResultCode), 'ResultCode');
+  CheckEquals(102, Driver.GetPropertyNumber(PIDX_ResultCodeExtended), 'ResultCodeExtended');
+  CheckEquals('FISCAL_MODULE_NOT_INITIALIZED', Driver.GetPropertyString(PIDXFptr_ErrorString), 'ErrorString');
+  // Sale not changed
+  FptrCheck(Driver.ResetPrinter);
+  Driver.Printer.TestMode := True;
+  Driver.Printer.TestReadZReport := True;
+  Driver.Printer.ResponseJson := ReadFileData('infoError.json');
+  Driver.DayResult.total_refund_count := 0;
+  Driver.DayResult.total_sale_count := 0;
+  Driver.Printer.CloseDayResponse2.result.data.total_refund_count := 0;
+  Driver.Printer.CloseDayResponse2.result.data.total_sale_count := 1;
+  Driver.SetPropertyNumber(PIDXFptr_FiscalReceiptType, FPTR_RT_SALES);
+  FptrCheck(Driver.BeginFiscalReceipt(True));
+  FptrCheck(Driver.PrintRecItem('Item 1', 100, 1000, 10, 100, 'רע'));
+  FptrCheck(Driver.PrintRecTotal(100, 100, '0'));
+  FptrCheck(Driver.EndFiscalReceipt(False));
+end;
+
 
 initialization
   RegisterTest('', TWebPrinterImplTest.Suite);

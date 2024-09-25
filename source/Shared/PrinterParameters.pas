@@ -241,7 +241,7 @@ begin
   // VatRates
   for i := 0 to VatRates.Count-1 do
   begin
-    VatRate := VatRates[i];
+    VatRate := VatRates[i];     
     Logger.Debug(Format('VAT: code=%d, rate=%.2f, name="%s"', [
       VatRate.Code, VatRate.Rate, VatRate.Name]));
   end;

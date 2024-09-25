@@ -373,10 +373,11 @@ begin
 end;
 
 procedure TWebPrinterTest2.CheckTimePastError;
-var
-  Data: WideString;
 begin
 (*
+var
+  Data: WideString;
+
   CheckPrintZReport;
   if FPrinter.OpenFiscalDay2(GetPrinterDate).error.code <> 0 then Break;
   Data := FPrinter.OpenFiscalDay(Now);

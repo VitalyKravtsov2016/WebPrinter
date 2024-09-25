@@ -36,6 +36,7 @@ type
     FPrinter: TWebPrinter;
     FReceipt: TCustomReceipt;
     FParams: TPrinterParameters;
+    FDayResult: TWPDayResult;
     FOposDevice: TOposServiceDevice19;
     FPrinterState: TFiscalPrinterState;
 
@@ -56,6 +57,7 @@ type
     procedure OpenCashDrawer;
     function GetCashInECRAmount: Currency;
     procedure AddMarkCodes(Labels, MarkCodes: TStrings);
+    function IsReceiptCommitted: Boolean;
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -78,6 +80,7 @@ type
 
     property Printer: TWebPrinter read FPrinter;
     property Receipt: TCustomReceipt read FReceipt;
+    property DayResult: TWPDayResult read FDayResult;
     property PrinterState: Integer read GetPrinterState write SetPrinterState;
   private
     FPostLine: WideString;
@@ -359,6 +362,7 @@ begin
   FOposDevice.ErrorEventEnabled := False;
   FPrinterState := TFiscalPrinterState.Create;
   FTLVItems := TTLVItems.Create;
+  FDayResult := TWPDayResult.Create;
 end;
 
 destructor TWebPrinterImpl.Destroy;
@@ -373,6 +377,7 @@ begin
   FTLVItems.Free;
   FOposDevice.Free;
   FPrinterState.Free;
+  FDayResult.Free;
   FLogger := nil;
   inherited Destroy;
 end;
@@ -874,10 +879,7 @@ begin
 end;
 
 function TWebPrinterImpl.GetCashInECRAmount: Currency;
-var
-  DayResult: TWPDayResult;
 begin
-  DayResult := FPrinter.CloseDayResponse2.result.data;
   Result :=
     DayResult.total_sale_cash/100 -
     DayResult.total_refund_cash/100 +
@@ -885,12 +887,8 @@ begin
 end;
 
 function TWebPrinterImpl.ReadCashRegister(RegID: Integer): Currency;
-var
-  DayResult: TWPDayResult;
 begin
   Result := 0;
-  DayResult := FPrinter.CloseDayResponse2.result.data;
-
   case RegID of
     // 241 Ц накопление наличности в кассе;
     241: Result := GetCashInECRAmount;
@@ -1095,7 +1093,6 @@ function TWebPrinterImpl.GetData(DataItem: Integer; out OptArgs: Integer;
   out Data: WideString): Integer;
 var
   Amount: Currency;
-  DayResult: TWPDayResult;
 begin
   try
     case DataItem of
@@ -1105,7 +1102,6 @@ begin
       FPTR_GD_DAILY_TOTAL: Data := AmountToOutStr(0);
       FPTR_GD_GRAND_TOTAL:
       begin
-        DayResult := FPrinter.CloseDayResponse2.result.data;
         Amount := DayResult.total_sale_cash/100 - DayResult.total_refund_cash/100;
         Amount := Amount + Params.CashInAmount - Params.CashOutAmount;
         Data := AmountToOutStr(Amount);
@@ -1115,7 +1111,6 @@ begin
       FPTR_GD_NOT_PAID: Data := AmountToOutStr(0);
       FPTR_GD_RECEIPT_NUMBER:
       begin
-        DayResult := FPrinter.CloseDayResponse2.result.data;
         Data := IntToStr(DayResult.total_sale_count);
       end;
       FPTR_GD_REFUND: Data := AmountToOutStr(0);
@@ -1912,9 +1907,12 @@ end;
 
 procedure TWebPrinterImpl.UpdateZReport;
 begin
+  if TestMode then Exit;
+
   FPrinter.SaveState;
   try
-    FPrinter.ReadZReport;
+    FDayResult.Assign(FPrinter.ReadZReport.result.data);
+    Logger.Debug('CashInECRAmount: ' + AmountToStr(GetCashInECRAmount));
   except
     on E: Exception do
     begin
@@ -2622,17 +2620,46 @@ begin
     // Apply receipt fields
     UpdateReceiptFields(Order, Receipt.JsonFields);
 
-    if receipt.RecType in [rtSell, rtRetBuy] then
-    begin
-      FPrinter.CreateOrder(Order);
-    end else
-    begin
-      FPrinter.ReturnOrder(Order);
+    try
+      if receipt.RecType in [rtSell, rtRetBuy] then
+      begin
+        FPrinter.CreateOrder(Order);
+      end else
+      begin
+        FPrinter.ReturnOrder(Order);
+      end;
+    except
+      on E: Exception do
+      begin
+        if not IsReceiptCommitted then raise;
+      end;
     end;
     UpdateZReport;
   finally
     Order.Free;
   end;
+end;
+
+function TWebPrinterImpl.IsReceiptCommitted: Boolean;
+var
+  DayResult: TWPDayResult;
+begin
+  Result := False;
+  FPrinter.SaveState;
+  try
+    DayResult := FPrinter.ReadZReport.result.data;
+    Result :=
+      (DayResult.total_refund_count > FDayResult.total_refund_count) or
+      (DayResult.total_sale_count > FDayResult.total_sale_count);
+
+    FDayResult.Assign(DayResult);
+  except
+    on E: Exception do
+    begin
+      Logger.Error(E.Message);
+    end;
+  end;
+  FPrinter.LoadState;
 end;
 
 procedure TWebPrinterImpl.AddMarkCodes(Labels, MarkCodes: TStrings);

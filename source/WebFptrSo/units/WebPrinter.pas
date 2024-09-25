@@ -814,6 +814,8 @@ type
   private
     FLogger: ILogFile;
     FTestMode: Boolean;
+    FTestReadZReport: Boolean;
+
     FDayOpened: Boolean;
     FTimeDiff: TDateTime;
     FAddress: WideString;
@@ -879,6 +881,7 @@ type
     property Info: TWPInfoCommand read FInfo;
     property Transport: TIdHTTP read GetTransport;
     property TestMode: Boolean read FTestMode write FTestMode;
+    property TestReadZReport: Boolean read FTestReadZReport write FTestReadZReport;
     property Address: WideString read FAddress write FAddress;
     property TimeDiff: TDateTime read FTimeDiff write FTimeDiff;
     property DayOpened: Boolean read FDayOpened write FDayOpened;
@@ -888,10 +891,10 @@ type
     property ResponseJson: WideString read FResponseJson write FResponseJson;
     property OpenDayResponse: TWPOpenDayResponse read FOpenDayResponse;
     property CloseDayResponse: TWPCloseDayResponse read FCloseDayResponse;
-    property CloseDayResponse2: TWPCloseDayResponse2 read FCloseDayResponse2;
     property ConnectTimeout: Integer read FConnectTimeout write FConnectTimeout;
     property CreateOrderResponse: TWPCreateOrderResponse read FCreateOrderResponse;
     property Requests: TWPRequests read FRequests;
+    property CloseDayResponse2: TWPCloseDayResponse2 read FCloseDayResponse2;
   end;
 
 function WPDateTimeToStr(Time: TDateTime): string;
@@ -2103,6 +2106,12 @@ function TWebPrinter.ReadZReport: TWPCloseDayResponse2;
 var
   JsonText: WideString;
 begin
+  if TestReadZReport then
+  begin
+    Result := FCloseDayResponse2;
+    Exit;
+  end;
+
   JsonText := GetJson(GetAddress + '/zreport/info/');
   JsonToObject(JsonText, FCloseDayResponse2);
   if not FCloseDayResponse2.result.is_success then
@@ -2252,7 +2261,7 @@ begin
     begin
       if FCreateOrderResponse.error.code = WP_ERROR_RECEIPT_TIME_PAST then
       begin
-        // Задержка в 1 секунду - время запроссов должно оттличаться на 1 секунду
+        // Задержка в 1 секунду - время запросов должно отличаться на 1 секунду
         Sleep(1000);
       end else
       begin
