@@ -19,7 +19,7 @@ uses
   ReceiptItem, StringUtils, DebugUtils, VatRate, FileUtils,
   PrinterTypes, DirectIOAPI, PrinterParametersReg, WebPrinter,
   WebFptrSO_TLB, MathUtils, ItemUnit, JsonUtils, uLkJSON, TLVItem,
-  RegExpr;
+  MarkCode;
 
 const
   AmountDecimalPlaces = 2;
@@ -76,7 +76,6 @@ type
     function AmountToStrEq(Value: Currency): AnsiString;
     function AmountToOutStr(Value: Currency): AnsiString;
     function CreateReceipt(FiscalReceiptType: Integer): TCustomReceipt;
-    function GetMarkCode(const MarkCode: AnsiString): AnsiString;
 
     property Printer: TWebPrinter read FPrinter;
     property Receipt: TCustomReceipt read FReceipt;
@@ -2669,43 +2668,6 @@ begin
   for i := 0 to MarkCodes.Count-1 do
   begin
     Labels.Add(GetMarkCode(MarkCodes[i]));
-  end;
-end;
-
-function FindRegExpr(const ARegExpr, AInputStr: AnsiString;
-  var S: AnsiString): Boolean;
-var
-  R: TRegExpr;
-begin
-  S := AInputStr;
-  R := TRegExpr.Create;
-  try
-    R.Expression := ARegExpr;
-    Result := R.Exec (AInputStr);
-    if Result then
-      S := Copy(AInputStr, 1, R.MatchLen[0]);
-  finally
-    R.Free;
-  end;
-end;
-
-function TWebPrinterImpl.GetMarkCode(const MarkCode: AnsiString): AnsiString;
-var
-  S: AnsiString;
-begin
-  Result := StringReplace(MarkCode, #$1D, '', [rfReplaceAll, rfIgnoreCase]);
-  if FindRegExpr('^01[0-9]{14}', Result, S) then
-  begin
-    if FindRegExpr('^01[0-9]{14}21.{7,20}93', Result, S) or
-      FindRegExpr('^01[0-9]{14}21.{7,20}91', Result, S) then
-    begin
-      Result := Copy(S, 1, Length(S)-2);
-    end;
-  end else
-  begin
-    Result := Copy(Result, 1, 21);
-    if Length(Result) < 14 then
-      Result := StringOfChar('0', 14-Length(Result)) + Result;
   end;
 end;
 

@@ -53,7 +53,8 @@ uses
   WebPrinter in 'units\WebPrinter.pas',
   VatRate in '..\Shared\VatRate.pas',
   uLkJSON in '..\Shared\uLkJSON.pas',
-  TLVItem in 'units\TLVItem.pas';
+  TLVItem in 'units\TLVItem.pas',
+  MarkCode in 'units\MarkCode.pas';
 
 exports
   DllGetClassObject,

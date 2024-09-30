@@ -53,7 +53,8 @@ uses
   WebFptrSO_TLB in '..\..\source\WebFptrSo\WebFptrSO_TLB.pas',
   duLogFile in 'units\duLogFile.pas',
   duWebPrinterImpl in 'units\duWebPrinterImpl.pas',
-  TLVItem in '..\..\source\WebFptrSo\units\TLVItem.pas';
+  TLVItem in '..\..\source\WebFptrSo\units\TLVItem.pas',
+  MarkCode in '..\..\source\WebFptrSo\units\MarkCode.pas';
 
 {$R *.RES}
 

@@ -11,7 +11,7 @@ uses
   TntClasses,
   // This
   CustomReceipt, ReceiptItem, gnugettext, WException, MathUtils,
-  TextDocument, PrinterTypes;
+  TextDocument, PrinterTypes, MarkCode;
 
 const
   MaxPayments = 4;
@@ -678,6 +678,7 @@ end;
 
 procedure TSalesReceipt.AddMarkCode(const MarkCode: string);
 begin
+  CheckMarkCode(MarkCode);
   FMarkCodes.Add(MarkCode);
 end;
 

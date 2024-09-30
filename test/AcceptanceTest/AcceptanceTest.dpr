@@ -53,7 +53,8 @@ uses
   SMFiscalPrinter in '..\..\source\Opos\SMFiscalPrinter.pas',
   OposFiscalPrinter_1_13_Lib_TLB in '..\..\source\Opos\OposFiscalPrinter_1_13_Lib_TLB.pas',
   TLVItem in '..\..\source\WebFptrSo\units\TLVItem.pas',
-  duWebPrinter in 'units\duWebPrinter.pas';
+  duWebPrinter in 'units\duWebPrinter.pas',
+  MarkCode in '..\..\source\WebFptrSo\units\MarkCode.pas';
 
 {$R *.RES}
 
