@@ -806,6 +806,7 @@ end;
 procedure TWebPrinterImplTest.TestTotalizers2;
 begin
   OpenClaimEnable;
+
   FDriver.Params.SalesAmountCash := 0;
   FDriver.Params.SalesAmountCard := 0;
   FDriver.Params.RefundAmountCash := 0;
@@ -817,6 +818,8 @@ begin
   CheckEquals(0, FDriver.Params.RefundAmountCash, 'RefundAmountCash');
   CheckEquals(0, FDriver.Params.RefundAmountCard, 'RefundAmountCard');
 
+  FDriver.Printer.CloseDayResponse.error.code := 0;
+  FDriver.Printer.CloseDayResponse.is_success := True;
   FDriver.Printer.CloseDayResponse.data.total_sale_cash := 662345;
   FDriver.Printer.CloseDayResponse.data.total_sale_card := 100000;
   FDriver.Printer.CloseDayResponse.data.total_refund_cash := 0;

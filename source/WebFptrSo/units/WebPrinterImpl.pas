@@ -58,6 +58,7 @@ type
     function GetCashInECRAmount: Currency;
     procedure AddMarkCodes(Labels, MarkCodes: TStrings);
     function IsReceiptCommitted: Boolean;
+    procedure CloseDay(DayResult: TWPDayResult);
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -1824,11 +1825,27 @@ begin
   Request.Free;
 end;
 
+procedure TWebPrinterImpl.CloseDay(DayResult: TWPDayResult);
+begin
+  // Clear Cash in and out
+  Params.CashInAmount := 0;
+  Params.CashOutAmount := 0;
+  Params.SalesAmountCash := Params.SalesAmountCash + DayResult.total_sale_cash/100;
+  Params.SalesAmountCard := Params.SalesAmountCard + DayResult.total_sale_card/100;
+  Params.RefundAmountCash := Params.RefundAmountCash + DayResult.total_refund_cash/100;
+  Params.RefundAmountCard := Params.RefundAmountCard + DayResult.total_refund_card/100;
+  SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
+end;
+
 function TWebPrinterImpl.PrintZReport: Integer;
 var
+  DayResult: TWPDayResult;
   Request: TWPCloseDayRequest;
   Response: TWPCloseDayResponse;
+  Response2: TWPCloseDayResponse;
 begin
+  DayResult := TWPDayResult.Create;
+  Response := TWPCloseDayResponse.Create;
   Request := TWPCloseDayRequest.Create;
   try
     CheckState(FPTR_PS_MONITOR);
@@ -1838,23 +1855,34 @@ begin
     Request.name := GetReportName('Z ÎÒ×¨Ò');
     AddReportLines(Request);
 
+    DayResult.Assign(FPrinter.ReadZReport.result.data);
+
     FPrinter.RaiseErrors := False;
-    try
-      Response := FPrinter.PrintZReport(Request);
-    finally
-      FPrinter.RaiseErrors := True;
+    Response.Assign(FPrinter.PrintZReport(Request));
+    if Response.is_success then
+    begin
+      CloseDay(Response.data);
     end;
+
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    // Error 2, Read timed out
+    // It is unknown if day closed on server or not
+    // Read day result and check if document number increased by 1
+    //
+    ///////////////////////////////////////////////////////////////////////////
+
+    if (not Response.is_success) and (Response.error.code = 2) then
+    begin
+      Response2 := Printer.ReadZReport.result;
+      if Response2.is_success and (Response2.data.number = (DayResult.number + 1)) then
+      begin
+        CloseDay(DayResult);
+      end;
+    end;
+
     if Response.error.code <> WP_ERROR_CURRENT_ZREPORT_IS_EMPTY then
       FPrinter.CheckForError(Response.error);
-
-    // Clear Cash in and out
-    Params.CashInAmount := 0;
-    Params.CashOutAmount := 0;
-    Params.SalesAmountCash := Params.SalesAmountCash + Response.data.total_sale_cash/100;
-    Params.SalesAmountCard := Params.SalesAmountCard + Response.data.total_sale_card/100;
-    Params.RefundAmountCash := Params.RefundAmountCash + Response.data.total_refund_cash/100;
-    Params.RefundAmountCard := Params.RefundAmountCard + Response.data.total_refund_card/100;
-    SaveUsrParameters(Params, FOposDevice.DeviceName, Logger);
 
     UpdateZReport;
     Result := ClearResult;
@@ -1862,6 +1890,9 @@ begin
     on E: Exception do
       Result := HandleException(E);
   end;
+  Printer.RaiseErrors := True;
+  DayResult.Free;
+  Response.Free;
   Request.Free;
 end;
 

@@ -154,7 +154,7 @@ begin
   try
     Request.Time := FPrinter.Info.Data.current_time;
     Request.close_zreport := True;
-    Request.name := 'X מעקוע';
+    Request.name := 'Z מעקוע';
     Response := FPrinter.PrintZReport(Request);
     CheckEquals(True, Response.is_success, 'is_success');
   finally
