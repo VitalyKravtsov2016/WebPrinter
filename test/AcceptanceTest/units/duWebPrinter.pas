@@ -52,6 +52,7 @@ begin
 
   FPrinter := TWebPrinter.Create(FLogger);
   FPrinter.Address := 'http://fbox.ngrok.io'; // 8080 или 80
+  FPrinter.TimeCorrection := True;
   FPrinter.RaiseErrors := True;
 end;
 

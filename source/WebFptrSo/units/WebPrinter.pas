@@ -847,7 +847,9 @@ type
     procedure AddRequest(URL, Request, Response: WideString;
       IsGetRequest: Boolean);
   public
+    TimeCorrection: Boolean;
     TestPrinterDate: WideString;
+
     constructor Create(ALogger: ILogFile);
     destructor Destroy; override;
 
@@ -2364,7 +2366,10 @@ end;
 
 function TWebPrinter.GetPrinterDate: TDateTime;
 begin
-  Result := Now + FTimeDiff;
+  Result := Now;
+  if TimeCorrection then
+    Result := Now + FTimeDiff;
+
   //FLogger.Debug('GetPrinterDate: ' + WPDateTimeToStr(Result));
 end;
 

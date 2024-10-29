@@ -68,6 +68,7 @@ begin
   FDriver.Params.VatRates.Add(2, 12,  'ÍÄÑ 12%');
   FDriver.Params.VatRates.Add(10, 15,  'ÍÄÑ 15%');
   FDriver.Params.OpenCashbox := True;
+  FDriver.Printer.TimeCorrection := True;
   SaveParameters(FDriver.Params, TestDeviceName, FDriver.Logger);
 end;
 
