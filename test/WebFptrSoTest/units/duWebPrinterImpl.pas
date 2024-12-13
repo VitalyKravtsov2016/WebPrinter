@@ -372,7 +372,7 @@ begin
   Json := TlkJSON.ParseText(Driver.Printer.CreateOrderResponse.RequestJson);
   try
     Check(Json <> nil, 'Json = nil');
-    CheckEquals(13, Json.Count, 'Json.Count');
+    CheckEquals(11, Json.Count, 'Json.Count');
     CheckEquals('1', Json.Field['number'].Value, 'number');
     CheckEquals('order', Json.Field['receipt_type'].Value, 'receipt_type');
     CheckEquals('Cahier 1', Json.Field['cashier'].Value, 'cashier');
@@ -1026,7 +1026,7 @@ begin
 
   RequestJson := Driver.Printer.RequestJson;
   CheckNotEquals('', RequestJson, 'RequestJson');
-  //WriteFileData('ZeroReceiptOrderRequest.json', RequestJson);
+  //WriteFileData('ZeroReceiptOrderRequest2.json', RequestJson);
 
   Order := TWPOrder.Create;
   try

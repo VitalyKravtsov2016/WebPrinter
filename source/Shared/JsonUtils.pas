@@ -8,7 +8,7 @@ uses
   // Tnt
   TntClasses,
   //
-  uLkJSON;
+  uLkJSON, DebugUtils;
 
 
 type
@@ -825,7 +825,7 @@ begin
       end;
     end;
   else
-    Result := True;
+    Result := Instance.IsRequiredField(PropName);
   end;
 end;
 
@@ -907,10 +907,13 @@ begin
       end;
     end;
   else
-    WriteStr(Prefix + '"' + PropName + '":');
-    V := GetPropValue(Instance, PropInfo);
-    WriteWideString(LowerCase(VarToWideStr(V)));
-    Result := True;
+    if Instance.IsRequiredField(PropName) then
+    begin
+      WriteStr(Prefix + '"' + PropName + '":');
+      V := GetPropValue(Instance, PropInfo);
+      WriteWideString(LowerCase(VarToWideStr(V)));
+      Result := True;
+    end;
   end;
 end;
 
@@ -1164,7 +1167,7 @@ begin
     end;
   end;
 
-  if FStream.Size >= 4 then
+  if (FStream.Size-FStream.Position) >= 4 then
   begin
     SetLength(S, 4);
     FStream.ReadBuffer(S[1], 4);

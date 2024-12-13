@@ -1064,6 +1064,18 @@ end;
 
 function TWPOrder.IsRequiredField(const Field: WideString): Boolean;
 begin
+  if AnsiCompareText(Field, 'card_type') = 0 then
+  begin
+    Result := received_card <> 0;
+    Exit;
+  end;
+
+  if AnsiCompareText(Field, 'ppt_id') = 0 then
+  begin
+    Result := received_card <> 0;
+    Exit;
+  end;
+
   Result := not IsOptionalField(Field);
 end;
 
@@ -1522,10 +1534,14 @@ const
   OptionalFields: array [0..1] of string = (
     'type', 'data');
 begin
+  Result := True;
   for i := Low(OptionalFields) to High(OptionalFields) do
   begin
-    Result := AnsiCompareText(Field, OptionalFields[i]) = 0;
-    if Result then Break;
+    if AnsiCompareText(Field, OptionalFields[i]) = 0 then
+    begin
+      Result := False;
+      Break;
+    end;
   end;
 end;
 
