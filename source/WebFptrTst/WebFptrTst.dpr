@@ -97,7 +97,8 @@ uses
   duCalculator in '..\..\test\AcceptanceTest\units\duCalculator.pas',
   WebPrinter in '..\WebFptrSo\units\WebPrinter.pas',
   JsonUtils in '..\Shared\JsonUtils.pas',
-  uLkJSON in '..\Shared\uLkJSON.pas';
+  uLkJSON in '..\Shared\uLkJSON.pas',
+  fmuFptrSetPosID in 'Fmu\fmuFptrSetPosID.pas' {fmFptrSetPosId};
 
 {$R *.RES}
 {$R WindowsXP.RES}

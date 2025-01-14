@@ -25,7 +25,7 @@ uses
   fmuFptrTraining, fmuFptrReceiptTest,
   fmuPrintRecVoidItem, fmuPrintRecItemRefund, fmuPrintRecItemRefundVoid,
   fmuFptrStatistics, fmuFptrEvents, fmuFptrTest, fmuFptrThreadTest,
-  fmuFptrFiscalStorage, fmuFptrTest2,
+  fmuFptrFiscalStorage, fmuFptrTest2, fmuFptrSetPosID,
   DebugUtils;
 
 type
@@ -155,6 +155,7 @@ begin
   // Others
   AddPage(TfmFptrSlipInsertion);
   AddPage(TfmFptrFiscalDocument);
+  AddPage(TfmFptrSetPosID);
   AddPage(TfmFptrDate);
   AddPage(TfmFptrSetVatTable);
   AddPage(TfmFptrSetLine);
