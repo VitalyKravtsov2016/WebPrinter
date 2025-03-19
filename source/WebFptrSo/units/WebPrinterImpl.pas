@@ -59,6 +59,7 @@ type
     procedure AddMarkCodes(Labels, MarkCodes: TStrings);
     function IsReceiptCommitted: Boolean;
     procedure CloseDay(DayResult: TWPDayResult);
+    procedure LogServerStatus(const Data: TWPInfoResponse);
   public
     procedure Initialize;
     procedure CheckEnabled;
@@ -1115,7 +1116,7 @@ begin
       end;
       FPTR_GD_REFUND: Data := AmountToOutStr(0);
       FPTR_GD_REFUND_VOID: Data := AmountToOutStr(0);
-      FPTR_GD_Z_REPORT: Data := IntToStr(FPrinter.Info.Data.zreport_count);
+      FPTR_GD_Z_REPORT: Data := IntToStr(FDayResult.Number);
       FPTR_GD_FISCAL_REC: Data := AmountToOutStr(0);
       FPTR_GD_FISCAL_DOC,
       FPTR_GD_FISCAL_DOC_VOID,
@@ -2330,6 +2331,7 @@ begin
       begin
         FPrinter.Connect;
         UpdateZReport;
+        LogServerStatus(Printer.Info.Data);
 
         FOposDevice.PhysicalDeviceDescription := FOposDevice.PhysicalDeviceName +
           ' ' + FPrinter.DeviceDescription;
@@ -2340,6 +2342,27 @@ begin
     end;
     FOposDevice.DeviceEnabled := Value;
   end;
+end;
+
+procedure TWebPrinterImpl.LogServerStatus(const Data: TWPInfoResponse);
+begin
+  Logger.Debug(Logger.Separator);
+  Logger.Debug('Номер фискального модуля: ' + Data.terminal_id);
+  Logger.Debug('Версия аплета фискального модуля: ' + Data.applet_version);
+  Logger.Debug('Порядковый номер чека: ' + Data.current_receipt_seq);
+  Logger.Debug('Дата и время сервера: ' + Data.current_time);
+  Logger.Debug('Дата и время последней операции: ' + Data.last_operation_time);
+  Logger.Debug('Количество неотправленных чеков: ' + IntToStr(Data.receipt_count));
+  Logger.Debug('Максимальное количество чеков в смене: ' + IntToStr(Data.receipt_max_count));
+  Logger.Debug('Количество закрытых кассовых смен: ' + IntToStr(Data.zreport_count));
+  Logger.Debug('Максимальное количество кассовых смен: ' + IntToStr(Data.zreport_max_count));
+  Logger.Debug('Доступная постоянная память: ' + IntToStr(Data.available_persistent_memory));
+  Logger.Debug('Доступная память для сброса: ' + IntToStr(Data.available_reset_memory));
+  Logger.Debug('Доступная память для отмены выбора: ' + IntToStr(Data.available_deselect_memory));
+  Logger.Debug('Денежный ящик: ' + IntToStr(Data.cashbox_number));
+  Logger.Debug('Версия прошивки: ' + Data.version_code);
+  Logger.Debug('Обновление: ' + BoolToStr(Data.is_updated));
+  Logger.Debug(Logger.Separator);
 end;
 
 function TWebPrinterImpl.HandleDriverError(E: EDriverError): TOPOSError;

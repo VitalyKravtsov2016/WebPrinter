@@ -12,7 +12,7 @@ unit WebFptrSO_TLB;
 // ************************************************************************ //
 
 // PASTLWTR : 1.2
-// File generated on 30.09.2024 12:26:30 from Type Library described below.
+// File generated on 14.01.2025 14:33:06 from Type Library described below.
 
 // ************************************************************************  //
 // Type Lib: D:\Projects\WebPrinter\source\WebFptrSo\WebFptrSo.tlb (1)
