@@ -2627,7 +2627,7 @@ begin
     Order.ppt_id := 0;
 	  Order.change := Round2(Receipt.Change * 100);
 	  Order.Open_cashbox := Params.OpenCashbox and (Order.Received_cash <> 0);
-	  Order.Send_email := Receipt.CustomerEmail <> '';
+	  Order.Send_email := Receipt.CustomerEmail <> '';     
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;
     Order.qr_code := Receipt.QrCode;
