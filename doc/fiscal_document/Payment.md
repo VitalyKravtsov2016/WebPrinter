@@ -234,18 +234,14 @@ Operation for send fiscalization check to PayMe
 ```json
 {
     "payment_id": [Payment_id],
-    "receipt_id": [Number check],
     "qr_code": [URL cheka],
-    "fiscal_sign": [Fiscal priznak cheka]
 }
 ```
 **Content** :
 ```json
 {
     "payment_id":"63b5282a6f47f572807fd53e",
-    "receipt_id":"2421",
     "qr_code":"https://ofd.soliq.uz/check?t=UZ170703100597&r=2421&c=20230104121801&s=514343190161",
-    "fiscal_sign":"514343190161"
 }
 ```
 
@@ -518,7 +514,7 @@ Operation for create paymen via Humo PinPad
 **Content** :
 ```json
 {
-  "amount": 50000 (цена в сотых 00)
+  "amount": 1000 (цена в сотых 00)
 }
 ```
 
@@ -558,6 +554,92 @@ Univ. EMV POS 1.0.0/(MP) /675\n
 }
 ```
 
+# Humo / Универсальная отмена (в рамках 1 смены) через пинпад (Ingenico iPP 320, Lane 3000, Lane 7000) Humo
+
+Operation for create paymen via Humo PinPad
+
+**URL** : `/payment/xumo`
+
+**Method** : `POST`
+
+**Auth required** : NO
+## Request 
+```json
+{
+  "request_id": [Request ID / RRN с банковского слипа],
+  "amount": [Payment price],
+  "is_return": [true]
+}
+```
+**Content** :
+```json
+{
+  "request_id":408005356147,
+  "amount": 1000 (цена в сотых 00)
+  "is_return":"true"
+}
+```
+
+**Success example**
+**Code** : `200 OK`
+
+**Content** :
+```json
+{
+    "data": {
+        "message": "
+            ОБЫЧНЫЙ ТОВАР
+         IP OOO JETI ASPAN
+      TOSHKENT, BUNYODKOR 9 UY
+ID Терм.:34112204      Номер смены 1
+ID Орг.:011760574070401       Чек 14
+          Отмена (CANCEL)
+              ОДОБРЕНО
+         ОПЕРАЦИЯ ОТМЕНЕНА
+СУММА:                    10.00 UZS
+AID:A0860001000001   HUMO- Cless EMV
+Карта:HUMO
+        986018******9831:01
+Код авториз.:731333   Код ответа:400
+RRN(ссылка) :416311639412
+Дата:11/06/24 17:39:54
+Univ. EMV POS 1.0.0/(MP) /681
+                ***
+@humocardbot-информация по вашей
+карте
+====================================
+
+	"ppt_id": "416311639412"
+    },
+    "error": null,
+    "is_success": true
+}
+```
+
+# Humo / Сверка итогов терминал (Ingenico iPP 320, Lane 3000, Lane 7000) Humo
+
+Operation for reconciliation of results via Humo PinPad
+
+**URL** : `/payment/xumo_close`
+
+**Method** : `GET`
+
+**Auth required** : NO
+**Success example**
+**Code** : `200 OK`
+
+**Content** :
+```json
+{
+    "data": {
+        "message": "====================================\n        Отчет закрытия смены\n           Итоги совпали\nДата:08/07/24         Время:11:45:22\n             Тест humo\n           Краткий отчет\nТерминал:                   09110004\nДата:08/07/24         Время:11:45:23\n------------------------------------\n                 -\n           Отчет окончен\n====================================\n====================================\n        Отчет закрытия смены\n====================================\n           Сверка итогов\nДата:08/07/24         Время:11:45:26\n====================================\nТерминал ID: 00000031\nID магазина:  000000009002143\n           -0000000000.00\n           Итоги совпали\nДата:08/07/24         Время:11:45:27\n             Тест humo\n           Краткий отчет\nТерминал:                   00000031\nДата:08/07/24         Время:11:45:27\n------------------------------------\n                 -\n           Отчет окончен\n====================================\n",
+        "ppt_id": null
+    },
+    "error": null,
+    "is_success": true
+}
+```
+
 # UzCard / Оплата через терминал (PAX A35) UzCard
 
 Operation for create paymen via UzCard PinPad
@@ -587,24 +669,202 @@ Operation for create paymen via UzCard PinPad
 ```json
 {
     "data": {
-message=PAX A35 Uzcard POS v1.5.0
-Merchant: Technology-7
-Address: Tashkent, Uzbekistan
-Date/Time: 2023-11-10 12:39:48
-MID: 000000009052147
-TID: 00000166
-Operation: Payment
-Invoice: 140
-CARD: 626291******4571
-Card Holder:  /
-Total Amount: 50000
-Currency:  UZS
-Auth Code: 
-Resp Code: 000
-RRN: 010964712882
-PIN: The operation was confirmed with a pin code
-TVR: , TSI: 
-), error=null, isSuccess=true)
+        "message": "PAX A35 Uzcard POS v1.5.0\nMerchant: Technology-7\nAddress: Tashkent, Uzbekistan\n
+Date/Time: 2024-04-04 11:22:13\n
+MID: 000000009052147\n
+TID: 00000166\n
+Operation: Оплата\n
+Invoice: 474\nCARD: 626291******5674(БЕСКОНТАКТ(W))\n
+Card Holder: TCARD/ARCA\n
+Total Amount: 50000\n
+Currency:  UZS\n
+Auth Code: \n
+Resp Code: 000\n
+RRN: 010965628751\n
+PIN: \n
+TVR: , TSI: \n",
+        "ppt_id": "010965628751"
+    },
+    "error": null,
+    "is_success": true
+}
+```
 
+# UzCard / Возврат через пинпад PAX A35 UzCard
+
+Operation for create paymen via PAX A35 UzCard
+
+**URL** : `/payment/uzcard`
+
+**Method** : `POST`
+
+**Auth required** : NO
+## Request 
+```json
+{
+  "request_id": [Request RRN / Номер RRN с банковского слипа],
+  "amount": [Payment price],
+  "is_return": [true]
+}
+```
+**Content** :
+```json
+{
+  "request_id":010965270742,
+  "amount": 30000 (цена в сотых 00)
+  "is_return":"true"
+}
+```
+
+**Success example**
+**Code** : `200 OK`
+
+**Content** :
+```json
+{
+    "data": {
+        "message": "
+            OOO TEST TIME
+        Tashkent, Main str
+       БЕСКОНТАКТНАЯ ОПЕРАЦИЯ
+Номер операции:                  168
+Терминал:                   00000013
+Торговец:            000000900227899
+Версия ПО:        SKappay v1.7.0_rc2
+SN:                       2290268839
+RRN                     010968002727
+Дата             2025-03-07 14:54:27
+Карта               544081******5040
+Тип:               UZCARD-MASTERCARD
+ 
+ 
+              Возврат
+             500.00 UZS
+              Одобрено
+          Код ответа:000 
+, pptId=010968002727), error=null, isSuccess=true
+}
+```
+
+# UZCARD / Сверка итогов терминал (PAX A35) UZCARD
+
+Operation for reconciliation of results via Uzcard PinPad
+
+**URL** : `/payment/uzcard_close`
+
+**Method** : `GET`
+
+**Auth required** : NO
+**Success example**
+**Code** : `200 OK`
+
+**Content** :
+```json
+{
+    "data": {
+        "message": "====================================\n        Отчет закрытия смены\n           Итоги совпали\nДата:08/07/24         Время:11:45:22\n             Тест humo\n           Краткий отчет\nТерминал:                   09110004\nДата:08/07/24         Время:11:45:23\n------------------------------------\n                 -\n           Отчет окончен\n====================================\n====================================\n        Отчет закрытия смены\n====================================\n           Сверка итогов\nДата:08/07/24         Время:11:45:26\n====================================\nТерминал ID: 00000031\nID магазина:  000000009002143\n           -0000000000.00\n           Итоги совпали\nДата:08/07/24         Время:11:45:27\n             Тест humo\n           Краткий отчет\nТерминал:                   00000031\nДата:08/07/24         Время:11:45:27\n------------------------------------\n                 -\n           Отчет окончен\n====================================\n",
+        "ppt_id": null
+    },
+    "error": null,
+    "is_success": true
+}
+```
+
+# Scan2pay / Оплата через сервис Scan2pay
+
+Payment via Scan2pay service
+
+**URL** : `/payment/qr_pay`
+
+**Method** : `POST`
+
+**Auth required** : NO
+## Request 
+```json
+{
+  "amount": [Payment price multiplied by 100],
+  "order_id": [ORDER ID],
+  "print": [false if you don't need to print QR],
+  *"tip_card": [Card number for tips or null / Номер карты для чаевых или ноль],
+  *"tip_card_expire": [date expire card for tips or null / дата истечения срока действия карты для чаевых или null]
+  *"sms_phone_number": [send scan2pay url for payment via sms 998********* or null  /  отправить ссылку scan2pay для оплаты через смс 998********* или null]
+}
+```
+**Content** :
+```json
+{
+	"amount":500 (цена в сотых 00),
+	"order_id":"77777",
+	"print":false,
+    *"tip_card":"8600112991130444",
+    *"tip_card_expire":"0726"
+    *"sms_phone_number":"998998895989"
+}
+```
+
+## Response
+
+```json
+{
+    "data": {
+        "status": "successfully",
+        "message": "http://scan2pay.uz/7c545c1e-9a57-4a2f-80dc-b7686023ec04"
+    },
+    "error": null,
+    "is_success": true
+}
+```
+
+# Status payment Scan2pay / Статус оплаты Scan2pay
+
+Status payment via Scan2pay service
+
+**URL** : `/payment/qr_pay/status`
+
+**Method** : `POST`
+
+**Auth required** : NO
+## Request 
+```json
+{
+  "order_id": [ORDER ID]
+}
+```
+**Content** :
+```json
+{
+	"order_id":"77777"
+}
+```
+
+## Response payment has been completed
+
+```json
+{
+    "data": {
+        "status": "successfully",
+        "data": {
+            "uuid": "1c9389de-c41c-4148-8b46-5d666caffd89",
+            "order_id": "77777",
+            "device": "00000001",
+            "status": "success"
+        },
+        "message": null
+    },
+    "error": null,
+    "is_success": true
+}
+```
+
+**Error example There has been no payment yet**
+```json
+{
+    "data": null,
+    "error": {
+        "code": 105,
+        "message": "{\"status\":\"error\",\"message\":\"Transaction not found\"}HTTP Exception 404 Not Found",
+        "data": null
+    },
+    "is_success": false
 }
 ```

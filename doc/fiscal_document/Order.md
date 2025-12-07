@@ -27,9 +27,9 @@ Operation for create order / Продажа, аванс, кредит
    "product_price":[product_price multiplied by 100], 
    "vat":[nds_price multiplied by 100], 
    "vat_percent":[nds_percent],
-   "discount":[discount_price],
+   "discount":[discount_price multiplied by 100],
    "discount_percent":[discount_price_percent],
-   "other":[other_discount_prices  multiplied by 100],
+   "other":[other_payments  multiplied by 100],
    "labels":[marking_codes_list],
    "class_code":[product_class_code],
    "package_code":[package_code],
@@ -39,18 +39,21 @@ Operation for create order / Продажа, аванс, кредит
               "pinfl":"pinfl comision"
    }
    }
-], 
+],
+*"uuid":[your uuid number], 
 "time":[time_in_format yyyy-MM-dd HH:mm:ss],
 "cashier":[cashier_name], 
 "received_cash":[received_cash_price multiplied by 100], 
 "change":[change_price multiplied by 100], 
 "received_card":[received card price  multiplied by 100],
-"card_type":[card type personal (0) or corporate (1)],
+"card_type":[card type personal (2) or corporate (1)],
 "ppt_id":[ RRN number (ppt_id) in the slip response from the bank pinpad (Humo, Uzcard)],
-*"extra_info":{
-    "phone_number":[Phone_number from response Payme,Click,Uzum],
-    "qr_payment_id":[Payment_ID from response Payme,Click,Uzum],
-    "qr_payment_provider":[0141 - Payme, 0064 - Click, 0161 - Uzum]
+*"scan2pay_paid":[If the payment was made through the service Scan2Pay true or false],
+"extra_info":{
+    *"phone_number":[Phone_number from response Payme,Click,Uzum],
+    *"qr_payment_id":[Payment_ID from response Payme,Click,Uzum],
+    *"qr_payment_provider":[0141 - Payme, 0064 - Click, 0161 - Uzum, 0187 - Anor bank],
+    *"scan2pay_id":[uuid from /payment/qr_pay/status]
           },
 *"send_email":[Send order data to special email],
 *"email":[Email for sending order data],
@@ -90,11 +93,11 @@ Operation for create order / Продажа, аванс, кредит
 |                    |        | Название единиц измерения взять с сайта tasnif.soliq.uz                        |                                             |
 | price              | Long   | Price/Сумма                                                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | product_price      | Long   | Product price/Цена за единицу товара/услуги                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-| vat                | Long   | Nds price/Сумма НДС                                                            | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-| vat_percent        | Integer| Nds percent/Процент НДС                                                        | 0 = 0%, 12 = 12%                            |
+| vat                | Long   | VAT price/Сумма НДС/ Расчет НДС (VAT calculate) Price*12/112                   | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| vat_percent        | Integer| VAT percent/Процент НДС                                                        | 0 = 0%, 12 = 12%, null - БЕЗ НДС            |
 | discount           | Long   | Discount price/Цена cкидки                                                     | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | discount_percent   | Integr | Discount price percent/Процент скидки                                          | 0 = 0%, 10 = 10%, 15 = 15%, 20 = 20%        |
-| other              | Long   | Other discount prices/Другая скидка                                            | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| other              | Long   | Other payments (gift card)/Другая оплата (карта лояльности, подарочные карты)  | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | labels             | String | Marking codes list/Код маркировки (значеник кода DataMatrix). К примеру если   | 05367567230048c?eN1(o0029                   |
 |                    |        | кол-во товаров с маркир. будет 5 шт, то в amount указываем 1 шт                |                                             |
 | class_code         | Long   | Product class code/Код ИКПУ (МХИК) (tasnif.soliq.uz)                           | 10999001001000000                           |
@@ -102,15 +105,19 @@ Operation for create order / Продажа, аванс, кредит
 | owner_type         | Integer| Owner_type/ Код происхождения товара (одно значение либо 0, либо 1, либо 2     | 0,1,2                                       |
 |                    |        | (0-"Куплено и продано" / 1-"Собственное производство" / 2-"Поставщик услуг")   |                                             |
 | comission_info     | Long   | Sign commission check TIN, PINFL/Признак комиссионный чек ИНН, ПИНФЛ           | 123456789, 12345678912345                   |
+| uuid               | String | Your UUID / Ваш UUID                                                           | abc123                                      |
 | time               | Double | Time in format yyyy-MM-dd hh:mm:ss/Дата и время в формате yyyy-MM-dd hh:mm:ss  | 2021-09-08 22:54:59                         |
 | cashier            | String | Cashier name/Имя кассира                                                       | Админ                                       |
 | received_cash      | Long   | Received cash price/Оплата наличными                                           | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | change             | Long   | Change price/Сдача                                                             | 100                                         |
 | received_card      | Long   | Received cash price/Оплата банковской картой,Payme,Click,UZUM                  | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-| card_type          | Integer| Card type(personal or corporate) / Тип карты (личная или корпоративная)        | 0,1                                         |
-|                    |        | 0 - личная карта , 1 - корпоративная карта                                     |                                             |
-| ppt_id             | Long   | Номер RRN (ppt_id) в слипе ответе от банквоского пинпада (Humo, Uzcard)        | 123456789012                                |
-| open_cashbox       | String | Open cashbox device/Открытие денежнего ящика                                   | true = open, falce = not open               |
+| card_type          | Integer| Card type(personal or corporate) / Тип карты (личная или корпоративная)        | 1,2                                         |
+|                    |        | 2 - личная карта , 1 - корпоративная карта                                     |                                             |
+| ppt_id             | Integer| Номер RRN (ppt_id) в слипе ответе от банквоского пинпада (Humo, Uzcard)        | 123456789012                                |
+| scan2pay_paid      | Bool   | If the payment was made through the service Scan2Pay true or false             | true or false                               |
+|                    |        | Если оплата была через сервис Scan2Pay true или false                          |                                             |
+| scan2pay_id        | String | uuid from /payment/qr_pay/status / uuid из /payment/qr_pay/status              | 59bcc56b-1fcf-4752-9f5b-a3fffdf525ae        |
+| open_cashbox       | String | Open cashbox device/Открытие денежнего ящика                                   | true = open, false = not open               |
 | type               | String | Banner type - {text, barcode, qr_code}/Штрих-код, QR-код                       | barcode                                     |
 | data               | String | Banner text/Рекламный текст                                                    | Скидка на следующую покупку 5%              |
 | prices / name      | String | Price name/Наименование вида оплаты                                            | USD, VISA, MasterCard, Click, Payme, Uzum   |
@@ -149,14 +156,22 @@ Operation for create order / Продажа, аванс, кредит
               "pinfl":"12345678912345"
     }
     }
-  ], 
+  ],
+*"uuid":"123",
 "time":"2021-04-07 12:52:02",
 "cashier":"Admin", 
 "received_cash":50000, 
 "change":0, 
 "received_card":0,
-"card_type":0,
+"card_type":2,
 "ppt_id":"123456789012",
+*"scan2pay_paid":true,
+"extra_info":{
+    *"phone_number":"998911234569",
+    *"qr_payment_id":"123456789id12"
+    *"qr_payment_provider":"0141"   
+    *"scan2pay_id":"59bcc56b-1fcf-4752-9f5b-a3fffdf525ae"
+      },
 *"open_cashbox":true,
 *"send_email":true,
 *"email":"abdullo21113@gmail.com",
@@ -281,6 +296,7 @@ Operations for refuse order / Возврат
    "name":[product name String], 
    "barcode":[product barcode String], 
    "amount":[product amount  multiplied to 1000],
+   "unit_name":[unit name],
    "price":[product_price * amount],
    "product_price":[product_price multiplied to 100], 
    "vat":[nds price multiplied to 100], 
@@ -297,15 +313,21 @@ Operations for refuse order / Возврат
    }
   
    }
-], 
+],
+*"uuid":[your uuid number],
 "qr_code":[link to web],
 "time":[Time in format yyyy-MM-dd HH:mm:ss],
 "cashier":[Cashier name], 
 "received_cash":[received cash price  multiplied to 100], 
 "change":[change price multiplied to 100], 
 "received_card":[received card price  multiplied to 100],
-"card_type":[card type personal (0) or corporate (1)],
-"ppt_id":[ RRN number (ppt_id) in the slip response from the bank pinpad (Humo, Uzcard)],
+"card_type":2,
+"ppt_id":"123456789012",
+"extra_info":{
+    *"phone_number":"998911234569",
+    *"qr_payment_id":"123456789id12"
+    *"qr_payment_provider":"0141"
+          },
 *"send_email":[Send order data to special email],
 *"email":[Email for sending order data],
 *"sms_phone_number" : [Phone number for sending order data],
@@ -332,6 +354,7 @@ Operations for refuse order / Возврат
      "name":"наименование товара или услуги", 
      "barcode":"4780000000007", 
      "amount":1000,
+     "unit_name":"dona",
      "price":230000,
      "product_price":2300.0, 
      "vat":15000.0, 
@@ -348,15 +371,21 @@ Operations for refuse order / Возврат
               "pinfl":"12345678912345"
     }
     }
-  ], 
+  ],
+*"uuid":"123",
 "qr_code":"https://ofd.soliq.uz/check?t=UZ191211501001&r=1447&c=20220309125810&s=461313663448",
 "time":"2021-04-15 14:35:02",
 "cashier":"Admin", 
 "received_cash":100000, 
 "change":0,
 "received_card":15000,
-"card_type":0,
+"card_type":2,
 "ppt_id":"123456789012",
+"extra_info":{
+    *"phone_number":"998911234569",
+    *"qr_payment_id":"123456789id12"
+    *"qr_payment_provider":"0141"
+          },
 *"send_email":true,
 *"email":"abdullo21113@gmail.com",
 *"sms_phone_number" :"+998909999999",
@@ -450,7 +479,7 @@ Operations for refuse order / Возврат
 
 
 ## Order print
-Operation for print last order / Печать последнего чека
+Operation for print copy last order / Печать копии последнего чека 
 
 **URL** : `/order/print/`
 
