@@ -4,6 +4,17 @@
 
 *******************************************************************
 
+  OposShtrih_1.13.62.exe
+  07 декабря 2025 22:05
+  
+  [+] Добавлен параметр uuid для чека. Установка параметра через 
+      метод DIO_SET_DRIVER_PARAMETER, чтение через DIO_GET_DRIVER_PARAMETER.
+	  Номер параметра DriverParameterUuid       = 303;
+      DIO_GET_DRIVER_PARAMETER  = 29; // read internal driver parameter
+      DIO_SET_DRIVER_PARAMETER  = 30; // write internal driver parameter
+
+*******************************************************************
+
   OposShtrih_1.13.61.exe
   14 января 2024 14:28
   

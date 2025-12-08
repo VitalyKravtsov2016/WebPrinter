@@ -178,6 +178,7 @@ type
     FReservedWord: WideString;
     FChangeDue: WideString;
     FRemainingFiscalMemory: Integer;
+    uuid: WideString;
 
     function DoCloseDevice: Integer;
     function DoOpen(const DeviceClass, DeviceName: WideString;
@@ -785,6 +786,14 @@ begin
       begin
         case pData of
           DriverParameterBarcode: Receipt.AddMarkCode(pString);
+          DriverParameterUuid: UUID := pString;
+        end;
+      end;
+
+      DIO_GET_DRIVER_PARAMETER:
+      begin
+        case pData of
+          DriverParameterUuid: pString := UUID;
         end;
       end;
 
@@ -2627,10 +2636,11 @@ begin
     Order.ppt_id := 0;
 	  Order.change := Round2(Receipt.Change * 100);
 	  Order.Open_cashbox := Params.OpenCashbox and (Order.Received_cash <> 0);
-	  Order.Send_email := Receipt.CustomerEmail <> '';     
+	  Order.Send_email := Receipt.CustomerEmail <> '';
 	  Order.Email := Receipt.CustomerEmail;
 	  Order.sms_phone_number := Receipt.CustomerPhone;
     Order.qr_code := Receipt.QrCode;
+    Order.uuid := uuid;
     // Items
     for i := 0 to Receipt.Items.Count-1 do
     begin

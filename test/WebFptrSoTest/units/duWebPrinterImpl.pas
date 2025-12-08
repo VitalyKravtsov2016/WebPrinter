@@ -65,6 +65,7 @@ type
     procedure TestMarkCode;
     procedure TestValidMarkCode;
     procedure TestCheckMarkCode;
+    procedure TestUuid;
   end;
 
 implementation
@@ -1256,6 +1257,20 @@ begin
   CheckEquals(OPOS_E_ILLEGAL, Driver.DirectIO2(30, 80, InvalidBarcode), 'Driver.DirectIO2');
   ErrorString := Driver.GetPropertyString(PIDXFptr_ErrorString);
   CheckEquals('Invalid markcode, ' + InvalidBarcode, ErrorString, 'ErrorString');
+end;
+
+procedure TWebPrinterImplTest.TestUuid;
+var
+  pData: Integer;
+  pString: WideString;
+begin
+  OpenClaimEnable;
+  FptrCheck(Driver.DirectIO2(DIO_SET_DRIVER_PARAMETER, DriverParameterUuid, '2783645726'));
+
+  pString := '';
+  pData := DriverParameterUuid;
+  FptrCheck(Driver.DirectIO(DIO_GET_DRIVER_PARAMETER, pData, pString));
+  CheckEquals('2783645726', pString, 'pString <> 2783645726');
 end;
 
 initialization

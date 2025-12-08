@@ -37,6 +37,7 @@ type
     FCashPayment: Currency;
     FJsonFields: TTntStrings;
 
+
     function AddItem: TSalesReceiptItem;
     procedure SubtotalCharge(Amount: Currency;
       const Description: WideString);

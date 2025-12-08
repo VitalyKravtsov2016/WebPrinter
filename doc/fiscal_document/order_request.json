@@ -1,0 +1,76 @@
+{
+	"number": 1,
+	"receipt_type": "order",
+	"products": [
+		{
+			"name": "наименование товара или услуги",
+			"barcode": "4780000000007",
+			"amount": 1000,
+			"unit_name": "litr",
+			"price": 50000,
+			"product_price": 50000,
+			"vat": 6000,
+			"vat_percent": 12,
+			"discount": 0,
+			"discount_percent": 0,
+			"other": 0,
+			"labels": [
+				"05367567230048c?eN1(o0029"
+			],
+			"class_code": "02710001005000000",
+			"package_code": 1282556,
+			"owner_type": 1,
+			"comission_info": {
+				"inn": "123456789",
+				"pinfl": "12345678912345"
+			}
+		}
+	],
+	"uuid": "123",
+	"time": "2021-04-07 12:52:02",
+	"cashier": "Admin",
+	"received_cash": 50000,
+	"change": 0,
+	"received_card": 0,
+	"card_type": 2,
+	"ppt_id": "123456789012",
+	"scan2pay_paid": true,
+	"extra_info": {
+		"phone_number": "998911234569",
+		"qr_payment_id": "123456789id12",
+		"qr_payment_provider": "0141",
+		"scan2pay_id": "59bcc56b-1fcf-4752-9f5b-a3fffdf525ae"
+	},
+	"open_cashbox": true,
+	"send_email": true,
+	"email": "abdullo21113@gmail.com",
+	"sms_phone_number": "+998909999999",
+	"banners": [
+		{
+			"type": "text",
+			"data": "Код скидки для следующий покупки",
+			"style": {
+				"font_width": 2,
+				"font_height": 100,
+				"is_bold": true
+			}
+		},
+		{
+			"type": "barcode",
+			"data": "23423423",
+			"style": {
+				"font_width": 2,
+				"font_height": 100,
+				"is_bold": true
+			}
+		}
+	],
+	"prices": [
+		{
+			"name": "PayMe",
+			"price": 100000,
+			"vat_type": "QQS",
+			"vat_price": 200000
+		}
+	]
+}

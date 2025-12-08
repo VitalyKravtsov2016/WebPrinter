@@ -394,6 +394,7 @@ const
   DriverParameterExternalCheckNumber      = 300;
   DriverParameterFiscalSign               = 301;
   DriverParameterPrintEnabled             = 302;
+  DriverParameterUuid                     = 303;
 
   /////////////////////////////////////////////////////////////////////////////
   // Separator type

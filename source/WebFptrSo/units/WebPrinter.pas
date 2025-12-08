@@ -309,37 +309,42 @@ type
 | name               | String | Product name/Наименование товара или услуги                                    | Хлеб                                        |
 | barcode            | Long   | Product barcode/Штрих-код (GTIN) товара                                        | EAN-8 47800007, EAN-13 4780000000007        |
 | amount             | Long   | Product amount/Количество                                                      | 1 шт. = 1000; 0,25 кг = 250                 |
-| unit_name          | String | Unit name/Едииница измереня для отображаения на чеке на лат. UZ                | dona                                        |
-| units              | Integr | Unit/Единица измерения                                                         | "1" - это шт. Подробности см ниже           |
+| unit_name          | String | Unit name/Едииница измерения для отображения на чеке на лат. UZ                | dona                                        |
+|                    |        | Название единиц измерения взять с сайта tasnif.soliq.uz                        |                                             |
 | price              | Long   | Price/Сумма                                                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | product_price      | Long   | Product price/Цена за единицу товара/услуги                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-| vat                | Long   | Nds price/Сумма НДС                                                            | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-| vat_percent        | Integer| Nds percent/Процент НДС                                                        | 0 = 0%, 12 = 12%                            |
+| vat                | Long   | VAT price/Сумма НДС/ Расчет НДС (VAT calculate) Price*12/112                   | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| vat_percent        | Integer| VAT percent/Процент НДС                                                        | 0 = 0%, 12 = 12%, null - БЕЗ НДС            |
 | discount           | Long   | Discount price/Цена cкидки                                                     | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | discount_percent   | Integr | Discount price percent/Процент скидки                                          | 0 = 0%, 10 = 10%, 15 = 15%, 20 = 20%        |
-| other              | Long   | Other discount prices/Другая скидка                                            | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
+| other              | Long   | Other payments (gift card)/Другая оплата (карта лояльности, подарочные карты)  | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | labels             | String | Marking codes list/Код маркировки (значеник кода DataMatrix). К примеру если   | 05367567230048c?eN1(o0029                   |
 |                    |        | кол-во товаров с маркир. будет 5 шт, то в amount указываем 1 шт                |                                             |
 | class_code         | Long   | Product class code/Код ИКПУ (МХИК) (tasnif.soliq.uz)                           | 10999001001000000                           |
-| package_code       | Long   | Package_code/ Код упаковки (tasnif.soliq.uz)                                   | 1520627                                     |
+| package_code       | Long   | Package_code/ Код ед.измерений / упаковки (tasnif.soliq.uz)                    | 1520627                                     |
 | owner_type         | Integer| Owner_type/ Код происхождения товара (одно значение либо 0, либо 1, либо 2     | 0,1,2                                       |
 |                    |        | (0-"Куплено и продано" / 1-"Собственное производство" / 2-"Поставщик услуг")   |                                             |
 | comission_info     | Long   | Sign commission check TIN, PINFL/Признак комиссионный чек ИНН, ПИНФЛ           | 123456789, 12345678912345                   |
+| uuid               | String | Your UUID / Ваш UUID                                                           | abc123                                      |
 | time               | Double | Time in format yyyy-MM-dd hh:mm:ss/Дата и время в формате yyyy-MM-dd hh:mm:ss  | 2021-09-08 22:54:59                         |
 | cashier            | String | Cashier name/Имя кассира                                                       | Админ                                       |
 | received_cash      | Long   | Received cash price/Оплата наличными                                           | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | change             | Long   | Change price/Сдача                                                             | 100                                         |
 | received_card      | Long   | Received cash price/Оплата банковской картой,Payme,Click,UZUM                  | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-| open_cashbox       | String | Open cashbox device/Открытие денежнего ящика                                   | true = open, falce = not open               |
+| card_type          | Integer| Card type(personal or corporate) / Тип карты (личная или корпоративная)        | 1,2                                         |
+|                    |        | 2 - личная карта , 1 - корпоративная карта                                     |                                             |
+| ppt_id             | Integer| Номер RRN (ppt_id) в слипе ответе от банквоского пинпада (Humo, Uzcard)        | 123456789012                                |
+| scan2pay_paid      | Bool   | If the payment was made through the service Scan2Pay true or false             | true or false                               |
+|                    |        | Если оплата была через сервис Scan2Pay true или false                          |                                             |
+| scan2pay_id        | String | uuid from /payment/qr_pay/status / uuid из /payment/qr_pay/status              | 59bcc56b-1fcf-4752-9f5b-a3fffdf525ae        |
+| open_cashbox       | String | Open cashbox device/Открытие денежнего ящика                                   | true = open, false = not open               |
 | type               | String | Banner type - {text, barcode, qr_code}/Штрих-код, QR-код                       | barcode                                     |
 | data               | String | Banner text/Рекламный текст                                                    | Скидка на следующую покупку 5%              |
 | prices / name      | String | Price name/Наименование вида оплаты                                            | USD, VISA, MasterCard, Click, Payme, Uzum   |
 | prices / price     | Long   | Price/Сумма                                                                    | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
 | prices / vat_type  | Long   | Vat type/Название налога и ставка                                              | НДС 15%                                     |
 | prices / vat_price | Long   | Vat price/Сумма налога                                                         | 50 тийин = 50, 1 сум = 100, 100 сум = 10000 |
-
 *)
-
 
   { TWPProducts }
 
@@ -429,6 +434,7 @@ type
 	  Fnumber: Integer;
 	  Freceipt_type: WideString;
 	  Fproducts: TWPProducts;
+    Fuuid: WideString;
 	  Ftime: WideString;
 	  Fcashier: WideString;
 	  Freceived_cash: Int64;
@@ -458,6 +464,7 @@ type
 	  property number: Integer read Fnumber write Fnumber;
 	  property receipt_type: WideString read Freceipt_type write Freceipt_type;
 	  property products: TWPProducts read Fproducts write SetProducts;
+    property uuid: WideString read Fuuid write Fuuid;
 	  property time: WideString read FTime write FTime;
 	  property cashier: WideString read Fcashier write Fcashier;
 	  property received_cash: Int64 read Freceived_cash write Freceived_cash;
@@ -1049,11 +1056,11 @@ function TWPOrder.IsOptionalField(const Field: WideString): Boolean;
 var
   i: Integer;
 const
-  OptionalFields: array [0..6] of string = (
+  OptionalFields: array [0..7] of string = (
     'extra_info', 'send_email',
     'email', 'sms_phone_number',
     'open_cashbox', 'banners',
-    'prices');
+    'prices', 'uuid');
 begin
   for i := Low(OptionalFields) to High(OptionalFields) do
   begin
