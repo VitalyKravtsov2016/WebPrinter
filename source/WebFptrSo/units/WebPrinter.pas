@@ -2313,8 +2313,6 @@ var
   RequestJson: WideString;
   responseJson: WideString;
 begin
-  FLogger.Debug('TWebPrinter.ReturnOrder.0');
-
   OpenFiscalDay3;
   for i := 1 to 2 do
   begin
@@ -2332,7 +2330,6 @@ begin
       Break;
     end;
   end;
-  FLogger.Debug('TWebPrinter.ReturnOrder.1');
   CheckForError(FCreateOrderResponse.error);
   Result := FCreateOrderResponse;
 end;
