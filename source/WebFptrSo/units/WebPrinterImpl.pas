@@ -56,7 +56,6 @@ type
     procedure RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
     procedure OpenCashDrawer;
     function GetCashInECRAmount: Currency;
-    procedure AddMarkCodes(Labels, MarkCodes: TStrings);
     function IsReceiptCommitted: Boolean;
     procedure CloseDay(DayResult: TWPDayResult);
     procedure LogServerStatus(const Data: TWPInfoResponse);
@@ -2663,7 +2662,7 @@ begin
         Product.vat := Round2(Item.GetVatAmount(VatRate) * 100);
         Product.discount_percent := Round(Item.GetDiscountPercent);
         Product.other := 0;
-        AddMarkCodes(Product.Labels, Item.MarkCodes);
+        Product.Labels.AddStrings(Item.MarkCodes);
         Product.Class_code := Item.ClassCode;
         Product.Package_code := Item.PackageCode;
         Product.Owner_type := 0;
@@ -2723,16 +2722,6 @@ begin
     end;
   end;
   FPrinter.LoadState;
-end;
-
-procedure TWebPrinterImpl.AddMarkCodes(Labels, MarkCodes: TStrings);
-var
-  i: Integer;
-begin
-  for i := 0 to MarkCodes.Count-1 do
-  begin
-    Labels.Add(GetMarkCode(MarkCodes[i]));
-  end;
 end;
 
 procedure TWebPrinterImpl.RecDiscountsToItemDiscounts(Receipt: TSalesReceipt);
