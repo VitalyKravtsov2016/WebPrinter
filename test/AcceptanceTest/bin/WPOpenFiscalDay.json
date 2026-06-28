@@ -1,9 +1,9 @@
 {
   "data": null,
   "error": {
-    "code": 36916,
-    "message": "ERROR_OPEN_ZREPORT_TIME_PAST",
-    "data": "ERROR_OPEN_ZREPORT_TIME_PAST\n  ERROR_OPEN_ZREPORT_TIME_PAST\n"
+    "code": 103,
+    "message": "9030 - DATETIME_IS_IN_THE_PAST; failed to open zreport; failed to execute command",
+    "data": null
   },
   "is_success": false
 }

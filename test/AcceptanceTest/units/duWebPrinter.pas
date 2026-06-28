@@ -67,8 +67,8 @@ var
   Data: TWPInfoResponse;
 begin
   Data := FPrinter.ReadInfo2.Data;
-  CheckEquals(Data.terminal_id, 'UZ170703100597', 'terminal_id');
-  CheckEquals(Data.applet_version, '0300', 'applet_version');
+  CheckEquals(Data.terminal_id, 'LG420230614045', 'terminal_id');
+  CheckEquals(Data.applet_version, 'v4.0.0', 'applet_version');
   CheckEquals(Data.receipt_count, 0, 'receipt_count');
   CheckEquals(Data.receipt_max_count, 858, 'receipt_max_count');
   CheckEquals(Data.zreport_count, 743, 'zreport_count');
@@ -85,6 +85,7 @@ begin
   CheckEquals(Data.last_operation_time, '2024-01-09 15:40:43', 'last_operation_time');
 *)
 end;
+
 
 procedure TWebPrinterTest2.CheckOpenFiscalDay;
 var
