@@ -1890,7 +1890,7 @@ begin
       end;
     end;
 
-    if Response.error.code <> WP_ERROR_CURRENT_ZREPORT_IS_EMPTY then
+    if Response.error.GetErrorCode <> WP_ERROR_CURRENT_ZREPORT_IS_EMPTY then
       FPrinter.CheckForError(Response.error);
 
     UpdateZReport;

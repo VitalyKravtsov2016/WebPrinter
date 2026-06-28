@@ -53,6 +53,9 @@ const
   WP_ERROR_OPEN_ZREPORT_TIME_PAST = $9034; // Время открытия Z- report старое
   WP_ERROR_MAINTENANCE_REQUIRED = $9035; // Требуется обслуживание со стороны ОФД
 
+  WP_ERROR_ZREPORT_IS_ALREADY_CLOSED    = $9023;
+  WP_ERROR_CANNOT_CLOSE_EMPTY_ZREPORT   = $9032;
+
 
   //////////////////////////////////////////////////////////////////////////////
   // Receipt type constants
@@ -133,6 +136,7 @@ type
   public
     procedure Clear;
     procedure Assign(Source: TPersistent); override;
+    function GetErrorCode: Integer;
   published
     property code: Integer read FCode write FCode;
     property message: WideString read FMessage write FMessage;
@@ -1506,6 +1510,35 @@ begin
   FMessage := '';
 end;
 
+(*
+
+{
+  "data": null,
+  "error": {
+    "code": 122,
+    "message": "9023 - ZREPORT_IS_ALREADY_CLOSED; failed to register receipt; failed to execute command",
+    "data": null
+  },
+  "is_success": false
+}
+
+*)
+
+function TWPError.GetErrorCode: Integer;
+var
+  P: Integer;
+begin
+  Result := Code;
+  if Code <> 0 then
+  begin
+    P := Pos(' ', Message);
+    if P <> 0 then
+    begin
+      Result := StrToIntDef('$' + Copy(Message, 1, P-1), Code);
+    end;
+  end;
+end;
+
 { TWPBanner }
 
 constructor TWPBanner.Create(Collection: TJsonCollection);
@@ -2056,9 +2089,9 @@ var
 begin
   ResponseJson := OpenFiscalDay(Time);
   JsonToObject(ResponseJson, FOpenDayResponse);
-  if FOpenDayResponse.error.code = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then
+  if FOpenDayResponse.error.GetErrorCode = WP_ERROR_ZREPORT_IS_ALREADY_OPEN then
   begin
-    FLogger.Error(WideFormat('%d, %s', [FOpenDayResponse.Error.Code, FOpenDayResponse.Error.message]));
+    FLogger.Error(WideFormat('%d, %s', [FOpenDayResponse.Error.GetErrorCode, FOpenDayResponse.Error.message]));
     FOpenDayResponse.Error.Clear;
   end;
   CheckForError(FOpenDayResponse.Error);
@@ -2278,13 +2311,13 @@ begin
     JsonToObject(ResponseJson, FCreateOrderResponse);
 
 
-    if FCreateOrderResponse.error.code = WP_ERROR_ZREPORT_IS_NOT_OPEN then
+    if FCreateOrderResponse.error.GetErrorCode = WP_ERROR_ZREPORT_IS_NOT_OPEN then
     begin
       FDayOpened := False;
       if OpenFiscalDay2(GetPrinterDate).error.code <> 0 then Break;
     end else
     begin
-      if FCreateOrderResponse.error.code = WP_ERROR_RECEIPT_TIME_PAST then
+      if FCreateOrderResponse.error.GetErrorCode = WP_ERROR_RECEIPT_TIME_PAST then
       begin
         // Задержка в 1 секунду - время запросов должно отличаться на 1 секунду
         Sleep(1000);
@@ -2322,7 +2355,7 @@ begin
     ResponseJson := PostJson(GetAddress + '/order/refuse/', RequestJson);
     FCreateOrderResponse.ResponseJson := ResponseJson;
     JsonToObject(ResponseJson, FCreateOrderResponse);
-    if FCreateOrderResponse.error.code = WP_ERROR_ZREPORT_IS_NOT_OPEN then
+    if FCreateOrderResponse.error.GetErrorCode = WP_ERROR_ZREPORT_IS_NOT_OPEN then
     begin
       OpenFiscalDay2(GetPrinterDate);
     end else

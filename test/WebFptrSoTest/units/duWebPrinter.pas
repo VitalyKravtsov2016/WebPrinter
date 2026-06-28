@@ -40,6 +40,7 @@ type
     procedure CheckOpenCashDrawerError;
     procedure CheckPrintLastReceipt;
     procedure CheckPrintLastReceiptError;
+    procedure CheckWPError;
   end;
 
 implementation
@@ -443,6 +444,20 @@ begin
   CheckEquals(False, Response.is_success, 'is_success');
   CheckEquals(9326, Response.error.code, 'error.code');
   CheckEquals('ZREPORT_ALREADY_CLOSE', Response.error.message, 'error.message');
+end;
+
+procedure TWebPrinterTest.CheckWPError;
+var
+  Error: TWPError;
+begin
+  Error := TWPError.Create;
+  try
+    Error.code := 122;
+    Error.message := '9023 - ZREPORT_IS_ALREADY_CLOSED; failed to register receipt; failed to execute command';
+    CheckEquals($9023, Error.GetErrorCode, 'Error.GetErrorCode');
+  finally
+    Error.Free;
+  end;
 end;
 
 initialization
