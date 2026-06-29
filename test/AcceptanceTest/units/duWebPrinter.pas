@@ -89,10 +89,14 @@ end;
 
 procedure TWebPrinterTest2.CheckOpenFiscalDay;
 var
-  Data: WideString;
+  i: Integer;
 begin
-  Data := FPrinter.OpenFiscalDay(Now);
-  WriteFileData('WPOpenFiscalDay.json', Data);
+  FPrinter.Connect;
+  for i := 1 to 3 do
+  begin
+    FPrinter.OpenFiscalDay3;
+  end;
+  //raise Exception.Create(Response.error.message);
 end;
 
 procedure TWebPrinterTest2.CheckCloseFiscalDay;
