@@ -868,6 +868,7 @@ type
     procedure Connect;
     procedure Disconnect;
     procedure OpenFiscalDay3;
+    procedure CloseFiscalDay3;
     procedure CheckForError(const Error: TWPError);
     procedure SaveState;
     procedure LoadState;
@@ -2119,12 +2120,21 @@ function TWebPrinter.CloseFiscalDay2(Time: TDateTime): TWPCloseDayResponse;
 var
   JsonText: WideString;
 begin
-  OpenFiscalDay3;
   JsonText := CloseFiscalDay(Time);
   FCloseDayResponse.is_success := False;
   JsonToObject(JsonText, FCloseDayResponse);
   CheckForError(FCloseDayResponse.Error);
   Result := FCloseDayResponse;
+end;
+
+procedure TWebPrinter.CloseFiscalDay3;
+begin
+  if DayOpened then
+  begin
+    CloseFiscalDay2(GetPrinterDate);
+    CheckForError(FCloseDayResponse.Error);
+    FDayOpened := False;
+  end;
 end;
 
 (*

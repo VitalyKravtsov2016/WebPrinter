@@ -94,35 +94,23 @@ begin
   FPrinter.Connect;
   for i := 1 to 3 do
   begin
+    FPrinter.DayOpened := False;
     FPrinter.OpenFiscalDay3;
+    Check(FPrinter.DayOpened, 'Printer.DayOpened');
   end;
-  //raise Exception.Create(Response.error.message);
 end;
 
 procedure TWebPrinterTest2.CheckCloseFiscalDay;
 var
-  Response: TWPCloseDayResponse;
+  i: Integer;
 begin
-  Response := FPrinter.CloseFiscalDay2(Now);
-  CheckEquals(True, Response.is_success, 'is_success');
-(*
-  CheckEquals('0300', Response.data.applet_version, 'data.applet_version');
-  CheckEquals('UZ170703100597', Response.data.terminal_id, 'data.terminal_id');
-  CheckEquals(3, Response.data.number, 'data.number');
-  CheckEquals(20, Response.data.count, 'data.count');
-  CheckEquals(20, Response.data.last_receipt_seq, 'data.last_receipt_seq');
-  CheckEquals(18, Response.data.first_receipt_seq, 'data.first_receipt_seq');
-  CheckEquals('2019-10-07 17:07:52', Response.data.open_time, 'data.open_time');
-  CheckEquals('2019-10-09 19:16:15', Response.data.close_time, 'data.close_time');
-  CheckEquals(1234, Response.data.total_refund_vat, 'data.total_refund_vat');
-  CheckEquals(123, Response.data.total_refund_card, 'data.total_refund_card');
-  CheckEquals(2343, Response.data.total_refund_cash, 'data.total_refund_cash');
-  CheckEquals(4564, Response.data.total_refund_count, 'data.total_refund_count');
-  CheckEquals(195342, Response.data.total_sale_vat, 'data.total_sale_vat');
-  CheckEquals(1231, Response.data.total_sale_card, 'data.total_sale_card');
-  CheckEquals(195000, Response.data.total_sale_cash, 'data.total_sale_cash');
-  CheckEquals(3, Response.data.total_sale_count, 'data.total_sale_count');
-*)
+  FPrinter.Connect;
+  for i := 1 to 3 do
+  begin
+    FPrinter.DayOpened := True;
+    FPrinter.CloseFiscalDay3;
+    Check(not FPrinter.DayOpened, 'Printer.DayOpened');
+  end;
 end;
 
 procedure TWebPrinterTest2.CheckWPDateTimeToStr;
@@ -261,6 +249,8 @@ var
   Request: TWPOrder;
   Response: TWPCreateOrderResponse;
 begin
+  CheckCloseFiscalDay;
+
   Request := TWPOrder.Create;
   try
     CreateOrder(Request);
