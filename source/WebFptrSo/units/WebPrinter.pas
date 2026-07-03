@@ -2188,7 +2188,7 @@ begin
   CheckForError(FCloseDayResponse2.result.error);
   if FCloseDayResponse2.result.error.code = 0 then
   begin
-    FDayOpened := FCloseDayResponse2.result.data.open_time <> '';
+    FDayOpened := FCloseDayResponse2.result.data.close_time = '';
   end;
   Result := FCloseDayResponse2;
 end;
@@ -2306,6 +2306,7 @@ Operation for create order / Продажа, аванс, кредит
 function TWebPrinter.CreateOrder(Request: TWPOrder): TWPCreateOrderResponse;
 var
   i: Integer;
+  ErrorCode: Integer;
   RequestJson: WideString;
   ResponseJson: WideString;
 begin
@@ -2320,14 +2321,16 @@ begin
     FCreateOrderResponse.ResponseJson := ResponseJson;
     JsonToObject(ResponseJson, FCreateOrderResponse);
 
-
-    if FCreateOrderResponse.error.GetErrorCode = WP_ERROR_ZREPORT_IS_NOT_OPEN then
+    ErrorCode := FCreateOrderResponse.error.GetErrorCode;
+    if (ErrorCode = WP_ERROR_ZREPORT_IS_NOT_OPEN)or
+    (ErrorCode = WP_ERROR_ZREPORT_IS_ALREADY_CLOSED) then
     begin
       FDayOpened := False;
-      if OpenFiscalDay2(GetPrinterDate).error.code <> 0 then Break;
+      ErrorCode := OpenFiscalDay2(GetPrinterDate).error.code;
+      if ErrorCode <> 0 then Break;
     end else
     begin
-      if FCreateOrderResponse.error.GetErrorCode = WP_ERROR_RECEIPT_TIME_PAST then
+      if ErrorCode = WP_ERROR_RECEIPT_TIME_PAST then
       begin
         // Задержка в 1 секунду - время запросов должно отличаться на 1 секунду
         Sleep(1000);

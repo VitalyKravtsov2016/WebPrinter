@@ -250,10 +250,10 @@ var
   Response: TWPCreateOrderResponse;
 begin
   CheckCloseFiscalDay;
-
   Request := TWPOrder.Create;
   try
     CreateOrder(Request);
+    FPrinter.DayOpened := True;
     Response := FPrinter.CreateOrder(Request);
     CheckEquals(True, Response.is_success, 'is_success');
     CheckEquals(0, Response.error.code, 'error.code');
