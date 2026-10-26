@@ -2188,7 +2188,9 @@ begin
   CheckForError(FCloseDayResponse2.result.error);
   if FCloseDayResponse2.result.error.code = 0 then
   begin
-    FDayOpened := FCloseDayResponse2.result.data.close_time = '';
+    FDayOpened :=
+      (FCloseDayResponse2.result.data.close_time = '') and
+      (FCloseDayResponse2.result.data.open_time <> '');
   end;
   Result := FCloseDayResponse2;
 end;
