@@ -2099,6 +2099,13 @@ begin
   FDayOpened := True;
   FDayOpenTime := Time;
   Result := FOpenDayResponse;
+  // Задержка 2 секунды, чтобы
+  if FOpenDayResponse.Error.code = 0 then
+  begin
+    FLogger.Error('Задержка 2 секунды...');
+    Sleep(2000);
+    FLogger.Error('Задержка 2 секунды: OK');
+  end;
 end;
 
 (*
